@@ -1,7 +1,4 @@
-\let\TeXyear\year
 \documentclass{ieeeaccess}
-\let\setyear\year
-\let\year\TeXyear
 %Adjusted 05/13/2026 at the byline author names
 %\usepackage[T1]{fontenc}
 \usepackage{cite}
@@ -13,22 +10,6 @@
 \usepackage{algorithmicx}
 \usepackage{graphicx}
 \graphicspath{{figures/}{./}}
-\usepackage{tikz}
-\usetikzlibrary{positioning, arrows.meta}
-
-% Architecture diagram palette
-\definecolor{cMacro}{RGB}{20, 65, 115}
-\definecolor{cMacroBg}{RGB}{242, 247, 253}
-\definecolor{cMicro}{RGB}{15, 95, 85}
-\definecolor{cMicroBg}{RGB}{240, 249, 247}
-\definecolor{cHeur}{RGB}{110, 25, 75}
-\definecolor{cHeurBg}{RGB}{253, 242, 250}
-\definecolor{cPool}{RGB}{165, 75, 10}
-\definecolor{cPoolBg}{RGB}{255, 247, 238}
-\definecolor{cMIP}{RGB}{125, 55, 15}
-\definecolor{cMIPBg}{RGB}{252, 243, 236}
-\definecolor{cArchive}{RGB}{20, 105, 50}
-\definecolor{cArchiveBg}{RGB}{240, 250, 243}
 \usepackage{textcomp}
 \usepackage{booktabs}
 \usepackage{tabularx}
@@ -61,7 +42,7 @@
   \else
     \@IEEEfigurecaptionsepspace
     \setbox\@tempboxa\hbox{{\color{accessblue}\figcapheadfont #1. \ }}%
-    \parbox[t]{\xfigwd}{\raggedright\noindent\unhbox\@tempboxa\figcapfont#2\strut}%
+    \parbox[t]{\hsize}{\raggedright\noindent\unhbox\@tempboxa\figcapfont#2\strut}%
   \fi
 }
 \makeatother
@@ -144,7 +125,10 @@ The Vehicle Routing Problem with Time Windows (VRPTW) is a foundational NP-hard 
 
 In commercial freight operations, the optimization objective is strictly lexicographic: dispatchers prioritize minimizing the total number of deployed vehicles ($\NV$) before minimizing total travel distance ($\TD$) \cite{Toth2014, braysy2005vehicle}. Formally, letting $\mathcal{S}$ denote the space of feasible routing solutions, a solution $s_1 \in \mathcal{S}$ is strictly preferred over $s_2 \in \mathcal{S}$ (denoted $s_1 \prec s_2$) if and only if:
 \begin{equation}
-  NV(s_1) < NV(s_2) \;\lor\; \big(NV(s_1) = NV(s_2) \;\land\; TD(s_1) < TD(s_2)\big)
+  \begin{aligned}
+    NV(s_1) < NV(s_2) \;\lor\; \big(&NV(s_1) = NV(s_2) \;\land \\
+    &TD(s_1) < TD(s_2)\big)
+  \end{aligned}
   \label{eq:lexicographic_intro}
 \end{equation}
 This hierarchical ordering reflects the economic structure of commercial transportation, where fixed vehicle capital acquisition, maintenance, insurance, and driver shift wages dominate marginal fuel consumption.
@@ -238,15 +222,18 @@ In computational solver implementations, this hierarchy is evaluated via a scala
 \end{equation}
 subject to:
 \begin{align}
-  &\sum_{k \in \mathcal{K}} \sum_{j \in \mathcal{V}, j \neq i} x_{ij}^k = 1, &&\forall i \in \mathcal{N} \label{eq:visit_once} \\
-  &\sum_{j \in \mathcal{N} \cup \{n+1\}} x_{0j}^k \le 1, \; \sum_{j \in \mathcal{N} \cup \{0\}} x_{j, n+1}^k = \sum_{j \in \mathcal{N} \cup \{n+1\}} x_{0j}^k, &&\forall k \in \mathcal{K} \label{eq:depot_flow} \\
-  &\sum_{i \in \mathcal{V}, i \neq h} x_{ih}^k - \sum_{j \in \mathcal{V}, j \neq h} x_{hj}^k = 0, &&\forall h \in \mathcal{N}, \; k \in \mathcal{K} \label{eq:flow_conservation} \\
-  &\sum_{i \in \mathcal{N}} q_i \sum_{j \in \mathcal{V}, j \neq i} x_{ij}^k \le Q, &&\forall k \in \mathcal{K} \label{eq:capacity_constraint} \\
-  &w_i^k + s_i + t_{ij} - M_{ij} (1 - x_{ij}^k) \le w_j^k, &&\forall (i, j) \in \mathcal{A}, \; k \in \mathcal{K} \label{eq:time_propagation} \\
-  &e_i \le w_i^k \le l_i, \quad x_{ij}^k \in \{0, 1\}, \quad w_i^k \ge 0, &&\forall i \in \mathcal{V}, (i,j) \in \mathcal{A}, k \in \mathcal{K} \label{eq:variable_domains}
+  &\sum_{k \in \mathcal{K}} \sum_{j \in \mathcal{V}, j \neq i} x_{ij}^k = 1, \quad \forall i \in \mathcal{N} \label{eq:visit_once} \\
+  &\sum_{j \in \mathcal{N} \cup \{n+1\}} x_{0j}^k \le 1, \quad \forall k \in \mathcal{K} \label{eq:depot_flow_depart} \\
+  &\sum_{j \in \mathcal{N} \cup \{0\}} x_{j, n+1}^k = \sum_{j \in \mathcal{N} \cup \{n+1\}} x_{0j}^k, \quad \forall k \in \mathcal{K} \label{eq:depot_flow_return} \\
+  &\sum_{i \in \mathcal{V}, i \neq h} x_{ih}^k - \sum_{j \in \mathcal{V}, j \neq h} x_{hj}^k = 0, \quad \forall h \in \mathcal{N}, \; k \in \mathcal{K} \label{eq:flow_conservation} \\
+  &\sum_{i \in \mathcal{N}} q_i \sum_{j \in \mathcal{V}, j \neq i} x_{ij}^k \le Q, \quad \forall k \in \mathcal{K} \label{eq:capacity_constraint} \\
+  &w_i^k + s_i + t_{ij} - M_{ij} (1 - x_{ij}^k) \le w_j^k, \nonumber \\
+  &\hspace{3.4cm} \forall (i, j) \in \mathcal{A}, \; k \in \mathcal{K} \label{eq:time_propagation} \\
+  &e_i \le w_i^k \le l_i, \quad w_i^k \ge 0, \quad \forall i \in \mathcal{V}, \; k \in \mathcal{K} \label{eq:variable_domains} \\
+  &x_{ij}^k \in \{0, 1\}, \quad \forall (i, j) \in \mathcal{A}, \; k \in \mathcal{K} \label{eq:binary_domains}
 \end{align}
 
-Constraint~\eqref{eq:visit_once} ensures that every customer is visited exactly once. Constraints~\eqref{eq:depot_flow} enforce that each vehicle departs from origin depot $0$ and arrives at destination depot $n+1$ at most once. Flow conservation across all customer nodes is guaranteed by \eqref{eq:flow_conservation}. Constraint~\eqref{eq:capacity_constraint} prevents vehicle capacity violations. Schedule propagation is maintained via \eqref{eq:time_propagation}, where $M_{ij} = \max\{0, l_i + s_i + t_{ij} - e_j\}$ defines the tightest valid Big-$M$ upper bound. Customer time-window compliance and domains are governed by \eqref{eq:variable_domains}; if a vehicle arrives at customer $i$ prior to $e_i$, it incurs an idle waiting time such that service begins at $w_i^k = e_i$. While $w_i^k$ is indexed per vehicle for strict MIP formulation alignment with $x_{ij}^k$, constraint~\eqref{eq:visit_once} ensures that exactly one vehicle serves each customer $i$, rendering only one $w_i^k$ active in any feasible dispatch plan.
+Constraint~\eqref{eq:visit_once} ensures that every customer is visited exactly once. Constraints~\eqref{eq:depot_flow_depart}--\eqref{eq:depot_flow_return} enforce that each vehicle departs from origin depot $0$ and arrives at destination depot $n+1$ at most once. Flow conservation across all customer nodes is guaranteed by \eqref{eq:flow_conservation}. Constraint~\eqref{eq:capacity_constraint} prevents vehicle capacity violations. Schedule propagation is maintained via \eqref{eq:time_propagation}, where $M_{ij} = \max\{0, l_i + s_i + t_{ij} - e_j\}$ defines the tightest valid Big-$M$ upper bound. Customer time-window compliance and domains are governed by \eqref{eq:variable_domains}--\eqref{eq:binary_domains}; if a vehicle arrives at customer $i$ prior to $e_i$, it incurs an idle waiting time such that service begins at $w_i^k = e_i$. While $w_i^k$ is indexed per vehicle for strict MIP formulation alignment with $x_{ij}^k$, constraint~\eqref{eq:visit_once} ensures that exactly one vehicle serves each customer $i$, rendering only one $w_i^k$ active in any feasible dispatch plan.
 
 \section{Proposed Methodology}
 \label{sec:methodology}
@@ -260,123 +247,7 @@ The framework decomposes the global routing search into three coordinated operat
 
 \begin{figure*}[!t]
 \centering
-\resizebox{0.91\textwidth}{!}{%
-\begin{tikzpicture}[
-  >=Latex,
-  font=\scriptsize,
-  card/.style 2 args={
-    draw=#1, fill=#2, rounded corners=3.5pt, line width=0.85pt,
-    inner sep=3.8pt, text width=6.7cm, align=left
-  },
-  rcard/.style 2 args={
-    draw=#1, fill=#2, rounded corners=3.5pt, line width=0.85pt,
-    inner sep=3.8pt, text width=6.7cm, align=left
-  },
-  ctrlarr/.style={->, line width=1.0pt, draw=cMacro},
-  dataarr/.style={->, line width=0.95pt, draw=cMicro},
-  marr/.style={->, line width=0.95pt, draw=cPool},
-  fbarr/.style={->, line width=0.8pt, dashed, draw=cPool},
-  badge/.style={
-    font=\tiny, fill=white, draw=gray!40, line width=0.35pt,
-    inner sep=1.4pt, rounded corners=1.8pt
-  },
-  slopedbadge/.style={
-    font=\tiny, fill=white, draw=cPool!70, line width=0.35pt,
-    inner sep=1.2pt, rounded corners=1.8pt, sloped, midway
-  }
-]
-
-  % =========================================================================
-  % COLUMN 1: Decision & Search Hierarchy (Tiers 1-3)
-  % =========================================================================
-  \node[card={cMacro}{cMacroBg}] (macro) {
-    {\bfseries\color{cMacro}\normalsize Tier 1: Macro Plateau Controller $\bm{\pi_{\text{macro}}}$}\hfill{\scriptsize\color{cMacro!80}\textsf{[Semi-MDP, $\Delta_{\text{seg}}=100$]}}\\[1pt]
-    {\color{cMacro!30}\rule{\linewidth}{0.35pt}}\\[1.5pt]
-    $\bullet$ \textbf{Observation $\mathbf{s}_k^{\text{macro}} \in \mathbb{R}^{13}$}: Stagnation rate, temp $T/T_0$, route separation $rb$, capacity balance $lb$, tight-TW ratio $\tau_{\text{tight}}$, slack $\bar{s}$, pool occupancy $\rho_{\text{pool}}$\\
-    $\bullet$ \textbf{Network}: Dueling Double DQN ($13 \to 128 \to 128 \to 7$) with Prioritized Replay\\
-    $\bullet$ \textbf{7 Strategic Regimes ($a_0$--$a_6$)}: $a_0$: Default exploration; $a_1$: Intensify / deep cool; $a_2$: Thermal reheat; $a_3$: TW-Rescue; $a_4$: GEC route elimination; $a_5$: Set-Part Recomb; $a_6$: Infeasible descent (adaptive TW/cap penalty relaxation)
-  };
-
-  \node[card={cMicro}{cMicroBg}, below=4.8mm of macro] (micro) {
-    {\bfseries\color{cMicro}\normalsize Tier 2: Micro Selection Tier ($\bm{\pi_{\text{micro}}}$ \& LAC)}\hfill{\scriptsize\color{cMicro!80}\textsf{[Step $t \in \{1,\dots,T\}$]}}\\[1pt]
-    {\color{cMicro!30}\rule{\linewidth}{0.35pt}}\\[1.5pt]
-    $\bullet$ \textbf{Observation $\mathbf{s}_t^{\text{micro}} \in \mathbb{R}^{20}$}: Operator success history, removal ratios, customer spatial clustering, normalized forward time-slack distribution\\
-    $\bullet$ \textbf{Operator Controller}: Dueling DDQN ($20 \to 128 \to 65$) selecting 65 action pairs ($13\text{ Destroy} \times 5\text{ Repair}$) with Softmax-Entropy confidence gate $w_{\text{conf}}(\mathbf{s})$\\
-    $\bullet$ \textbf{Learned Acceptance (LAC)}: MLP ($9 \to 64 \to 48 \to 32 \to 1$) evaluates delayed downstream gain ($H_{\text{lac}}=80$ lookahead); replaces SA after 300 warmup steps
-  };
-
-  \node[card={cHeur}{cHeurBg}, below=4.8mm of micro] (heur) {
-    {\bfseries\color{cHeur}\normalsize Tier 3: Heuristic Execution Engine (ALNS)}\hfill{\scriptsize\color{cHeur!80}\textsf{[Execution Muscle]}}\\[1pt]
-    {\color{cHeur!30}\rule{\linewidth}{0.35pt}}\\[1.5pt]
-    $\bullet$ \textbf{Composite Operators}: 13 Ruin (Shaw, Worst, Slack, GEC, Cluster) $\times$ 5 Recreate (Greedy, Regret-2/3/4, Deep-Insertion)\\
-    $\bullet$ \textbf{Spatial Guidance}: 3-layer Contrastive GNN ($k=25$ kNN) prunes $98.74\%$ edges\\
-    $\bullet$ \textbf{Fast Feasibility}: $O(1)$ Savelsbergh forward time-slack evaluation\\
-    $\bullet$ \textbf{Fleet Elimination}: Polynomial Generalized Ejection Chains (GEC)
-  };
-
-  % =========================================================================
-  % COLUMN 2: Recombination & Elite Archive (Right)
-  % =========================================================================
-  \node[rcard={cPool}{cPoolBg}, right=18mm of macro] (pool) {
-    {\bfseries\color{cPool}\normalsize Dual-Slot Route Pool $\bm{\mathcal{P}}$}\hfill{\scriptsize\color{cPool!80}\textsf{[Cap $|\mathcal{P}|_{\max}\le 2000$]}}\\[1pt]
-    {\color{cPool!30}\rule{\linewidth}{0.35pt}}\\[1.5pt]
-    $\bullet$ \textbf{Deduplication}: Frozenset customer hash table guarantees 0 duplicate columns\\
-    $\bullet$ \textbf{Slot A (75\% Quota)}: Cost-per-stop efficiency metric $c_r / |r|$\\
-    $\bullet$ \textbf{Slot B (25\% Quota)}: Short-route fragments for vehicle reduction\\
-    $\bullet$ \textbf{Eviction Policy}: FIFO displacement upon reaching capacity boundary
-  };
-
-  \node[rcard={cMIP}{cMIPBg}, right=18mm of micro] (highs) {
-    {\bfseries\color{cMIP}\normalsize Set Partitioning Recombination (HiGHS)}\hfill{\scriptsize\color{cMIP!80}\textsf{[Exact Recomb]}}\\[1pt]
-    {\color{cMIP!30}\rule{\linewidth}{0.35pt}}\\[1.5pt]
-    $\bullet$ \textbf{MILP Model}: $\min \sum_{r \in \mathcal{P}} c_r x_r + \lambda_{\text{pen}} \sum_{i} y_i$ s.t. $\sum_{r \ni i} x_r + y_i = 1$\\
-    $\bullet$ \textbf{Lexicographic Penalty}: $\lambda_{\text{pen}} \in \{2 \dots 50\}\bar{c}$ guarantees exact $\NV \succ \TD$\\
-    $\bullet$ \textbf{Cutoff}: Deterministic 4.0s wall-clock MIP limit; returns $s_{\text{inc}}$ if timeout
-  };
-
-  \node[rcard={cArchive}{cArchiveBg}, right=18mm of heur] (inc) {
-    {\bfseries\color{cArchive}\normalsize Incumbent Plan $\bm{s_{\text{inc}}}$ \& Elite Archive}\hfill{\scriptsize\color{cArchive!80}\textsf{[Feasibility Gate]}}\\[1pt]
-    {\color{cArchive!30}\rule{\linewidth}{0.35pt}}\\[1.5pt]
-    $\bullet$ \textbf{Feasibility Invariant}: 100\% hard capacity and time-window conformance\\
-    $\bullet$ \textbf{Lexicographic Admission}: $s_{\text{cand}} \prec s_{\text{inc}} \iff \NV^{\text{cand}} < \NV^{\text{inc}} \lor (\NV^{\text{cand}} = \NV^{\text{inc}} \land \TD^{\text{cand}} < \TD^{\text{inc}})$\\
-    $\bullet$ \textbf{Cold-Start Protocol}: Isolated ephemeral scratch directories (0 seed leakage)
-  };
-
-  % =========================================================================
-  % VERTICAL DOWNWARD CONTROL & DATA ARROWS
-  % =========================================================================
-  \draw[ctrlarr] (macro.south) -- node[badge, right=3pt]{Mode $a_k$ (every $\Delta_{\text{seg}}$ iters)} (micro.north);
-  \draw[ctrlarr] (micro.south) -- node[badge, right=3pt]{Operator pair $(d,r)$ (iter $t$)} (heur.north);
-
-  \draw[marr] (pool.south) -- node[badge, right=3pt]{Candidate columns in $\mathcal{P}$} (highs.north);
-  \draw[marr] (highs.south) -- node[badge, right=3pt]{Recombined solution $s_{\text{MIP}}$} (inc.north);
-
-  % =========================================================================
-  % UPWARD STATE FEEDBACK (LEFT FLANK)
-  % =========================================================================
-  \draw[fbarr] ([yshift=-2mm]heur.west) -- ++(-6mm,0) coordinate (p1)
-               -- node[slopedbadge]{$\mathbf{s}_t^{\text{micro}} \in \mathbb{R}^{20}$} (p1 |- micro.west)
-               -- ([yshift=-2mm]micro.west);
-
-  \draw[fbarr] ([yshift=3mm]micro.west) -- ++(-6mm,0) coordinate (p2)
-               -- node[slopedbadge]{$\mathbf{s}_k^{\text{macro}} \in \mathbb{R}^{13}$} (p2 |- macro.west)
-               -- (macro.west);
-
-  % =========================================================================
-  % UPWARD ROUTE ACCUMULATION (RIGHT FLANK)
-  % =========================================================================
-  \draw[dataarr] (inc.east) -- ++(6mm,0) coordinate (p3)
-                -- node[badge, midway, sloped]{Elite routes $\to \mathcal{P}$} (p3 |- pool.east)
-                -- (pool.east);
-
-  % =========================================================================
-  % HORIZONTAL CROSS-TIER ARROWS
-  % =========================================================================
-  \draw[ctrlarr] (macro.east) -- node[badge, above=1pt]{Mode $a_5$ Trigger} (pool.west);
-  \draw[dataarr] (heur.east) -- node[badge, above=1pt]{Feasible $s_{\text{cand}}$} (inc.west);
-
-\end{tikzpicture}%
-}
+\includegraphics[width=0.83\textwidth]{architecture.pdf}
 \caption{Tri-Level Hybrid DDQN-ALNS control architecture. Solid downward arrows represent hierarchical control and data dispatch across tiers. Dashed upward arrows represent state feedback signals consumed by the Macro and Micro RL training loops. The Macro tier operates over segment options $\Delta_{\text{seg}}=100$; the Micro and Heuristic tiers execute per iteration $t$.}
 \label{fig:architecture}
 \end{figure*}
