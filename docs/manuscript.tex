@@ -16,6 +16,9 @@
 \usepackage{tikz}
 \usetikzlibrary{positioning, arrows.meta}
 \definecolor{accessblue}{cmyk}{1,0.3,0,0.2}
+\definecolor{greycolor}{cmyk}{0,0,0,0.8}
+\definecolor{grey}{cmyk}{0,0,0,0.1}
+\definecolor{black}{cmyk}{0,0,0,1}
 
 % Architecture diagram palette
 \definecolor{cMacro}{RGB}{20, 65, 115}
@@ -122,8 +125,10 @@
 
 \corresp{Corresponding author: Thi-Linh Ho (e-mail: hothilinh@tdtu.edu.vn).}
 
-\titlepgskip=-15pt
-
+\newlength{\realabstractwidth}
+\setlength{\realabstractwidth}{\titlewidth}
+\addtolength{\realabstractwidth}{-9.27pt}
+\let\abstractwidth\realabstractwidth
 \begin{abstract}
 The Vehicle Routing Problem with Time Windows (VRPTW) is a fundamental combinatorial optimization problem in logistics, characterized by a hierarchical objective that prioritizes minimizing the total number of deployed vehicles ($\NV$) before minimizing total travel distance ($\TD$). While classical Adaptive Large Neighborhood Search (ALNS) remains a widely used and competitive metaheuristic paradigm for vehicle routing, baseline implementations relying on stateless heuristic score aggregation and static acceptance criteria can encounter search stagnation in complex spatial-temporal topologies. Conversely, pure end-to-end Deep Reinforcement Learning (DRL) methods face feasibility challenges under hard time windows and out-of-distribution generalization barriers. To bridge these paradigms, this paper presents Tri-Level Hybrid DDQN-ALNS, a learning-augmented optimization framework structured into three coordinated tiers: (i) a Macro Decision Tier (Plateau Controller) formulated as an Approximate Semi-Markov Decision Process over an Aggregated State Space (Aggregated SMDP) to monitor search stagnation and govern regime transitions, (ii) a Micro Selection Tier where a Dueling Double Deep Q-Network (DDQN) with an explicit normalized Softmax-Entropy policy-concentration gate learns state-conditioned destroy-repair pairings, complemented by a Learned Acceptance Criterion (LAC) that operates as an online delayed-outcome predictive acceptance override over an $H_{\text{lac}}=80$ lookahead horizon without vetoing valid Simulated Annealing acceptances, and (iii) a Heuristic Execution Muscle leveraging $O(1)$ incremental forward-time-slack feasibility queries per candidate insertion, a Contrastive Graph Neural Network (GNN) spatial edge predictor to prune unpromising insertion arcs, polynomial Generalized Ejection Chains (GEC), and periodic time-limited Set Partitioning recombination over elite routes via HiGHS with certified lexicographic penalty bounds. We evaluate the proposed framework across 74 standard Solomon-100, Homberger-200, and Homberger-400 benchmark instances under strictly isolated cold-start execution protocols. Tri-Level Hybrid DDQN-ALNS achieves statistically significant vehicle fleet reductions (31 Wins / 40 Ties / 3 Losses, Wilcoxon $p=6.91 \times 10^{-7}$); on the 54.1\% fleet-matched subset ($N_{\text{matched}}=40/74$), it secures an average $-3.73\%$ travel distance reduction ($p=9.31 \times 10^{-8}$) while strictly preserving $100\%$ operational constraint feasibility.
 \end{abstract}
@@ -132,11 +137,9 @@ The Vehicle Routing Problem with Time Windows (VRPTW) is a fundamental combinato
 Adaptive Large Neighborhood Search, Deep Reinforcement Learning, Double DQN, Semi-Markov Decision Process, Metaheuristics, Vehicle Routing Problem with Time Windows.
 \end{keywords}
 
-\titlepgskip=-15pt
+\titlepgskip=-19.5pt
 
 \maketitle
-
-\titlepgskip=11pt
 
 \section{Introduction}
 \label{sec:introduction}
@@ -419,7 +422,7 @@ To guide reinforcement learning exploration in alignment with the primary-second
   R_{\text{seg}} = \text{Base} + \lambda_{\text{fleet}} \Psi_{NV} + (1 - \lambda_{\text{fleet}}) \Psi_{TD} + \text{Bonus}_{NV} + \Delta \Phi
   \label{eq:segment_reward}
 \end{equation}
-where $\Psi_{NV} = \sum_{j=1}^4 \beta_{NV, j} \Delta X_j$ and $\Psi_{TD} = \sum_{j=1}^4 \beta_{TD, j} \Delta X_j$ linearly weight improvements across best-so-far and incumbent fleet size ($\Delta NV$) and travel distance ($\Delta C$), with representative primary fleet coefficient $\beta_{NV, 1} = 8.0$. Baseline computational penalty $\text{Base}$ penalizes intensive local search passes and unproductive stagnation, while $\text{Bonus}_{NV}$ provides discrete milestone reinforcement ($+15.0$) upon physical vehicle elimination. Complete parameter listings and definitions are tabulated in Supplementary Material Table~S1.
+where $\Psi_{NV} = \sum_{j=1}^4 \beta_{NV, j} \Delta X_j$ and \allowbreak $\Psi_{TD} = \sum_{j=1}^4 \beta_{TD, j} \Delta X_j$ linearly weight improvements across best-so-far and incumbent fleet size ($\Delta NV$) and travel distance ($\Delta C$), with representative primary fleet coefficient $\beta_{NV, 1} = 8.0$. Baseline computational penalty $\text{Base}$ penalizes intensive local search passes and unproductive stagnation, while $\text{Bonus}_{NV}$ provides discrete milestone reinforcement ($+15.0$) upon physical vehicle elimination. Complete parameter listings and definitions are tabulated in Supplementary Material Table~S1.
 
 The presence of two parallel fleet-reward pathways in~\eqref{eq:segment_reward} addresses credit assignment across temporal scales: (i)~\textbf{Dense Continuous Guidance} ($\lambda_{\text{fleet}} \Psi_{NV}$) encourages moves that balance inter-route capacity utilization and narrow the vehicle count gap relative to the incumbent; and (ii)~\textbf{Sparse Milestone Reinforcement} ($\text{Bonus}_{NV}$) awards $+15.0$ exclusively upon physical vehicle elimination, preventing the sparse route collapse signal from being diluted across routine distance variations.
 
@@ -436,7 +439,8 @@ To accelerate learning while preventing artificial reward cycles in the surrogat
 where $\sigma(\cdot)$ is the logistic sigmoid, with the state potential defined as:
 \begin{align}
   \Phi(s) = &-\lambda_{\text{fleet}}(s) \frac{\max(NV - NV_{\text{best}}, 0)}{NV_{\text{init}}} \nonumber \\
-  &- (1 - \lambda_{\text{fleet}}(s)) \cdot 0.5 \operatorname{clip}\!\left(\frac{TD - TD_{\text{best}}}{TD_{\text{best}}} \cdot 100, -25, 25\right)
+  &- 0.5\bigl(1 - \lambda_{\text{fleet}}(s)\bigr) \nonumber \\
+  &\quad \times \operatorname{clip}\!\left(\frac{TD - TD_{\text{best}}}{TD_{\text{best}}} \cdot 100, -25, 25\right)
   \label{eq:potential_function}
 \end{align}
 The Macro Plateau Controller trains a dedicated Dueling Double DQN network ($Q_{\text{macro}}$) with prioritized replay buffer $\mathcal{D}_{\text{macro}}$, executing Adam gradient steps with Cosine Annealing learning rate scheduling at the completion of each macro segment.
@@ -453,7 +457,7 @@ At each iteration $t$, the operator controller observes a 20-dimensional state v
 \centering
 \scriptsize
 \setlength{\tabcolsep}{1.2pt}
-\begin{tabularx}{\columnwidth}{clX clX}
+\begin{tabularx}{\columnwidth}{cl>{\raggedright\arraybackslash}X cl>{\raggedright\arraybackslash}X}
 \toprule
 \textbf{Idx} & \textbf{Sym} & \textbf{Definition} & \textbf{Idx} & \textbf{Sym} & \textbf{Definition} \\
 \midrule
@@ -477,7 +481,7 @@ The micro action space $\mathcal{A}_{\text{micro}}$ comprises $N_D \times N_R = 
 \subsubsection{Dueling DDQN Architecture \& Policy-Concentration Blending}
 The Micro Q-network adopts a Dueling architecture \cite{wang2016dueling} with layer normalization:
 \begin{equation}
-  Q(s, a; \theta) = V(s; \theta_v) + \left( A(s, a; \theta_a) - \frac{1}{|\mathcal{A}|} \sum_{a'} A(s, a'; \theta_a) \right)
+  Q(s, a; \theta) = V(s; \theta_v) + \Big( A(s, a; \theta_a) - \frac{1}{|\mathcal{A}|} \sum_{a'} A(s, a'; \theta_a) \Big)
   \label{eq:dueling_q}
 \end{equation}
 To adaptively balance learned neural predictions with exploration priors, we implement a normalized Softmax-Entropy Policy-Concentration Gate. Let $\pi_{\theta}(a \mid s) = \operatorname{softmax}(Q(s, a)/\tau_{\text{soft}})$ be the Boltzmann policy at softmax temperature $\tau_{\text{soft}} = 1.0$. The normalized Shannon entropy is defined as:
@@ -505,8 +509,11 @@ In classical ALNS, move acceptance relies on Simulated Annealing (SA), which acc
 
 To prevent search entrapment without compromising the convergence stability of Simulated Annealing, the Learned Acceptance Criterion (LAC) operates as an online supervised binary classifier $\phi_{\text{LAC}}: \mathbb{R}^9 \to [0, 1]$. Rather than serving as an exclusionary filter or replacement, LAC implements a disjunctive acceptance decision rule:
 \begin{equation}
-  \text{Accept}(s' \mid s, T) \iff \Big( p_t \ge \tau_{\text{acc}}(t) \Big) \;\lor\; \Big( P_{\text{SA}}(\Delta C, T) > U \Big)
-  \label{eq:lac_decision_rule}
+\begin{aligned}
+  \text{Accept}(s' \mid s, T) \iff \; &\Big( p_t \ge \tau_{\text{acc}}(t) \Big) \\
+  &\lor\; \Big( P_{\text{SA}}(\Delta C, T) > U \Big)
+\end{aligned}
+\label{eq:lac_decision_rule}
 \end{equation}
 where $p_t = \phi_{\text{LAC}}(\mathbf{z}_t)$, $U \sim \operatorname{Uniform}(0, 1)$, and $\tau_{\text{acc}}(t) \in [0.40, 0.75]$ is an adaptive confidence threshold. 
 
@@ -518,8 +525,8 @@ Because decision rule~\eqref{eq:lac_decision_rule} operates as an additive boost
 The LAC input feature vector $\mathbf{z}_t \in \mathbb{R}^9$ comprises 9 normalized features:
 \begin{align}
   \mathbf{z}_t = \Big[ 
-    &\operatorname{sign}(\Delta C)\sqrt{|\Delta C| / C_{\text{best}}}, \; \frac{T}{T_0}, \; \frac{\text{no\_imp}}{\text{patience}}, \; \frac{NV_{\text{cur}}}{NV_{\text{init}}}, \; \Delta NV, \nonumber \\
-    &\rho_{\text{fill}}, \; \bar{s}, \; \frac{t}{T_{\max}}, \; \exp\left(-\frac{\max(\Delta C, 0)}{T}\right) \Big]
+    &\operatorname{sign}(\Delta C)\sqrt{|\Delta C| / C_{\text{best}}}, \; \frac{T}{T_0}, \; \frac{\text{no\_imp}}{\text{patience}}, \; \frac{NV_{\text{cur}}}{NV_{\text{init}}}, \nonumber \\
+    &\Delta NV, \; \rho_{\text{fill}}, \; \bar{s}, \; \frac{t}{T_{\max}}, \; \exp\left(-\frac{\max(\Delta C, 0)}{T}\right) \Big]
   \label{eq:lac_features}
 \end{align}
 During the first 300 iterations, the solver operates under standard Simulated Annealing while accumulating state-action transition tuples $( \mathbf{z}_t, s_t, s_{t+1} )$ into an online lookahead FIFO buffer. At iteration $t + H_{\text{lac}}$, delayed binary target labels $y_t \in \{0, 1\}$ are assigned based on whether the search trajectory discovered a new best solution within the lookahead horizon ($y_t = 1 \iff \min_{k \in [t+1, t+H_{\text{lac}}]} F(s_k) < F(s_{\text{inc}, t})$).
@@ -600,7 +607,7 @@ where $c_r$ is route travel distance, $\bar{c}$ is pool mean route distance, and
 In practice, with Route Pool $\mathcal{P}$ bounded to $|\mathcal{P}| \le 2000$ high-quality elite columns, route substitutions between valid set partitions yield cumulative distance deltas that are bounded by $K_{\max} \cdot c_{\max}^{\text{route}}$. To guarantee certified lexicographic preservation even at extreme scales ($N=400$), the solver analytically enforces a certified threshold $\lambda_{\text{pen}}^{\text{cert}} = \max\bigl(\lambda_{\text{pen}}\bar{c}, \; (1 + \epsilon_{\text{margin}}) K_{\max} c_{\max}^{\text{route}}\bigr)$ with clearance margin $\epsilon_{\text{margin}} = 0.20$ whenever solving for fleet reduction (formal derivation in Supplementary Material Proposition~1), guaranteeing $\ge 20\%$ clearance above theoretical distance disparity. The multi-scale penalty grid $\lambda_{\text{pen}} \in \{2.0, 5.0, 12.0, 30.0, 50.0\}\bar{c}$ provides a progressive exploration continuum ranging from distance preservation to aggressive vehicle consolidation.
 
 \subsubsection{Route Pool Deduplication and Capacity Management}
-To maintain diverse yet non-redundant columns: (1)~\textbf{Frozenset Cover Deduplication}: routes visiting identical customer sets $\text{cover}(R) = \{v_1, \dots, v_m\}$ are deduplicated via hash tables, retaining only the minimal-distance tour permutation; and (2)~\textbf{Dual-Slot Pruning}: pool capacity $|\mathcal{P}|_{\max} = \min(2000, 600 + 4N)$ is partitioned into Slot A (75\% capacity, sorting by cost-per-stop $c_r / |r|$) and Slot B (25\% capacity, preserving longest sub-routes $|r|$ to supply high-occupancy columns for fleet reduction), with customer inclusion capped at $M_{\text{cust}} = 3$ routes per customer.
+To maintain diverse yet non-redundant columns: (1) \textbf{Frozenset Cover Deduplication}: routes visiting identical customer sets $\text{cover}(R) = \{v_1, \dots, v_m\}$ are deduplicated via hash tables, retaining only the minimal-distance tour permutation; and (2)~\textbf{Dual-Slot Pruning}: pool capacity $|\mathcal{P}|_{\max} = \min(2000, 600 + 4N)$ is partitioned into Slot A (75\% capacity, sorting by cost-per-stop $c_r / |r|$) and Slot B (25\% capacity, preserving longest sub-routes $|r|$ to supply high-occupancy columns for fleet reduction), with customer inclusion capped at $M_{\text{cust}} = 3$ routes per customer.
 Branch-and-cut solves are executed via HiGHS~\cite{huangfu2018parallelizing} subject to a strict 4.0s wall-clock cutoff per invocation.
 
 \begin{algorithm}[!t]
@@ -923,7 +930,7 @@ Full mathematical proofs are detailed in Supplementary Sections~3--5.
 
 \subsection{Limitations and Threats to Validity}
 \label{sec:disc_limitations}
-Six primary limitations characterize this framework: (i)~\textbf{Small-Scale Latency}: For $N \le 50$, heuristics reach near-optimal solutions in sub-second times, rendering neural buffers superfluous; (ii)~\textbf{MIP Dependency}: Set Partitioning relies on solver throughput (HiGHS), bounded by a $4.0\text{s}$ cutoff; (iii)~\textbf{Compute Overhead}: Under matched iterations ($T_{\max}=2000$), neural updates incur higher wall-clock latency than raw loops; (iv)~\textbf{Static Scope}: The framework targets static VRPTW; dynamic real-time dispatch requires pretrained offline policies; (v)~\textbf{GNN Scale Shift}: GNN edge recall drops from $95.8\%$ ($N=100$) to $78.2\%$ ($N=400$) under extreme scale shift; and (vi)~\textbf{LAC Disentanglement}: Because LAC operates disjunctively ($\text{Accept} \iff p_t \ge \tau_{\text{acc}} \lor P_{\text{SA}} > U$), future work is needed to isolate predictive lookahead intelligence from generic acceptance volume. Nonetheless, $100\%$ operational feasibility is strictly guaranteed across all returned solutions.
+The framework exhibits six primary limitations: (i) \textbf{Small-Scale Latency}: For $N \le 50$, heuristics reach near-optimal solutions in sub-second times, rendering neural buffers superfluous; (ii)~\textbf{MIP Dependency}: Set Partitioning relies on solver throughput (HiGHS), bounded by a $4.0\text{s}$ cutoff; (iii)~\textbf{Compute Overhead}: Under matched iterations ($T_{\max}=2000$), neural updates incur higher wall-clock latency than raw loops; (iv)~\textbf{Static Scope}: The framework targets static VRPTW; dynamic real-time dispatch requires pretrained offline policies; (v)~\textbf{GNN Scale Shift}: GNN edge recall drops from $95.8\%$ ($N=100$) to $78.2\%$ ($N=400$) under extreme scale shift; and (vi)~\textbf{LAC Disentanglement}: Because LAC operates disjunctively ($\text{Accept} \iff p_t \ge \tau_{\text{acc}} \lor P_{\text{SA}} > U$), future work is needed to isolate predictive lookahead intelligence from generic acceptance volume. Nonetheless, $100\%$ operational feasibility is strictly guaranteed across all returned solutions.
 
 \section{Conclusion}
 \label{sec:conclusion}
@@ -1090,6 +1097,7 @@ R.~S. Sutton, D.~Precup, and S.~Singh, ``Between MDPs and semi-MDPs: A framework
 \end{thebibliography}
 }
 
+\phantomsection
 \begin{IEEEbiography}[{\includegraphics[width=1.0in,height=1.25in,clip,keepaspectratio]{profile_Huy.jpg}}]{Huynh Nhat Huy} is currently pursuing the B.S. degree in Computer Science with the Faculty of Information Technology, Ton Duc Thang University, Ho Chi Minh City, Vietnam. His research interests include deep reinforcement learning, combinatorial optimization, metaheuristics, and learning-augmented algorithms.
 \end{IEEEbiography}
 
