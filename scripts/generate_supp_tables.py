@@ -26,19 +26,19 @@ HGS-VRPTW \cite{vidal2013hybrid} (Lit.) & 10.00 & 828.4 & 3.00 & 589.9 & 11.92 &
 SISR \cite{christiaens2020slack} (Lit.) & 10.00 & 828.4 & 3.00 & 589.9 & 11.92 & 1212.5 & 2.73 & 955.9 & 11.50 & 1386.4 & 3.25 & 1121.2 & 7.23 & 1023.1 & +0.20\% & -0.25\% \\
 \midrule
 \multicolumn{17}{l}{\textit{\textbf{Paradigm 2: End-to-End Deep Learning (Neural Constructive)}}} \\
-Attention Model \cite{kool2019attention,lin2021neural} & 10.45 & 894.2 & 3.25 & 642.1 & 13.15 & 1378.4 & 3.45 & 1092.3 & 12.80 & 1558.9 & 3.80 & 1265.4 & 7.82 & 1142.3 & +11.88\% & +11.37\% \\
+Attention Model \cite{kool2019attention,falkner2020learning} & 10.45 & 894.2 & 3.25 & 642.1 & 13.15 & 1378.4 & 3.45 & 1092.3 & 12.80 & 1558.9 & 3.80 & 1265.4 & 7.82 & 1142.3 & +11.88\% & +11.37\% \\
 \midrule
 \multicolumn{17}{l}{\textit{\textbf{Paradigm 3: Learning-Augmented Metaheuristics}}} \\
 Single-Agent RL-LNS \cite{lu2020learning} & 10.11 & 845.3 & 3.12 & 612.8 & 12.67 & 1238.4 & 3.09 & 978.2 & 12.38 & 1412.5 & 3.38 & 1142.1 & 7.46 & 1038.2 & +1.68\% & +1.22\% \\
 ALNS-Base \cite{Ropke2006} (Live 5-seed) & 10.00 & 828.5 & 3.00 & 602.0 & 12.57 & 1211.8 & 3.05 & 953.8 & 12.25 & 1381.1 & 3.38 & 1135.6 & 7.56 & 1025.7 & +0.44\% & 0.00\% \\
-\textbf{Tri-Level Hybrid (Ours)} & \textbf{10.00} & \textbf{828.4} & \textbf{3.00} & \textbf{590.2} & \textbf{12.43} & \textbf{1209.4} & \textbf{3.07} & \textbf{938.2} & \textbf{12.12} & \textbf{1362.5} & \textbf{3.45} & \textbf{1114.8} & \textbf{7.53} & \textbf{1014.8} & \textbf{-0.63\%} & \textbf{-1.06\%} \\
+\textbf{Tri-Level Hybrid (Ours)} & \textbf{10.00} & \textbf{828.4} & \textbf{3.00} & \textbf{590.5} & \textbf{12.38} & \textbf{1207.1} & \textbf{3.02} & \textbf{942.5} & \textbf{12.10} & \textbf{1375.7} & \textbf{3.35} & \textbf{1126.5} & \textbf{7.49} & \textbf{1018.7} & \textbf{-0.24\%} & \textbf{-0.68\%} \\
 \bottomrule
 \end{tabular*}
 {\raggedright \scriptsize \textit{Note}: All live evaluations conducted under strict cold-starts ($N=5$ seeds, $T_{\max}=2000$). Literature rows are summarized from published reports. $\text{Gap\%}_{\text{BKS}} = \frac{TD - TD_{\text{BKS}}}{TD_{\text{BKS}}} \times 100\%$; $\Delta\text{TD}\%_{\text{ALNS}} = \frac{TD - TD_{\text{ALNS}}}{TD_{\text{ALNS}}} \times 100\%$.\par}
 \end{table*}
 """
 
-# Table S3: Full 24-Instance Anytime Trajectory
+# Table S2: Full 24-Instance Anytime Trajectory
 df_any = pd.read_csv(ROOT / "results" / "extended_anytime_300s" / "anytime_raw.csv")
 insts_24 = sorted(df_any["instance"].unique().tolist())
 

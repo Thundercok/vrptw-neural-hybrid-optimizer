@@ -121,15 +121,15 @@ def generate_table_iii_latex() -> str:
         return row
 
     alns_row = get_row("ALNS-Base")
-    ours_row = get_row("Hybrid-DDQN")
+    ours_row = get_row("GNN-Hybrid-DDQN")
 
     lines = [
         r"\begin{table*}[!t]",
         r"\caption{Tri-Paradigm Benchmark on Solomon-100 Instances ($N=56$): Comparative Performance with Unified Gaps vs.\ BKS and vs.\ ALNS-Base.}",
         r"\label{tab:solomon_tri_paradigm}",
         r"\centering",
-        r"\footnotesize",
-        r"\setlength{\tabcolsep}{2.0pt}",
+        r"\scriptsize",
+        r"\setlength{\tabcolsep}{1.8pt}",
         r"\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}} l cc cc cc cc cc cc cccc @{}}",
         r"\toprule",
         r"\multirow{2}{*}{\textbf{Algorithm / Paradigm}} & \multicolumn{2}{c}{\textbf{C1 (9)}} & \multicolumn{2}{c}{\textbf{C2 (8)}} & \multicolumn{2}{c}{\textbf{R1 (12)}} & \multicolumn{2}{c}{\textbf{R2 (11)}} & \multicolumn{2}{c}{\textbf{RC1 (8)}} & \multicolumn{2}{c}{\textbf{RC2 (8)}} & \multicolumn{4}{c}{\textbf{Overall (56)}} \\",
@@ -143,8 +143,8 @@ def generate_table_iii_latex() -> str:
         r"Literature Context \cite{vidal2013hybrid,christiaens2020slack,kool2019attention,lu2020learning} (See Table~S1) & 10.00 & 828.4 & 3.00 & 589.9 & 11.92 & 1211.8 & 2.73 & 956.0 & 11.50 & 1385.3 & 3.25 & 1120.4 & 7.23 & 1022.8 & +0.17\% & -0.29\% \\",
         r"\midrule",
         r"\multicolumn{17}{l}{\textit{\textbf{Controlled Cold-Start Evaluations (Live 5-seed, $T_{\max}=2000$)}}} \\",
-        f"ALNS-Base \\cite{{Ropke2006}} (Live 5-seed) & {alns_row['C1']['nv']:.2f} & {alns_row['C1']['td']:.1f} & {alns_row['C2']['nv']:.2f} & {alns_row['C2']['td']:.1f} & {alns_row['R1']['nv']:.2f} & {alns_row['R1']['td']:.1f} & {alns_row['R2']['nv']:.2f} & {alns_row['R2']['td']:.1f} & {alns_row['RC1']['nv']:.2f} & {alns_row['RC1']['td']:.1f} & {alns_row['RC2']['nv']:.2f} & {alns_row['RC2']['td']:.1f} & {alns_row['ALL']['nv']:.2f} & {alns_row['ALL']['td']:.1f} & +{alns_row['gap_bks']:.2f}\\% & 0.00\\% \\\\",
-        f"\\textbf{{Tri-Level Hybrid DDQN-ALNS (Ours)}} & \\textbf{{{ours_row['C1']['nv']:.2f}}} & \\textbf{{{ours_row['C1']['td']:.1f}}} & \\textbf{{{ours_row['C2']['nv']:.2f}}} & \\textbf{{{ours_row['C2']['td']:.1f}}} & \\textbf{{{ours_row['R1']['nv']:.2f}}} & \\textbf{{{ours_row['R1']['td']:.1f}}} & \\textbf{{{ours_row['R2']['nv']:.2f}}} & \\textbf{{{ours_row['R2']['td']:.1f}}} & \\textbf{{{ours_row['RC1']['nv']:.2f}}} & \\textbf{{{ours_row['RC1']['td']:.1f}}} & \\textbf{{{ours_row['RC2']['nv']:.2f}}} & \\textbf{{{ours_row['RC2']['td']:.1f}}} & \\textbf{{{ours_row['ALL']['nv']:.2f}}} & \\textbf{{{ours_row['ALL']['td']:.1f}}} & \\textbf{{+{ours_row['gap_bks']:.2f}\\%}} & \\textbf{{{ours_row['gap_alns']:+.2f}\\%}} \\\\",
+        f"ALNS-Base \\cite{{Ropke2006}} (Live 5-seed) & {alns_row['C1']['nv']:.2f} & {alns_row['C1']['td']:.1f} & {alns_row['C2']['nv']:.2f} & {alns_row['C2']['td']:.1f} & {alns_row['R1']['nv']:.2f} & {alns_row['R1']['td']:.1f} & {alns_row['R2']['nv']:.2f} & {alns_row['R2']['td']:.1f} & {alns_row['RC1']['nv']:.2f} & {alns_row['RC1']['td']:.1f} & {alns_row['RC2']['nv']:.2f} & {alns_row['RC2']['td']:.1f} & {alns_row['ALL']['nv']:.2f} & {alns_row['ALL']['td']:.1f} & {alns_row['gap_bks']:+.2f}\\% & 0.00\\% \\\\",
+        f"\\textbf{{Tri-Level Hybrid DDQN-ALNS (Ours)}} & \\textbf{{{ours_row['C1']['nv']:.2f}}} & \\textbf{{{ours_row['C1']['td']:.1f}}} & \\textbf{{{ours_row['C2']['nv']:.2f}}} & \\textbf{{{ours_row['C2']['td']:.1f}}} & \\textbf{{{ours_row['R1']['nv']:.2f}}} & \\textbf{{{ours_row['R1']['td']:.1f}}} & \\textbf{{{ours_row['R2']['nv']:.2f}}} & \\textbf{{{ours_row['R2']['td']:.1f}}} & \\textbf{{{ours_row['RC1']['nv']:.2f}}} & \\textbf{{{ours_row['RC1']['td']:.1f}}} & \\textbf{{{ours_row['RC2']['nv']:.2f}}} & \\textbf{{{ours_row['RC2']['td']:.1f}}} & \\textbf{{{ours_row['ALL']['nv']:.2f}}} & \\textbf{{{ours_row['ALL']['td']:.1f}}} & \\textbf{{{ours_row['gap_bks']:+.2f}\\%}} & \\textbf{{{ours_row['gap_alns']:+.2f}\\%}} \\\\",
         r"\bottomrule",
         r"\end{tabular*}",
         r"{\raggedright \footnotesize \textit{Note}: All live evaluations conducted under strict cold-starts ($N=5$ seeds, $T_{\max}=2000$). Literature rows are summarized from published reports; full disaggregated instance values are in Supplementary Table~S1. $\text{Gap\%}_{\text{BKS}} = \frac{TD - TD_{\text{BKS}}}{TD_{\text{BKS}}} \times 100\%$; $\Delta\text{TD}\%_{\text{ALNS}} = \frac{TD - TD_{\text{ALNS}}}{TD_{\text{ALNS}}} \times 100\%$.\par}",
@@ -169,8 +169,8 @@ def generate_table_iv_latex() -> str:
         r"\caption{Large-Scale Multi-Benchmark Performance on Gehring-Homberger 200- and 400-Customer Representative Instances (5 Independent Seeds).}",
         r"\label{tab:homberger_scale_benchmark}",
         r"\centering",
-        r"\footnotesize",
-        r"\setlength{\tabcolsep}{2.6pt}",
+        r"\scriptsize",
+        r"\setlength{\tabcolsep}{2.0pt}",
         r"\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}} l cc cc cc cc cc @{}}",
         r"\toprule",
         r"\multirow{2}{*}{\textbf{Benchmark Instance}} & \multicolumn{2}{c}{\textbf{BKS Baseline}} & \multicolumn{2}{c}{\textbf{ALNS-Base~\cite{Ropke2006}}} & \multicolumn{2}{c}{\textbf{Tri-Level (Ours)}} & \multicolumn{2}{c}{\textbf{Gap vs.\ BKS}} & \multicolumn{2}{c}{\textbf{Delta vs.\ ALNS-Base}} \\",
@@ -185,8 +185,8 @@ def generate_table_iv_latex() -> str:
         b_td = BKS[inst]["td"]
         a_nv = piv_nv.loc[inst, "ALNS-Base"]
         a_td = piv_td.loc[inst, "ALNS-Base"]
-        o_nv = piv_nv.loc[inst, "Hybrid-DDQN"]
-        o_td = piv_td.loc[inst, "Hybrid-DDQN"]
+        o_nv = piv_nv.loc[inst, "GNN-Hybrid-DDQN"]
+        o_td = piv_td.loc[inst, "GNN-Hybrid-DDQN"]
 
         d_nv_bks = o_nv - b_nv
         gap_td_bks = (o_td - b_td) / b_td * 100.0
@@ -195,7 +195,7 @@ def generate_table_iv_latex() -> str:
         d_td_alns = (o_td - a_td) / a_td * 100.0
 
         dagger = r"$^\dagger$" if o_nv > b_nv else ""
-        d_alns_str = f"{d_td_alns:+.2f}\\%" if abs(d_nv_alns) < 1e-4 else f"$\\Delta NV={d_nv_alns:+.1f}$"
+        d_alns_str = f"{d_td_alns:+.2f}\\%" if abs(d_nv_alns) < 1e-4 else "--"
 
         inst_tex = inst.replace("_", r"\_")
         lines.append(
@@ -213,8 +213,8 @@ def generate_table_iv_latex() -> str:
         b_td = BKS[inst]["td"]
         a_nv = piv_nv.loc[inst, "ALNS-Base"]
         a_td = piv_td.loc[inst, "ALNS-Base"]
-        o_nv = piv_nv.loc[inst, "Hybrid-DDQN"]
-        o_td = piv_td.loc[inst, "Hybrid-DDQN"]
+        o_nv = piv_nv.loc[inst, "GNN-Hybrid-DDQN"]
+        o_td = piv_td.loc[inst, "GNN-Hybrid-DDQN"]
 
         d_nv_bks = o_nv - b_nv
         gap_td_bks = (o_td - b_td) / b_td * 100.0
@@ -223,7 +223,7 @@ def generate_table_iv_latex() -> str:
         d_td_alns = (o_td - a_td) / a_td * 100.0
 
         dagger = r"$^\dagger$" if o_nv > b_nv else ""
-        d_alns_str = f"{d_td_alns:+.2f}\\%" if abs(d_nv_alns) < 1e-4 else f"$\\Delta NV={d_nv_alns:+.1f}$"
+        d_alns_str = f"{d_td_alns:+.2f}\\%" if abs(d_nv_alns) < 1e-4 else "--"
 
         inst_tex = inst.replace("_", r"\_")
         lines.append(
@@ -259,8 +259,8 @@ def generate_table_v_anytime_latex() -> str:
         r"\caption{Equal Wall-Clock Anytime Trajectory Comparison Across Representative 100- and 200-Customer Topologies ($N=5$ Independent Seeds, Continuous 300s Trajectory Sampling).}",
         r"\label{tab:anytime_wallclock}",
         r"\centering",
-        r"\footnotesize",
-        r"\setlength{\tabcolsep}{4.5pt}",
+        r"\scriptsize",
+        r"\setlength{\tabcolsep}{3.5pt}",
         r"\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}} ll cccccc cc @{}}",
         r"\toprule",
         r"\multirow{2}{*}{\textbf{Instance}} & \multirow{2}{*}{\textbf{Algorithm}} & \multicolumn{2}{c}{\textbf{t = 1s (Init)}} & \multicolumn{2}{c}{\textbf{t = 10s (Early)}} & \multicolumn{2}{c}{\textbf{t = 60s (Mid)}} & \multicolumn{2}{c}{\textbf{t = 300s (Final)}} \\",
@@ -302,7 +302,7 @@ def generate_table_v_anytime_latex() -> str:
     lines.extend([
         r"\bottomrule",
         r"\end{tabular*}",
-        r"{\raggedright \footnotesize \textit{Note}: Evaluated under cold-starts ($N=5$ seeds). Lexicographic evaluation ($\NV \succ \TD$): $\Delta TD\%$ is reported strictly when fleet sizes match ($NV_{\text{Ours}} = NV_{\text{ALNS}}$); otherwise, fleet difference $\Delta NV$ is reported. Full 24-instance results including cases where ALNS-Base wins (e.g., $c1\_2\_2$, $r2\_2\_1$) are documented in Supplementary Table~S3.\par}",
+        r"{\raggedright \scriptsize \textit{Note}: Evaluated under cold-starts ($N=5$ seeds). Anytime trajectory sampling reflects the pre-GNN learning hierarchy (Tri-Level MARL: Macro/Micro DDQN + LAC); offline Contrastive GNN spatial arc filtering operates as an $\mathcal{O}(NK)$ one-time preprocessing step prior to search with zero per-iteration runtime overhead. Lexicographic evaluation ($\NV \succ \TD$): $\Delta TD\%$ is reported strictly when fleet sizes match ($NV_{\text{Ours}} = NV_{\text{ALNS}}$); otherwise, fleet difference $\Delta NV$ is reported. Full 24-instance results including cases where ALNS-Base wins (e.g., $c1\_2\_2$, $r2\_2\_1$) are documented in Supplementary Table~S2.\par}",
         r"\end{table*}",
     ])
     return "\n".join(lines)
@@ -472,7 +472,7 @@ def generate_table_vii_ladder_latex() -> str:
         r"\caption{Constructive Contribution Ladder ($A_0 \to A_4$): Incremental Performance Progression Across Benchmark Scales with Step-Wise Wilcoxon Signed-Rank Significance Tests.}",
         r"\label{tab:constructive_ladder}",
         r"\centering",
-        r"\footnotesize",
+        r"\scriptsize",
         r"\setlength{\tabcolsep}{2.5pt}",
         r"\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}} l l cc cc cc cc cc @{}}",
         r"\toprule",
@@ -503,7 +503,7 @@ def generate_table_vii_ladder_latex() -> str:
     lines.extend([
         r"\bottomrule",
         r"\end{tabular*}",
-        r"{\raggedright \footnotesize \textit{Note}: All arms evaluated across identical 5 independent random seeds under strict cold-start execution protocols ($T_{\max}=2000$). Arms $A_0, A_1, A_2, A_3, A_4$ all drawn from verified benchmark suite (\texttt{results/ultimate-publication-suite/combined\_clean.csv}), holding the underlying metaheuristic search engine and operator set fixed. Step-wise Wilcoxon evaluated on full 74-instance paired travel distance.\par}",
+        r"{\raggedright \footnotesize \textit{Note}: All arms evaluated across identical 5 independent random seeds under strict cold-start execution protocols ($T_{\max}=2000$). Arms $A_0, A_1, A_2, A_3, A_4$ all drawn from verified benchmark suite archive, holding the underlying metaheuristic search engine and operator set fixed. Step-wise Wilcoxon evaluated on full 74-instance paired travel distance.\par}",
         r"\end{table*}",
     ])
     return "\n".join(lines)
@@ -514,6 +514,7 @@ def main():
 
     parser = argparse.ArgumentParser(description="Generate canonical unified LaTeX tables.")
     parser.add_argument("--verify", action="store_true", help="Verify computations and display summary.")
+    parser.add_argument("--write", action="store_true", help="Write tables to docs/generated_tables.tex.")
     args = parser.parse_args()
 
     t3 = generate_table_iii_latex()
@@ -522,7 +523,24 @@ def main():
     t6 = generate_table_vi_loco_latex()
     t7 = generate_table_vii_ladder_latex()
 
-    if args.verify:
+    if args.write:
+        out_path = ROOT / "docs" / "generated_tables.tex"
+        content = "\n\n".join([
+            "% TABLE III: SOLOMON-100",
+            t3,
+            "% TABLE IV: HOMBERGER-200 & HOMBERGER-400",
+            t4,
+            "% TABLE V: EXTENDED ANYTIME 300S",
+            t5,
+            "% TABLE VI: LOCO ABLATION",
+            t6,
+            "% TABLE VII: CONSTRUCTIVE LADDER",
+            t7,
+        ]) + "\n"
+        out_path.write_text(content, encoding="utf-8")
+        print(f"✓ Successfully wrote all 5 tables to {out_path}")
+
+    if args.verify or not args.write:
         print("=== TABLE III (SOLOMON) ===")
         print(t3[:300] + "...\n")
         print("=== TABLE IV (HOMBERGER) ===")
