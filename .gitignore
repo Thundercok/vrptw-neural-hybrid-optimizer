@@ -107,3 +107,11 @@ vercel-static-deploy/
 # Scratch prompt notes. Has held live API keys; GitHub push protection
 # rejected a push that included it.
 prompt_ai.md
+
+# Temporary scratch & build files
+*.bak
+*.pre_trim
+*.bbl
+extracted_rId*
+test_keynote_export*
+audit_bib_results.json

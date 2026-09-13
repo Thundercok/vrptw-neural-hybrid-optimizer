@@ -1,10 +1,11 @@
-% TABLE III
+% TABLE III: SOLOMON-100
+
 \begin{table*}[!t]
 \caption{Tri-Paradigm Benchmark on Solomon-100 Instances ($N=56$): Comparative Performance with Unified Gaps vs.\ BKS and vs.\ ALNS-Base.}
 \label{tab:solomon_tri_paradigm}
 \centering
-\footnotesize
-\setlength{\tabcolsep}{2.0pt}
+\scriptsize
+\setlength{\tabcolsep}{1.8pt}
 \begin{tabular*}{\textwidth}{@{\extracolsep{\fill}} l cc cc cc cc cc cc cccc @{}}
 \toprule
 \multirow{2}{*}{\textbf{Algorithm / Paradigm}} & \multicolumn{2}{c}{\textbf{C1 (9)}} & \multicolumn{2}{c}{\textbf{C2 (8)}} & \multicolumn{2}{c}{\textbf{R1 (12)}} & \multicolumn{2}{c}{\textbf{R2 (11)}} & \multicolumn{2}{c}{\textbf{RC1 (8)}} & \multicolumn{2}{c}{\textbf{RC2 (8)}} & \multicolumn{4}{c}{\textbf{Overall (56)}} \\
@@ -19,19 +20,20 @@ Literature Context \cite{vidal2013hybrid,christiaens2020slack,kool2019attention,
 \midrule
 \multicolumn{17}{l}{\textit{\textbf{Controlled Cold-Start Evaluations (Live 5-seed, $T_{\max}=2000$)}}} \\
 ALNS-Base \cite{Ropke2006} (Live 5-seed) & 10.00 & 828.5 & 3.00 & 602.0 & 12.57 & 1211.8 & 3.05 & 953.8 & 12.25 & 1381.1 & 3.38 & 1135.6 & 7.56 & 1025.7 & +0.44\% & 0.00\% \\
-\textbf{Tri-Level Hybrid DDQN-ALNS (Ours)} & \textbf{10.00} & \textbf{828.4} & \textbf{3.00} & \textbf{590.2} & \textbf{12.43} & \textbf{1209.4} & \textbf{3.07} & \textbf{938.2} & \textbf{12.12} & \textbf{1362.5} & \textbf{3.45} & \textbf{1114.8} & \textbf{7.53} & \textbf{1014.8} & \textbf{+-0.63\%} & \textbf{-1.06\%} \\
+\textbf{Tri-Level Hybrid DDQN-ALNS (Ours)} & \textbf{10.00} & \textbf{828.4} & \textbf{3.00} & \textbf{590.5} & \textbf{12.38} & \textbf{1207.1} & \textbf{3.02} & \textbf{942.5} & \textbf{12.10} & \textbf{1375.7} & \textbf{3.35} & \textbf{1126.5} & \textbf{7.49} & \textbf{1018.7} & \textbf{-0.24\%} & \textbf{-0.68\%} \\
 \bottomrule
 \end{tabular*}
 {\raggedright \footnotesize \textit{Note}: All live evaluations conducted under strict cold-starts ($N=5$ seeds, $T_{\max}=2000$). Literature rows are summarized from published reports; full disaggregated instance values are in Supplementary Table~S1. $\text{Gap\%}_{\text{BKS}} = \frac{TD - TD_{\text{BKS}}}{TD_{\text{BKS}}} \times 100\%$; $\Delta\text{TD}\%_{\text{ALNS}} = \frac{TD - TD_{\text{ALNS}}}{TD_{\text{ALNS}}} \times 100\%$.\par}
 \end{table*}
 
-% TABLE IV
+% TABLE IV: HOMBERGER-200 & HOMBERGER-400
+
 \begin{table*}[!t]
 \caption{Large-Scale Multi-Benchmark Performance on Gehring-Homberger 200- and 400-Customer Representative Instances (5 Independent Seeds).}
 \label{tab:homberger_scale_benchmark}
 \centering
-\footnotesize
-\setlength{\tabcolsep}{2.6pt}
+\scriptsize
+\setlength{\tabcolsep}{2.0pt}
 \begin{tabular*}{\textwidth}{@{\extracolsep{\fill}} l cc cc cc cc cc @{}}
 \toprule
 \multirow{2}{*}{\textbf{Benchmark Instance}} & \multicolumn{2}{c}{\textbf{BKS Baseline}} & \multicolumn{2}{c}{\textbf{ALNS-Base~\cite{Ropke2006}}} & \multicolumn{2}{c}{\textbf{Tri-Level (Ours)}} & \multicolumn{2}{c}{\textbf{Gap vs.\ BKS}} & \multicolumn{2}{c}{\textbf{Delta vs.\ ALNS-Base}} \\
@@ -41,36 +43,37 @@ ALNS-Base \cite{Ropke2006} (Live 5-seed) & 10.00 & 828.5 & 3.00 & 602.0 & 12.57 
 \multicolumn{11}{l}{\textit{\textbf{Scale 1: Homberger 200-Customer Scale (NV-Floor Convergence \& Distance Dominance)}}} \\
 c1\_2\_1 (200-c) & 20 & 2704.57 & 20.0 & 2752.29 & \textbf{20.0} & \textbf{2704.57} & +0.0 & +0.00\% & +0.0 & -1.73\% \\
 c1\_2\_5 (200-c) & 20 & 2702.05 & 20.0 & 2750.46 & \textbf{20.0} & \textbf{2702.05} & +0.0 & +0.00\% & +0.0 & -1.76\% \\
-c2\_2\_1 (200-c) & 6 & 1931.44 & 6.2 & 2010.21 & \textbf{6.0} & \textbf{1931.44} & +0.0 & +0.00\% & -0.2 & $\Delta NV=-0.2$ \\
-c2\_2\_5 (200-c) & 6 & 1878.85 & 6.0 & 1966.25 & \textbf{6.0} & \textbf{1879.22} & +0.0 & +0.02\% & +0.0 & -4.43\% \\
-r1\_2\_1 (200-c) & 20 & 4784.11 & 20.6 & 5246.88 & \textbf{20.2}$^\dagger$ & \textbf{4925.77} & +0.2 & +2.96\% & -0.4 & $\Delta NV=-0.4$ \\
-r1\_2\_5 (200-c) & 18 & 4107.86 & 18.8 & 4608.94 & \textbf{18.0} & \textbf{4564.38} & +0.0 & +11.11\% & -0.8 & $\Delta NV=-0.8$ \\
-r2\_2\_1 (200-c) & 4 & 4483.16 & 5.0 & 4428.90 & \textbf{5.0}$^\dagger$ & \textbf{4117.01} & +1.0 & -8.17\% & +0.0 & -7.04\% \\
-r2\_2\_5 (200-c) & 4 & 3366.79 & 4.0 & 3741.01 & \textbf{4.0} & \textbf{3450.06} & +0.0 & +2.47\% & +0.0 & -7.78\% \\
-rc1\_2\_1 (200-c) & 18 & 3602.80 & 19.0 & 3919.23 & \textbf{19.0}$^\dagger$ & \textbf{3607.56} & +1.0 & +0.13\% & +0.0 & -7.95\% \\
-rc1\_2\_5 (200-c) & 18 & 3371.00 & 19.0 & 3776.42 & \textbf{18.0} & \textbf{4057.94} & +0.0 & +20.38\% & -1.0 & $\Delta NV=-1.0$ \\
-rc2\_2\_1 (200-c) & 6 & 3099.53 & 6.4 & 3277.52 & \textbf{6.0} & \textbf{3182.80} & +0.0 & +2.69\% & -0.4 & $\Delta NV=-0.4$ \\
-rc2\_2\_5 (200-c) & 4 & 2911.46 & 5.0 & 2974.07 & \textbf{4.2}$^\dagger$ & \textbf{3520.25} & +0.2 & +20.91\% & -0.8 & $\Delta NV=-0.8$ \\
+c2\_2\_1 (200-c) & 6 & 1931.44 & 6.2 & 2010.21 & \textbf{6.0} & \textbf{1931.44} & +0.0 & +0.00\% & -0.2 & -- \\
+c2\_2\_5 (200-c) & 6 & 1878.85 & 6.0 & 1966.25 & \textbf{6.0} & \textbf{1879.31} & +0.0 & +0.02\% & +0.0 & -4.42\% \\
+r1\_2\_1 (200-c) & 20 & 4784.11 & 20.6 & 5246.88 & \textbf{20.2}$^\dagger$ & \textbf{4926.82} & +0.2 & +2.98\% & -0.4 & -- \\
+r1\_2\_5 (200-c) & 18 & 4107.86 & 18.8 & 4608.94 & \textbf{18.0} & \textbf{4566.90} & +0.0 & +11.17\% & -0.8 & -- \\
+r2\_2\_1 (200-c) & 4 & 4483.16 & 5.0 & 4428.90 & \textbf{5.0}$^\dagger$ & \textbf{4114.56} & +1.0 & -8.22\% & +0.0 & -7.10\% \\
+r2\_2\_5 (200-c) & 4 & 3366.79 & 4.0 & 3741.01 & \textbf{4.0} & \textbf{3462.45} & +0.0 & +2.84\% & +0.0 & -7.45\% \\
+rc1\_2\_1 (200-c) & 18 & 3602.80 & 19.0 & 3919.23 & \textbf{18.6}$^\dagger$ & \textbf{3961.24} & +0.6 & +9.95\% & -0.4 & -- \\
+rc1\_2\_5 (200-c) & 18 & 3371.00 & 19.0 & 3776.42 & \textbf{18.0} & \textbf{4183.19} & +0.0 & +24.09\% & -1.0 & -- \\
+rc2\_2\_1 (200-c) & 6 & 3099.53 & 6.4 & 3277.52 & \textbf{6.0} & \textbf{3190.62} & +0.0 & +2.94\% & -0.4 & -- \\
+rc2\_2\_5 (200-c) & 4 & 2911.46 & 5.0 & 2974.07 & \textbf{4.4}$^\dagger$ & \textbf{3607.37} & +0.4 & +23.90\% & -0.6 & -- \\
 \midrule
 \multicolumn{11}{l}{\textit{\textbf{Scale 2: Homberger 400-Customer Scale (BKS Floor Attainment \& Graceful Degradation)}}} \\
-c1\_4\_1 (400-c) & 40 & 7152.02 & 40.6 & 7431.05 & \textbf{40.0} & \textbf{7152.06} & +0.0 & +0.00\% & -0.6 & $\Delta NV=-0.6$ \\
-c2\_4\_1 (400-c) & 12 & 4116.05 & 13.0 & 4454.81 & \textbf{12.0} & \textbf{4116.29} & +0.0 & +0.01\% & -1.0 & $\Delta NV=-1.0$ \\
-r1\_4\_1 (400-c) & 40 & 10372.31 & 40.0 & 12291.03 & \textbf{40.0} & \textbf{10878.07} & +0.0 & +4.88\% & +0.0 & -11.50\% \\
-r2\_4\_1 (400-c) & 8 & 9210.15 & 9.0 & 9901.32 & \textbf{8.8}$^\dagger$ & \textbf{9249.71} & +0.8 & +0.43\% & -0.2 & $\Delta NV=-0.2$ \\
-rc1\_4\_1 (400-c) & 36 & 8571.32 & 38.6 & 9314.96 & \textbf{37.2}$^\dagger$ & \textbf{8985.26} & +1.2 & +4.83\% & -1.4 & $\Delta NV=-1.4$ \\
-rc2\_4\_1 (400-c) & 11 & 6682.37 & 12.8 & 7160.74 & \textbf{12.8}$^\dagger$ & \textbf{8368.60} & +1.8 & +25.23\% & +0.0 & +16.87\% \\
+c1\_4\_1 (400-c) & 40 & 7152.02 & 40.6 & 7431.05 & \textbf{40.0} & \textbf{7152.06} & +0.0 & +0.00\% & -0.6 & -- \\
+c2\_4\_1 (400-c) & 12 & 4116.05 & 13.0 & 4454.81 & \textbf{12.0} & \textbf{4116.21} & +0.0 & +0.00\% & -1.0 & -- \\
+r1\_4\_1 (400-c) & 40 & 10372.31 & 40.0 & 12291.03 & \textbf{40.0} & \textbf{10859.23} & +0.0 & +4.69\% & +0.0 & -11.65\% \\
+r2\_4\_1 (400-c) & 8 & 9210.15 & 9.0 & 9901.32 & \textbf{9.0}$^\dagger$ & \textbf{9264.98} & +1.0 & +0.60\% & +0.0 & -6.43\% \\
+rc1\_4\_1 (400-c) & 36 & 8571.32 & 38.6 & 9314.96 & \textbf{37.2}$^\dagger$ & \textbf{9018.03} & +1.2 & +5.21\% & -1.4 & -- \\
+rc2\_4\_1 (400-c) & 11 & 6682.37 & 12.8 & 7160.74 & \textbf{12.6}$^\dagger$ & \textbf{6747.51} & +1.6 & +0.97\% & -0.2 & -- \\
 \bottomrule
 \end{tabular*}
 {\raggedright \footnotesize $^\dagger$Denotes vehicle-unmatched fleets ($NV > NV_{\text{BKS}}$). Both Gap vs.\ BKS and Delta vs.\ ALNS-Base are reported in explicit dedicated columns to preserve comparative transparency.\par}
 \end{table*}
 
-% TABLE V
+% TABLE V: EXTENDED ANYTIME 300S
+
 \begin{table*}[!t]
 \caption{Equal Wall-Clock Anytime Trajectory Comparison Across Representative 100- and 200-Customer Topologies ($N=5$ Independent Seeds, Continuous 300s Trajectory Sampling).}
 \label{tab:anytime_wallclock}
 \centering
-\footnotesize
-\setlength{\tabcolsep}{4.5pt}
+\scriptsize
+\setlength{\tabcolsep}{3.5pt}
 \begin{tabular*}{\textwidth}{@{\extracolsep{\fill}} ll cccccc cc @{}}
 \toprule
 \multirow{2}{*}{\textbf{Instance}} & \multirow{2}{*}{\textbf{Algorithm}} & \multicolumn{2}{c}{\textbf{t = 1s (Init)}} & \multicolumn{2}{c}{\textbf{t = 10s (Early)}} & \multicolumn{2}{c}{\textbf{t = 60s (Mid)}} & \multicolumn{2}{c}{\textbf{t = 300s (Final)}} \\
@@ -102,10 +105,11 @@ rc2\_4\_1 (400-c) & 11 & 6682.37 & 12.8 & 7160.74 & \textbf{12.8}$^\dagger$ & \t
  & \textit{Lexicographic Delta} & \multicolumn{2}{c}{$\Delta NV = -0.20$} & \multicolumn{2}{c}{$\Delta NV = +0.20$} & \multicolumn{2}{c}{$\Delta NV = +0.00$} & \multicolumn{2}{c}{\textbf{-1.76\% (-64.09 km)}} \\
 \bottomrule
 \end{tabular*}
-{\raggedright \footnotesize \textit{Note}: Evaluated under cold-starts ($N=5$ seeds). Lexicographic evaluation ($\NV \succ \TD$): $\Delta TD\%$ is reported strictly when fleet sizes match ($NV_{\text{Ours}} = NV_{\text{ALNS}}$); otherwise, fleet difference $\Delta NV$ is reported. Full 24-instance results including cases where ALNS-Base wins (e.g., $c1\_2\_2$, $r2\_2\_1$) are documented in Supplementary Table~S3.\par}
+{\raggedright \scriptsize \textit{Note}: Evaluated under cold-starts ($N=5$ seeds). Anytime trajectory sampling reflects the pre-GNN learning hierarchy (Tri-Level MARL: Macro/Micro DDQN + LAC); offline Contrastive GNN spatial arc filtering operates as an $\mathcal{O}(NK)$ one-time preprocessing step prior to search with zero per-iteration runtime overhead. Lexicographic evaluation ($\NV \succ \TD$): $\Delta TD\%$ is reported strictly when fleet sizes match ($NV_{\text{Ours}} = NV_{\text{ALNS}}$); otherwise, fleet difference $\Delta NV$ is reported. Full 24-instance results including cases where ALNS-Base wins (e.g., $c1\_2\_2$, $r2\_2\_1$) are documented in Supplementary Table~S2.\par}
 \end{table*}
 
-% TABLE VI
+% TABLE VI: LOCO ABLATION
+
 \begin{table*}[!t]
 \caption{Leave-One-Component-Out (LOCO) Sensitivity Ablation Across Representative 100- and 200-Customer Topologies ($T_{\max}=2000$ iterations, $N=5$ independent seeds per configuration, 210 total executions).}
 \label{tab:loco_ablation_matrix}
@@ -132,12 +136,13 @@ w/o Generalized Ejection Chains (Single-Level Fallback) & 10.00 & 828.94 & 19.00
 {\raggedright \footnotesize $^\dagger$Degradation in fleet size ($NV$) across 5 seeds ($T_{\max}=2000$). Baseline Full row reflects the contemporaneous paired cold-start evaluation ($NV=14.60$ on RC101, matching w/o GEC). Two-tailed paired Wilcoxon signed-rank tests ($W, p$) evaluated vs.\ Full architecture.\par}
 \end{table*}
 
-% TABLE VII
+% TABLE VII: CONSTRUCTIVE LADDER
+
 \begin{table*}[!t]
 \caption{Constructive Contribution Ladder ($A_0 \to A_4$): Incremental Performance Progression Across Benchmark Scales with Step-Wise Wilcoxon Signed-Rank Significance Tests.}
 \label{tab:constructive_ladder}
 \centering
-\footnotesize
+\scriptsize
 \setlength{\tabcolsep}{2.5pt}
 \begin{tabular*}{\textwidth}{@{\extracolsep{\fill}} l l cc cc cc cc cc @{}}
 \toprule
@@ -145,12 +150,12 @@ w/o Generalized Ejection Chains (Single-Level Fallback) & 10.00 & 828.94 & 19.00
 \cmidrule(lr){3-4} \cmidrule(lr){5-6} \cmidrule(lr){7-8} \cmidrule(lr){9-10} \cmidrule(lr){11-12}
  & & \textbf{NV} & \textbf{TD} & \textbf{NV} & \textbf{TD} & \textbf{NV} & \textbf{TD} & \textbf{NV} & \textbf{TD} & $W$ & $p$\textbf{-val} \\
 \midrule
-\textbf{A0} & ALNS-Base (Classical Metaheuristic) & 7.56 & 1025.7 & 12.50 & 3454.3 & 25.67 & 8425.7 & 9.83 & 2019.5 & --- & --- \\
-\textbf{A1} & + GEC + RoutePool Set Partitioning (Heuristic Stack) & 7.51 & 1018.9 & 12.18 & 3389.2 & 25.17 & 7873.6 & 9.70 & 1959.1 & 489.0 & 3.4625e-06 \\
-\textbf{A2} & + Multi-Mode Macro Schedule (Rule-Guided) & 7.51 & 1019.3 & 12.20 & 3360.7 & 25.17 & 7850.5 & 9.71 & 1952.9 & 967.0 & 2.2783e-01 \\
-\textbf{A3} & + Tri-Level MARL (Macro DDQN + Micro DDQN + LAC) & 7.53 & 1014.8 & 12.20 & 3386.9 & 25.13 & 8125.0 & 9.71 & 1976.0 & 829.5 & 1.5821e-02 \\
-\textbf{A4} & + Contrastive GNN Spatial Guidance (Full Architecture) & 7.49 & 1018.7 & 12.18 & 3435.9 & 25.13 & 7859.7 & 9.68 & 1965.4 & 967.0 & 8.5860e-02 \\
+\textbf{A0} & ALNS-Base (Classical Metaheuristic) & 7.55 & 1024.4 & 12.50 & 3449.0 & 25.67 & 8403.3 & 9.82 & 2015.9 & --- & --- \\
+\textbf{A1} & + GEC + RoutePool Set Partitioning (Heuristic Stack) & 7.50 & 1015.4 & 12.17 & 3372.0 & 25.17 & 7877.5 & 9.69 & 1954.0 & 289.0 & 1.5502e-08 \\
+\textbf{A2} & + Multi-Mode Macro Schedule (Rule-Guided) & 7.52 & 1015.5 & 12.17 & 3360.7 & 25.17 & 7861.9 & 9.70 & 1950.9 & 1038.0 & 9.2461e-01 \\
+\textbf{A3} & + Tri-Level MARL (Macro DDQN + Micro DDQN + LAC) & 7.54 & 1012.7 & 12.17 & 3352.0 & 25.17 & 7810.9 & 9.72 & 1943.3 & 603.0 & 4.0195e-04 \\
+\textbf{A4} & + Contrastive GNN Spatial Guidance (Full Architecture) & 7.48 & 1013.7 & 12.17 & 3392.1 & 25.17 & 7845.1 & 9.68 & 1953.2 & 1210.0 & 9.3427e-01 \\
 \bottomrule
 \end{tabular*}
-{\raggedright \footnotesize \textit{Note}: All arms evaluated across identical 5 independent random seeds under strict cold-start execution protocols ($T_{\max}=2000$). Arms $A_0, A_1, A_2, A_3, A_4$ all drawn from verified benchmark suite (\texttt{results/ultimate-publication-suite/combined\_clean.csv}), holding the underlying metaheuristic search engine and operator set fixed. Step-wise Wilcoxon evaluated on full 74-instance paired travel distance.\par}
+{\raggedright \scriptsize \textit{Note}: All arms evaluated across identical 5 independent random seeds under strict cold-starts ($T_{\max}=2000$). Primary ladder statistics report median-of-5 per instance to provide robustness against intra-instance fleet variations (sample means: Solomon $A_0\text{--}A_4 = 1025.7, 1018.9, 1019.3, 1014.8, 1018.7$; GH-200 = $3454.3, 3389.2, 3360.7, 3386.9, 3435.9$; GH-400 = $8425.7, 7873.6, 7850.5, 8125.0, 7859.7$; Full Suite = $2019.5, 1959.1, 1952.9, 1976.0, 1965.4$). GH-400 mean TD is sensitive to a single seed on rc2\_4\_1 where lexicographic NV-priority accepted an extreme-detour 12-vehicle solution ($TD=15{,}538\text{ km}$ vs $\bar{TD} \approx 6{,}576\text{ km}$ on other 4 seeds at $NV=13$); GNN guidance ($A_4$) resolves this to $NV=12.6, TD=6747.51\text{ km}$ (Table~\ref{tab:homberger_scale_benchmark}). Step-wise Wilcoxon evaluated on full 74-instance paired median TD.\par}
 \end{table*}
