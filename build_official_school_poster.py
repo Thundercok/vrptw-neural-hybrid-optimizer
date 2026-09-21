@@ -26,6 +26,7 @@ def build_poster():
     arch_b64 = get_base64_image("docs/figures/poster_architecture.png")
     r101_b64 = get_base64_image("docs/figures/route_R101.png")
     rc101_b64 = get_base64_image("docs/figures/route_RC101.png")
+    nami_b64 = get_base64_image("docs/figures/nami_dispatch_real_hcmc.png")
 
     html_content = f"""<!DOCTYPE html>
 <html lang="vi">
@@ -576,19 +577,25 @@ def build_poster():
     margin-top: 1px;
   }}
 
-  /* NAMI DEPLOYMENT CARD */
-  .deploy-card {{
-    background: #f0fdf4;
-    border: 1.5px solid #bbf7d0;
-    border-left: 4px solid #16a34a;
-    border-radius: 6px;
-    padding: 8px 12px;
+  /* NAMI REAL DEPLOYMENT SHOWCASE */
+  .deploy-showcase-box {{
+    background: #ffffff;
+    border: 1.5px solid #86efac;
+    border-radius: 8px;
+    padding: 8px 10px;
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 6px;
+    box-shadow: 0 4px 12px -2px rgba(22, 101, 52, 0.08);
   }}
 
-  .deploy-head {{
+  .deploy-head-bar {{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }}
+
+  .deploy-head-title {{
     font-size: 13px;
     font-weight: 800;
     color: #166534;
@@ -596,10 +603,36 @@ def build_poster():
     letter-spacing: 0.3px;
   }}
 
-  .deploy-desc {{
-    font-size: 12px;
+  .deploy-head-tag {{
+    font-size: 10px;
+    font-weight: 700;
+    color: #15803d;
+    background: #dcfce7;
+    padding: 2px 7px;
+    border-radius: 10px;
+  }}
+
+  .deploy-img-container {{
+    width: 100%;
+    height: 190px;
+    border-radius: 6px;
+    overflow: hidden;
+    border: 1px solid #cbd5e1;
+    background: #f8fafc;
+  }}
+
+  .deploy-screenshot {{
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top center;
+    display: block;
+  }}
+
+  .deploy-caption {{
+    font-size: 11px;
     line-height: 1.4;
-    color: #1e293b;
+    color: #334155;
     text-align: justify;
   }}
 
@@ -627,8 +660,8 @@ def build_poster():
     <div class="header-dept-2">Khoa Công nghệ Thông tin</div>
 
     <div class="header-title-box">
-      <div class="header-title-main">TỐI ƯU HÓA BÀI TOÁN ĐỊNH TUYẾN PHƯƠNG TIỆN CÓ KHUNG THỜI GIAN (VRPTW)</div>
-      <div class="header-title-sub">BẰNG THUẬT TOÁN TÌM KIẾM LÂN CẬN LỚN THÍCH ỨNG LAI HỌC TĂNG CƯỜNG SÂU</div>
+      <div class="header-title-main">XÂY DỰNG MÔ HÌNH ĐỂ TỐI ƯU HÓA TUYẾN ĐƯỜNG TRONG LOGISTICS</div>
+      <div class="header-title-sub">TIẾP CẬN BÀI TOÁN VRPTW BẰNG THUẬT TOÁN TÌM KIẾM LÂN CẬN LỚN THÍCH ỨNG LAI HỌC TĂNG CƯỜNG SÂU (HYBRID DDQN-ALNS)</div>
     </div>
 
     <div class="header-author-row">
@@ -645,7 +678,7 @@ def build_poster():
   <!-- QR CODE IN DEDICATED TEMPLATE BOX -->
   <div class="qr-box">
     <img src="{qr_b64}" class="qr-img" alt="QR Code">
-    <div class="qr-label">Quét mã xem mã nguồn & demo</div>
+    <div class="qr-label">Quét mã xem demo hệ thống & bài báo</div>
   </div>
 
   <!-- MAIN POSTER CANVAS -->
@@ -925,11 +958,17 @@ def build_poster():
             </div>
           </div>
 
-          <!-- NAMI DEPLOYMENT CARD -->
-          <div class="deploy-card">
-            <div class="deploy-head">&bull; Ứng Dụng Thực Tiễn: NAMI Dispatch Portal</div>
-            <div class="deploy-desc">
-              Thuật toán Hybrid DDQN-ALNS đã được đóng gói thành microservice API trên nền tảng NAMI Dispatch Portal, hỗ trợ tái tối ưu lộ trình tức thời (&lt; 5s) khi phát sinh đơn hàng khẩn cấp hoặc biến động giao thông thực tế trong chuỗi cung ứng.
+          <!-- NAMI REAL DEPLOYMENT SHOWCASE -->
+          <div class="deploy-showcase-box">
+            <div class="deploy-head-bar">
+              <div class="deploy-head-title">🚀 Ứng Dụng Thực Tiễn: NAMI Dispatch Control Tower</div>
+              <span class="deploy-head-tag">Bản Đồ Đường Bộ TP.HCM</span>
+            </div>
+            <div class="deploy-img-container">
+              <img src="{nami_b64}" alt="NAMI Dispatch Real HCMC Map" class="deploy-screenshot">
+            </div>
+            <div class="deploy-caption">
+              <b>Triển khai thực tế:</b> Thuật toán điều phối chính xác 18 đội xe trên mạng lưới đường bộ thực tế TP.HCM, tiết kiệm <b>-1.40%</b> quãng đường so với ALNS Base (704.03 km vs 714.05 km) và lập lịch tài xế qua biểu đồ Gantt thời gian thực.
             </div>
           </div>
         </div>
