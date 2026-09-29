@@ -58,3 +58,8 @@ extraPaths = ["docs", "src"]
 dev = [
     "python-pptx>=1.0.2",
 ]
+
+[tool.pytest.ini_options]
+addopts = "--ignore=tests/e2e"
+testpaths = ["tests"]
+

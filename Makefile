@@ -22,7 +22,7 @@ dev-all:
 	@npm run dev:all
 
 test:
-	PYTHONPATH=/src/backend uv run pytest tests/ -v
+	PYTHONPATH=./src uv run pytest tests/ -v
 
 # ── Firebase Emulator Suite ──────────────────────────────────────────
 # Auth (9099) + Firestore (8080) + Hosting/SPA (5050) + Emulator UI (4000)
