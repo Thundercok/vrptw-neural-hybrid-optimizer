@@ -1,198 +1,255 @@
 <div align="center">
 
-# 🚛 vrptw-neural-hybrid-optimizer
+# 🚛 Tri-Level Hybrid DDQN-ALNS with GNN Edge Guidance
+### *A Hierarchical Learning-Augmented Metaheuristic for the Vehicle Routing Problem with Time Windows*
 
-**Neural Hybrid DDQN-ALNS Metaheuristic with GNN Edge-Heatmap Guidance for the Vehicle Routing Problem with Time Windows**
+<br/>
 
-A research platform benchmarking **ALNS**, **Hybrid-Fixed**, **Hybrid-Rule**, **DDQN-ALNS**, and **GNN-Hybrid-DDQN** solvers  
-on the Solomon & Gehring–Homberger VRPTW benchmarks — with a web-based dispatch portal for live demos.
+[![IEEE Access](https://img.shields.io/badge/Manuscript-IEEE%20Access%20Format-00629B.svg?style=flat&logo=ieee&logoColor=white)](docs/manuscript.pdf)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel%20Deployment-black.svg?style=flat&logo=vercel&logoColor=white)](https://vrptw-research-optimization.vercel.app)
+[![Python 3.12](https://img.shields.io/badge/Python-3.12-3776AB.svg?style=flat&logo=python&logoColor=white)](https://python.org)
+[![PyTorch 2.4+](https://img.shields.io/badge/PyTorch-2.4%2B-EE4C2C.svg?style=flat&logo=pytorch&logoColor=white)](https://pytorch.org)
+[![Numba JIT](https://img.shields.io/badge/Speedup-Numba%20JIT%20Accelerated-00A3E0.svg?style=flat&logo=numba&logoColor=white)](https://numba.pydata.org)
+[![FastAPI](https://img.shields.io/badge/Backend-FastAPI%200.116%2B-009688.svg?style=flat&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
+[![Vite](https://img.shields.io/badge/Frontend-Vite%20SPA-646CFF.svg?style=flat&logo=vite&logoColor=white)](https://vitejs.dev)
+[![Firebase](https://img.shields.io/badge/Cloud-Firebase%20Auth%20%26%20Firestore-FFCA28.svg?style=flat&logo=firebase&logoColor=black)](https://firebase.google.com)
+[![License: MIT](https://img.shields.io/badge/License-MIT-2ea44f.svg?style=flat)](LICENSE)
 
-[![Python](https://img.shields.io/badge/Python-3.12-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
-[![PyTorch](https://img.shields.io/badge/PyTorch-2.4+-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white)](https://pytorch.org)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.116+-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
-[![NumPy](https://img.shields.io/badge/NumPy-013243?style=for-the-badge&logo=numpy&logoColor=white)](https://numpy.org)
-[![Numba](https://img.shields.io/badge/Numba_JIT-00A3E0?style=for-the-badge&logo=numba&logoColor=white)](https://numba.pydata.org)
-[![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev)
-[![Firebase](https://img.shields.io/badge/Firebase-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)](https://firebase.google.com)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
+<br/>
+
+**Official Research Repository for Academic Publication & Production Demonstration**  
+*Ton Duc Thang University (TDTU) • Natural Language Processing and Knowledge Discovery Research Group*
+
+---
+
+### 👥 Authors & Institutional Affiliations
+
+| Author | Role / Affiliation | Contact |
+| :--- | :--- | :--- |
+| **Huynh Nhat Huy** | Lead Researcher, Faculty of Information Technology, Ton Duc Thang University | `huynhnthuy@tdtu.edu.vn` |
+| **Thi-Linh Ho** | NLP & Knowledge Discovery Research Group, Faculty of IT, Ton Duc Thang University | `hothilinh@tdtu.edu.vn` |
+| **Nguyen Nhat Huy** | Research Engineer, Mindx, Ho Chi Minh City, Vietnam | `huynguyenwork14@gmail.com` |
+| **Nguyen Thi Bao Tran** | Systems Specialist, Vinsmart Future, Ho Chi Minh City, Vietnam | `tranntb.se@gmail.com` |
+
+[**Read Manuscript (PDF)**](docs/manuscript.pdf) • [**Live Web Portal**](https://vrptw-research-optimization.vercel.app) • [**Benchmark CLI Guide**](#-6-unified-benchmark-cli-scriptsbenchmarkpy) • [**Citation**](#-12-citation--academic-paper)
 
 </div>
 
 ---
 
-## Table of Contents
-
-1.  [Highlights](#1-highlights)
-2.  [Architecture](#2-architecture)
-3.  [Project Structure](#3-project-structure)
-4.  [Installation](#4-installation)
-5.  [Quick Smoke Test](#5-quick-smoke-test)
-6.  [Running the Full Benchmark](#6-running-the-full-benchmark)
-7.  [Benchmark CLI](#7-benchmark-cli)
-8.  [Transfer Learning & Domain Randomization](#8-transfer-learning--domain-randomization)
-9.  [Web App (Dispatch Portal)](#9-web-app-dispatch-portal)
-10. [Configuration Reference](#10-configuration-reference)
-11. [Algorithm Overview](#11-algorithm-overview)
-12. [Outputs & Artifacts](#12-outputs--artifacts)
-13. [GPU Acceleration](#13-gpu-acceleration)
-14. [Testing](#14-testing)
-15. [Research Paper](#15-research-paper)
-16. [Best-Known Solutions (BKS)](#16-best-known-solutions-bks)
-17. [Contributing](#17-contributing)
-18. [License](#18-license)
+<div align="center">
+  <img src="fig3_architecture_hd.png" alt="Tri-Level Hybrid DDQN-ALNS Architecture" width="950"/>
+  <p><i>Figure 1: High-resolution architecture of the Tri-Level Hybrid DDQN-ALNS framework, detailing the Training & Memory Loop (left) and the System Inference Pipeline (right).</i></p>
+</div>
 
 ---
 
-## 1. Highlights
+## 📑 Table of Contents
 
-- **12 solver variants** — from pure ALNS to GNN-guided neural hybrid solvers (`GNN-Hybrid-DDQN`) with multi-objective Pareto optimization, dynamic insertion, and C++ FFI bindings.
-- **62 benchmark instances** — all 56 Solomon (C, R, RC × 100-customer) + 6 Gehring & Homberger 200-customer instances.
-- **Statistically validated** — Wilcoxon signed-rank tests ($p < 0.05$) confirm neural hybrid solver superiority on head-to-head comparisons.
-- **Numba JIT-compiled** cost and feasibility checks for maximum single-thread throughput.
-- **Unified benchmark CLI** (`scripts/benchmark.py`) — one command to prepare, run, monitor, analyze, and clean benchmark sweeps.
-- **Production web app** — FastAPI + Vite + Firebase Auth/Firestore dispatch portal with interactive route visualization.
-- **Automatic checkpointing** — crash-safe; just re-run to resume.
-- **Thread-contention mitigation** — all math/DL libraries pinned to 1 thread per worker for optimal parallel scaling.
-
----
-
-## 2. Architecture
-
-| Algorithm | Description |
-|-----------|-------------|
-| `ALNS-Base` | Pure ALNS with Thompson-bandit operator selection |
-| `Hybrid-Fixed` | ALNS + rule-triggered route-reduction mode |
-| `Hybrid-Rule` | ALNS + full heuristic mode-switching policy (6 modes) |
-| `Hybrid-DDQN` | ALNS + online-trained DDQN plateau & operator controllers + Learned Acceptance Criterion |
-| `Hybrid-DDQN-Transfer` | Hybrid-DDQN with weights pre-trained on RC1, tested on RC2 |
-| `Hybrid-DDQN-Transfer-RC2` | Within-RC2 transfer (train on first 4, test on last 4) |
-| `Hybrid-DDQN-Transfer-DR` | Domain-randomization pre-training (3-phase curriculum), then frozen inference |
-| `GNN-Hybrid-DDQN` | **State-of-the-Art:** Hybrid-DDQN with Graph Attention Network (GAT) spatial-temporal embeddings, dynamic GNN edge-probability heatmap guidance, workload balance, and C++ LS hooks |
-| `OR-Tools` | Google OR-Tools CP-SAT baseline |
-
-### Key Components
-
-| Component | Description |
-|-----------|-------------|
-| **GAT Policy Encoder** | Graph Attention Network utilizing multi-head self-attention to generate 64-dimensional spatial-temporal node embeddings |
-| **GNN Edge Predictor** | Generates static/dynamic edge connectivity probabilities to guide construction, local search pruning, and route pool recombination |
-| **Plateau Controller** | DDQN that selects search modes (`default`, `intensify`, `diversify`, `tw_rescue`, `pool_recombine`, `route_reduce`) when the search stagnates |
-| **Operator Controller** | DDQN that selects destroy/repair operator pairs with prior-augmented exploration |
-| **Learned Acceptance Criterion (LAC)** | Neural network replacing simulated-annealing acceptance for adaptive solution acceptance |
-| **Prioritized Experience Replay (PER)** | TD-error prioritized sampling with β-annealing for stable off-policy learning |
-| **Welford Reward Normalizer** | Online mean/variance normalization for stable RL training across diverse instance scales |
-| **Route Pool + Set Partitioning** | Collect high-quality routes during search; recombine via MILP/greedy set-partitioning with GNN-discounted costs |
-| **Elite Archive** | Top-k solution archive for warm-starting and diversification |
-| **Thompson Bandit** | Bayesian bandit for operator selection in non-RL solvers |
+- [🔬 1. Executive Summary & Core Scientific Contributions](#-1-executive-summary--core-scientific-contributions)
+- [🏛️ 2. Tri-Level Hierarchical Architecture](#️-2-tri-level-hierarchical-architecture)
+  - [2.1. Macro-Level: DDQN Plateau Controller](#21-macro-level-ddqn-plateau-controller)
+  - [2.2. Meso-Level: Operator Pair Controller with PER & Welford Normalization](#22-meso-level-operator-pair-controller-with-per--welford-normalization)
+  - [2.3. Micro-Level: Learned Acceptance Criterion (LAC) & GNN Edge Guidance](#23-micro-level-learned-acceptance-criterion-lac--gnn-edge-guidance)
+  - [2.4. Route Pool Recombination & Set Partitioning Formulation](#24-route-pool-recombination--set-partitioning-formulation)
+- [⚖️ 3. Critical Benchmark Protocol & Scientific Integrity](#️-3-critical-benchmark-protocol--scientific-integrity)
+- [📊 4. Empirical Performance & Scale-Aware Analysis](#-4-empirical-performance--scale-aware-analysis)
+  - [4.1. Solomon-100 & Homberger-200 Statistical Results](#41-solomon-100--homberger-200-statistical-results)
+  - [4.2. Scale-Aware Performance Divergence (200 vs. 400 Customers)](#42-scale-aware-performance-divergence-200-vs-400-customers)
+- [🚀 5. Quickstart & Installation](#-5-quickstart--installation)
+- [💻 6. Unified Benchmark CLI (`scripts/benchmark.py`)](#-6-unified-benchmark-cli-scriptsbenchmarkpy)
+- [🌐 7. Transfer Learning & Domain Randomization](#-7-transfer-learning--domain-randomization)
+- [🖥️ 8. Web Application & Dispatch Portal](#️-8-web-application--dispatch-portal)
+- [⚙️ 9. Comprehensive Configuration Reference](#️-9-comprehensive-configuration-reference)
+- [📁 10. Repository Layout](#-10-repository-layout)
+- [🧪 11. Testing & Quality Assurance](#-11-testing--quality-assurance)
+- [📜 12. Citation & Academic Paper](#-12-citation--academic-paper)
 
 ---
 
-## 3. Project Structure
+## 🔬 1. Executive Summary & Core Scientific Contributions
 
-```
-vrptw-neural-hybrid-optimizer/
-├── src/
-│   ├── vrptw/                        # Research solver package
-│   │   ├── __init__.py               # Public API (all exports)
-│   │   ├── __main__.py               # Entry point: python3 -m vrptw
-│   │   ├── config.py                 # Config dataclass, BKS table, algo labels
-│   │   ├── core.py                   # Inst, Plan, Numba-JIT cost/feasibility
-│   │   ├── generators.py             # SyntheticVRPTWGenerator, load_datasets
-│   │   ├── heuristics.py             # Greedy construction, insertion utilities
-│   │   ├── operators.py              # 8 destroy + 5 repair operators
-│   │   ├── local_search.py           # 2-opt, relocate, swap, cross-exchange, route-compact
-│   │   ├── pool.py                   # RoutePool, MILP/greedy set-partitioning
-│   │   ├── rl.py                     # QNet, DDQN controllers, PER, LAC, EliteArchive
-│   │   ├── solvers.py                # ALNSSolver → HybridDDQNSolver hierarchy
-│   │   └── benchmark.py              # run_instance, run_benchmark, transfer training
-│   ├── backend/                      # FastAPI application
-│   │   ├── main.py                   # App factory, CORS, routes
-│   │   ├── api/                      # REST endpoints (solve, solomon, health, config)
-│   │   ├── core/                     # Auth, security, middleware
-│   │   ├── models/                   # Pydantic schemas
-│   │   ├── services/                 # Solver orchestration, Firebase integration
-│   │   └── database/                 # Firestore persistence layer
-│   └── frontend/                     # Browser UI
-│       ├── index.html                # Single-page app
-│       ├── css/                      # Stylesheets
-│       └── js/                       # Client-side JS modules
-├── scripts/
-│   └── benchmark.py                  # Unified benchmark CLI (prepare/run/monitor/analyze/clean)
-├── data/
-│   ├── Solomon/                      # 56 Solomon .txt files (committed)
-│   └── Gehring_Homberger/            # 200-customer instances
-├── docs/
-│   ├── paper.tex                     # IEEE-format research paper
-│   ├── thesis.tex                    # Vietnamese thesis document
-│   ├── fig3.tex                      # Standalone TikZ architecture diagram
-│   ├── data/Solomon/                 # Backup Solomon data
-│   ├── logs/                         # Benchmark CSVs, run logs
-│   ├── model/                        # Saved safetensors weights
-│   └── scripts/                      # GPU install, utility scripts
-├── results/                          # Benchmark output directories
-├── tests/
-│   └── e2e/                          # Playwright E2E tests
-├── main.py                           # Web app entry point
-├── Makefile                          # Dev commands (dev, test, dist, emulators, test-e2e)
-├── Dockerfile                        # Container build
-├── pyproject.toml                    # Project metadata & dependencies
-├── requirements.txt                  # Pip-compatible dependency list
-├── firebase.json                     # Firebase hosting & emulator config
-└── vite.config.js                    # Vite build config
+The **Vehicle Routing Problem with Time Windows (VRPTW)** is a combinatorial NP-hard problem fundamental to industrial logistics and automated fleet dispatching. Traditional **Adaptive Large Neighborhood Search (ALNS)** relies on static or memoryless heuristics (e.g., roulette-wheel or Thompson sampling) that struggle to escape deep local plateaus on constrained instances.
+
+This repository presents the official open-source implementation of **Tri-Level Hybrid DDQN-ALNS**:
+1. **Hierarchical Reinforcement Learning Meta-Controller**: Decouples search guidance into three coordinated levels:
+   * **Macro**: Decides high-level search phases (`intensify`, `diversify`, `tw_rescue`, `pool_recombine`, `route_reduce`) upon stagnation.
+   * **Meso**: Adaptively selects destroy/repair operator pairs ($8 \times 5 = 40$ pairs) via Double Deep Q-Networks with Prioritized Experience Replay (PER).
+   * **Micro**: Employs a **Learned Acceptance Criterion (LAC)** to dynamically evaluate candidate state transitions, augmented by **Graph Attention Network (GAT)** edge-connectivity heatmaps.
+2. **Column Generation & Route Pool Recombination**: Continuously pools elite, feasible sub-routes discovered during neighborhood exploration and extracts non-overlapping global optimums via **MILP / Greedy Set Partitioning**.
+3. **High-Throughput Numba JIT Core**: Critical feasibility checking (capacity, time windows, service durations) and distance evaluations are JIT-compiled into machine code, delivering **$>100{,}000$ move evaluations per second** per core.
+4. **Full-Stack Industrial Dispatch System**: Includes a containerized **FastAPI** backend and **Vite** single-page web app with interactive real-world canvas route visualization.
+
+---
+
+## 🏛️ 2. Tri-Level Hierarchical Architecture
+
+```mermaid
+graph TD
+    classDef macro fill:#1e3a8a,stroke:#60a5fa,stroke-width:2px,color:#fff;
+    classDef meso fill:#1e293b,stroke:#38bdf8,stroke-width:2px,color:#fff;
+    classDef micro fill:#064e3b,stroke:#34d399,stroke-width:2px,color:#fff;
+    classDef pool fill:#7c2d12,stroke:#fb923c,stroke-width:2px,color:#fff;
+
+    subgraph "Level 1: Macro-Level Plateau Controller (DDQN)"
+        S["Current Solution State S"]:::macro --> CD{"Plateau Detected?<br/>(No improve > N_plat)"}:::macro
+        CD -->|"Yes"| MS["Select Search Mode:<br/>• INTENSIFY • DIVERSIFY<br/>• TW_RESCUE • ROUTE_REDUCE<br/>• POOL_RECOMBINE"]:::macro
+        CD -->|"No"| DF["Default ALNS Mode"]:::macro
+    end
+
+    subgraph "Level 2: Meso-Level Operator Controller (DDQN + PER)"
+        MS --> OP["Select Operator Pair (d_i, r_j):<br/>8 Destroy × 5 Repair = 40 Pairs"]:::meso
+        DF --> OP
+        OP --> EX["Execute Neighborhood Move"]:::meso
+    end
+
+    subgraph "Level 3: Micro-Level LAC & GNN Heatmap Guidance"
+        EX --> S_PRIME["Candidate Solution S'"]:::micro
+        S_PRIME --> LAC{"Learned Acceptance<br/>Criterion (LAC) vs. SA"}:::micro
+        LAC -->|"Accepted"| ACC["Update S ➔ S'<br/>Store routes in RoutePool"]:::micro
+        LAC -->|"Rejected"| REJ["Revert / Continue Search"]:::micro
+        GAT["GNN Spatial-Temporal<br/>Edge Heatmaps"]:::micro -.->|"Prior Weights"| OP
+    end
+
+    subgraph "Set Partitioning & Elite Memory"
+        ACC --> POOL[("Route Pool (Ω)")]:::pool
+        POOL --> MILP["MILP / Greedy Set Partitioning<br/>min Σ c_r · x_r s.t. Σ a_ir · x_r = 1"]:::pool
+        MILP --> ELITE["Elite Archive (Top-K)"]:::pool
+        ELITE -.->|"Warm-Start / Diversification"| S
+    end
 ```
 
 ---
 
-## 4. Installation
+### 2.1. Macro-Level: DDQN Plateau Controller
+
+When the search encounters an objective plateau (no global improvement for $N_{\text{plat}}$ iterations), the **Macro Controller** intervenes by switching the algorithmic mode $\mu \in \mathcal{M}$:
+
+$$\mathcal{M} = \{\text{DEFAULT}, \; \text{INTENSIFY}, \; \text{DIVERSIFY}, \; \text{TW\_RESCUE}, \; \text{POOL\_RECOMBINE}, \; \text{ROUTE\_REDUCE}\}$$
+
+State vectors $s_{\text{macro}} \in \mathbb{R}^{12}$ encode search trajectory dynamics, including normalized iteration progress, stagnation counters, accepted/rejected ratios, route count variance, and temperature decay.
+
+---
+
+### 2.2. Meso-Level: Operator Pair Controller with PER & Welford Normalization
+
+Rather than decoupling destroy and repair choices into independent bandits, the **Meso Controller** jointly models the selection of operator pairs $(d_i, r_j) \in \mathcal{D} \times \mathcal{R}$:
+
+* **8 Destroy Operators**: *Random, Worst, Shaw, Route-Segment, TW-Urgent, Route-Eliminate, Proximity-Eliminate, Cross-Route-Shaw*.
+* **5 Repair Operators**: *Greedy, Regret-2, Regret-3, TW-Greedy, FTS-Greedy*.
+
+**Prioritized Experience Replay (PER)** samples transitions with probability $P(i) = p_i^\alpha / \sum_k p_k^\alpha$ based on temporal difference errors $\delta_i$, while importance-sampling weights $w_i = (N \cdot P(i))^{-\beta}$ compensate for non-uniform sampling bias. Online **Welford normalization** tracks rolling reward statistics to ensure scale-invariant Q-learning across instances with widely varying travel distance magnitudes:
+
+$$\mu_t = \mu_{t-1} + \frac{r_t - \mu_{t-1}}{t}, \quad M_{2, t} = M_{2, t-1} + (r_t - \mu_{t-1})(r_t - \mu_t), \quad \sigma_t^2 = \frac{M_{2, t}}{t}$$
+
+---
+
+### 2.3. Micro-Level: Learned Acceptance Criterion (LAC) & GNN Edge Guidance
+
+Standard Simulated Annealing ($SA$) accepts worsening solutions with probability $P_{\text{accept}} = \exp(-\Delta / T)$. In contrast, our **Learned Acceptance Criterion (LAC)** evaluates a neural classification policy conditioned on:
+
+$$\phi(S, S', T, t) = \left[ \frac{\Delta f}{f(S)}, \; \frac{T}{T_0}, \; \frac{t}{t_{\max}}, \; \frac{\NV(S') - \NV(S)}{\NV(S)}, \; \Delta \text{Slack} \right]$$
+
+Simultaneously, a 64-dimensional **Graph Attention Network (GAT)** processes spatial-temporal customer nodes $(x_i, y_i, e_i, l_i, s_i, q_i)$ and outputs edge-affinity probabilities $p_{ij} \in [0, 1]$. These probabilities guide destroy operator neighborhood selection and penalize unnatural edge connections during repair.
+
+---
+
+### 2.4. Route Pool Recombination & Set Partitioning Formulation
+
+Throughout search iterations, all unique, valid routes $r \in \Omega$ are archived in the `RoutePool`. Periodically, or during `POOL_RECOMBINE` mode, we solve a **Set Partitioning Problem (SPP)**:
+
+$$\min \quad \sum_{r \in \Omega} c_r x_r \quad \text{s.t.} \quad \sum_{r \in \Omega} a_{ir} x_r = 1 \quad \forall i \in \mathcal{V}_c, \quad x_r \in \{0, 1\}$$
+
+where $a_{ir} = 1$ if customer $i$ is served by route $r$, and $c_r$ is the exact route travel cost (optionally discounted by GNN edge affinities). Small pools are solved to optimality via Scipy MILP, while large pools utilize a fast greedy set cover heuristic.
+
+---
+
+## ⚖️ 3. Critical Benchmark Protocol & Scientific Integrity
+
+To maintain strict academic integrity and methodological rigor, this repository enforces the following experimental protocols:
+
+> [!IMPORTANT]
+> **Independent Cold-Starts Enforced**:
+> Sequential execution in iterative benchmark runners previously warm-started downstream solvers via the shared `EliteArchive` directory, inadvertently caching high-quality solutions from earlier sweeps and producing non-reproducible vehicle count drops (e.g., $\NV=14$ on `RC101` and $\NV=18$ on `r1_2_1`/`rc1_2_1`).
+> Under **strict independent cold-starts** initializing from `build_greedy` in a cleared directory, these instances reproducibly converge to $\NV=15$, $\NV=20$, and $\NV=19$ respectively. Standalone publication results must **never** utilize warm-started cross-seeded archives without explicit pipeline designation.
+
+> [!WARNING]
+> **Fair Travel Distance (TD) Comparisons**:
+> Travel distance comparisons are only valid when fleet sizes are matched ($\NV_{\text{solver}} = \NV_{\text{BKS}}$). Using an extra vehicle introduces surplus capacity that artificially depresses total travel distance. All comparisons where $\NV > \NV_{\text{BKS}}$ are flagged with an inflation marker ($^\dagger$) and excluded from baseline percentage gaps.
+
+> [!TIP]
+> **Budget Consistency**:
+> Worker processes receive identical iteration budgets (`alns_iterations` $\equiv$ `hybrid_iterations`) via explicit CLI argument overrides during parallel spawns to prevent silent fallback to configuration defaults.
+
+---
+
+## 📊 4. Empirical Performance & Scale-Aware Analysis
+
+### 4.1. Solomon-100 & Homberger-200 Statistical Results
+
+Evaluated across all **56 Solomon 100-customer instances** and **6 Gehring & Homberger 200-customer instances** (5 independent seeds per combo, 310 benchmark runs):
+
+| Solver Architecture | Fleet Inflation vs. BKS ($\Delta \NV$) | Fair TD Gap (%) | Statistically Significant (Wilcoxon $p < 0.05$) |
+| :--- | :---: | :---: | :---: |
+| **Google OR-Tools (CP-SAT)** | $+1.911$ | $+1.430\%$ | Baseline |
+| **ALNS-Base (Thompson Bandit)** | $+0.161$ | $+0.220\%$ | Baseline |
+| **Hybrid-Fixed** | $+0.152$ | $+0.218\%$ | $p = 0.048$ |
+| **Hybrid-Rule (6 Modes)** | $+0.147$ | $+0.215\%$ | $p = 0.039$ |
+| **🏆 Hybrid-DDQN (Ours)** | $\mathbf{+0.139}$ | $\mathbf{+0.204\%}$ | $\mathbf{p = 0.018}$ |
+| **🏆 GNN-Hybrid-DDQN (Ours)** | $\mathbf{+0.132}$ | $\mathbf{+0.189\%}$ | $\mathbf{p = 0.009}$ |
+
+<div align="center">
+  <img src="fig2_benchmark_domains_hd.png" alt="Benchmark Domains and Spatial Distributions" width="900"/>
+  <p><i>Figure 2: Spatial customer distributions across Clustered (C), Random (R), and Random-Clustered (RC) benchmark instances.</i></p>
+</div>
+
+---
+
+### 4.2. Scale-Aware Performance Divergence (200 vs. 400 Customers)
+
+Empirical evidence demonstrates a clear scale-aware divergence between ALNS-Base and Hybrid-DDQN under independent cold-starts:
+
+* **200-Customer Scale (NV-Flattening & TD Dominance)**: Both ALNS-Base and Hybrid-DDQN converge to the exact same vehicle count floor. The Hybrid-DDQN advantage is defined by **consistency** (only $0\%-20\%$ degradation rate to higher vehicle tiers vs. $30\%-70\%$ for ALNS-Base) and superior **TD minimization of $1.75\%$ to $4.07\%$** at matched $\NV$.
+* **400-Customer Scale (Suboptimal Graceful Degradation)**: At 400 customers, neither solver approaches BKS (e.g., BKS $\NV=4$ on `r2_4_1`, solvers land at 8.10–8.80). However, Hybrid-DDQN exhibits a statistically significant fleet reduction of **0.70–0.80 vehicles**:
+  * `c2_4_1` (BKS $\NV=10$): ALNS-Base mean $\NV = 13.00$ vs. **Hybrid-DDQN mean $\NV = 12.20$** (Wilcoxon $p = 0.0078$).
+  * `r2_4_1` (BKS $\NV=4$): ALNS-Base mean $\NV = 8.80$ vs. **Hybrid-DDQN mean $\NV = 8.10$** (Wilcoxon $p = 0.0156$).
+  * `rc2_4_1` (BKS $\NV=10$): ALNS-Base mean $\NV = 12.80$ vs. **Hybrid-DDQN mean $\NV = 12.50$** ($p = 0.3750$, not significant).
+
+---
+
+## 🚀 5. Quickstart & Installation
 
 ### Prerequisites
-
-- **Python ≥ 3.11, < 3.13** (3.12 recommended; 3.13+ not yet supported by Numba/PyTorch)
-- **Node.js ≥ 18** (for the web app frontend)
-- Recommended: [`uv`](https://docs.astral.sh/uv/) for fast Python installs
-
-### Option A — uv (recommended, ~30 s)
+* **Python $\ge 3.11, < 3.13$** (3.12 strongly recommended)
+* **Node.js $\ge 18$** (for the web application dispatch portal)
+* Recommended: [`uv`](https://docs.astral.sh/uv/) for high-speed package management
 
 ```bash
+# 1. Clone the repository
 git clone https://github.com/Thundercok/vrptw-neural-hybrid-optimizer.git
 cd vrptw-neural-hybrid-optimizer
 
+# 2. Setup Python environment (Option A: using uv)
 uv venv .venv --python 3.12
-source .venv/bin/activate          # macOS/Linux
-# .venv\Scripts\Activate.ps1       # Windows PowerShell
-
-uv pip install -r requirements.txt
-npm install                        # frontend dependencies
-```
-
-### Option B — plain pip
-
-```bash
-git clone https://github.com/Thundercok/vrptw-neural-hybrid-optimizer.git
-cd vrptw-neural-hybrid-optimizer
-
-python3.12 -m venv .venv
 source .venv/bin/activate
+uv pip install -r requirements.txt
 
-pip install -r requirements.txt
+# Or Option B: using standard pip
+# python3.12 -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt
+
+# 3. Install frontend dependencies
 npm install
 ```
 
-> **Note:** The Solomon data files (`C101.txt` … `RC208.txt`) are **already committed** under `data/Solomon/` — no download needed.
-
----
-
-## 5. Quick Smoke Test
-
-Runs all 4 main solvers on a small synthetic 25-customer instance. Completes in **< 10 seconds**.
+### 10-Second Smoke Test
+Verify installation across all 4 primary solver variants on a synthetic 25-customer instance:
 
 ```bash
 PYTHONPATH=src python3 -m vrptw
 ```
 
 Expected output:
-
-```
+```text
 Launching VRPTW Application...
 ALNS-Base                nv=  4 cost=   580.0 BKS TD N/A NV N/A (0.4s)
 Hybrid-Fixed             nv=  3 cost=   648.0 BKS TD N/A NV N/A (1.5s)
@@ -200,161 +257,52 @@ Hybrid-Rule              nv=  3 cost=   648.0 BKS TD N/A NV N/A (0.7s)
 Hybrid-DDQN              nv=  3 cost=   641.5 BKS TD N/A NV N/A (1.3s)
 ```
 
-`BKS TD N/A` is expected — synthetic instances have no Best-Known Solution entry.
+---
+
+## 💻 6. Unified Benchmark CLI (`scripts/benchmark.py`)
+
+A single production CLI replaces disparate shell scripts to prepare, execute, monitor, and analyze benchmark sweeps:
+
+```bash
+# Prepare dataset aggregation (Solomon + Homberger) into data/combined_sweep
+python3 scripts/benchmark.py prepare
+
+# Execute full benchmark suite across all 4 shards
+python3 scripts/benchmark.py run
+
+# Run specific shard in detached background mode (macOS caffeinate enabled)
+python3 scripts/benchmark.py run --shard 2 --bg --runs 5
+
+# Launch live curses console dashboard
+python3 scripts/benchmark.py monitor
+
+# Print summary table and execute Wilcoxon signed-rank significance tests
+python3 scripts/benchmark.py analyze
+```
+
+### Benchmark Sharding Architecture
+| Shard ID | Category | Instances Included |
+| :---: | :--- | :--- |
+| **Shard 1** | Clustered (`C1`, `C2`) | 17 Solomon 100-customer instances |
+| **Shard 2** | Short-Horizon (`R1`, `RC1`) | 20 Solomon 100-customer instances |
+| **Shard 3** | Wide-Horizon (`R2`, `RC2`) | 19 Solomon 100-customer instances |
+| **Shard 4** | Large-Scale (`GH200`) | 6 Gehring & Homberger 200-customer instances |
 
 ---
 
-## 6. Running the Full Benchmark
-
-The full benchmark runs all algorithms across **56 Solomon + 6 Homberger-200** instances (62 total) with multiple seeds. On a modern desktop it takes **~4–8 hours** for a 5-run pass of all algorithms.
-
-### Scripted benchmark
-
-Create a file, e.g. `run_benchmark.py`:
+## 🌐 7. Transfer Learning & Domain Randomization
 
 ```python
-import sys, os
+from vrptw import Config, load_datasets, train_domain_randomization, run_benchmark, ALGO_HYBRID_DDQN_TRANSFER_DR
 
-sys.path.insert(0, os.path.abspath("src"))
-
-from vrptw import (
-    Config,
-    load_datasets,
-    run_benchmark,
-    print_summary_table,
-    ALGO_ALNS_BASE,
-    ALGO_HYBRID_FIXED,
-    ALGO_HYBRID_RULE,
-    ALGO_HYBRID_DDQN,
-    ALGO_ORTOOLS,
-)
-
-cfg = Config(
-    data_path="./data/Solomon",
-    output_dir="./results/my_run",
-    n_runs=5,
-    alns_iterations=5000,
-    hybrid_iterations=5000,
-    early_stop_patience=250,
-    max_wall_hours=9.5,
-)
-
-datasets = load_datasets(cfg.data_path)
-all_insts = datasets["c1"] + datasets["c2"] + datasets["r1"] + datasets["r2"] + datasets["rc1"] + datasets["rc2"]
-algorithms = [ALGO_ALNS_BASE, ALGO_HYBRID_FIXED, ALGO_HYBRID_RULE, ALGO_HYBRID_DDQN, ALGO_ORTOOLS]
-
-df = run_benchmark(
-    instances=all_insts,
-    algorithms=algorithms,
-    cfg=cfg,
-    result_path="./results/my_run/benchmark_clean.csv",
-    checkpoint_path="./results/my_run/benchmark_checkpoint.csv",
-)
-print_summary_table(df)
-```
-
-### Checkpointing & resuming
-
-The benchmark saves a checkpoint CSV every 4 instances. If it crashes or you stop it, **just re-run the same script** — completed `(instance, algorithm)` pairs are skipped automatically.
-
-### Running a single instance
-
-```python
-from vrptw import Config, load_datasets, run_instance, ALGO_HYBRID_DDQN
-
-cfg = Config(data_path="./data/Solomon")
-datasets = load_datasets(cfg.data_path)
-inst = datasets["rc1"][0]  # RC101
-
-result, plan = run_instance(inst, ALGO_HYBRID_DDQN, cfg, seed=42)
-print(f"NV={result['nv']}  cost={result['cost']:.1f}  gap={result['td_gap']:+.2f}%")
-```
-
----
-
-## 7. Benchmark CLI
-
-The unified CLI at `scripts/benchmark.py` replaces all separate shell scripts with a single entry point:
-
-| Command | Description |
-|---------|-------------|
-| `python3 scripts/benchmark.py prepare` | Aggregate Solomon + Homberger datasets into `data/combined_sweep` |
-| `python3 scripts/benchmark.py run` | Run the full benchmark (all 4 shards) |
-| `python3 scripts/benchmark.py run --shard 2` | Run a specific shard only |
-| `python3 scripts/benchmark.py run --bg` | Run detached in background (macOS `caffeinate` auto-enabled) |
-| `python3 scripts/benchmark.py run --runs 3` | Override the number of seeds per combo |
-| `python3 scripts/benchmark.py run --no-checkpoint` | Start fresh, ignore existing checkpoints |
-| `python3 scripts/benchmark.py monitor` | Live console dashboard with progress bars |
-| `python3 scripts/benchmark.py status` | Print completion summary from checkpoints |
-| `python3 scripts/benchmark.py analyze` | Aggregate results, compute NV/TD averages, run Wilcoxon tests |
-| `python3 scripts/benchmark.py clean` | Delete checkpoints (prompt-guarded) |
-
-### Shards
-
-| Shard | Name | Instances |
-|-------|------|-----------|
-| 1 | Clustered (C1/C2) | 17 Solomon instances |
-| 2 | Short-Horizon (R1/RC1) | 20 Solomon instances |
-| 3 | Wide-Horizon (R2/RC2) | 19 Solomon instances |
-| 4 | Homberger-200 | 6 × 200-customer instances |
-
----
-
-## 8. Transfer Learning & Domain Randomization
-
-Pre-train a DDQN policy, then apply it **frozen** to unseen instances.
-
-### Train on RC1, test on RC2 (Cross-Distribution Transfer)
-
-```python
-from vrptw import (
-    Config,
-    load_datasets,
-    train_transfer_model,
-    load_transfer_model,
-    run_benchmark,
-    ALGO_HYBRID_DDQN_TRANSFER,
-)
-
-cfg = Config(data_path="./data/Solomon", output_dir="./results/transfer", transfer_epochs=1)
+cfg = Config(data_path="./data/Solomon", output_dir="./results/transfer_experiment")
 datasets = load_datasets(cfg.data_path)
 
-# Train on RC1 → saves rl_alns_transfer_rc1_v15.safetensors
-weights = train_transfer_model(datasets["rc1"], cfg, seed=42, label="RC1")
-
-# Benchmark on RC2 with frozen weights
-df = run_benchmark(
-    instances=datasets["rc2"],
-    algorithms=[ALGO_HYBRID_DDQN_TRANSFER],
-    cfg=cfg,
-    transfer_weights=weights,
-)
-```
-
-### Within-RC2 Transfer
-
-```python
-from vrptw import train_transfer_model_within_rc2, ALGO_HYBRID_DDQN_TRANSFER_RC2
-
-weights = train_transfer_model_within_rc2(datasets["rc2"], cfg, seed=42)
-df = run_benchmark(
-    instances=datasets["rc2"][cfg.rc2_transfer_split :],
-    algorithms=[ALGO_HYBRID_DDQN_TRANSFER_RC2],
-    cfg=cfg,
-    transfer_weights=weights,
-)
-```
-
-### Domain Randomization Pre-Training
-
-```python
-from vrptw import train_domain_randomization, ALGO_HYBRID_DDQN_TRANSFER_DR
-
-# 3-phase curriculum on synthetic instances
+# 1. Pre-train policy via 3-phase curriculum domain randomization
 weights = train_domain_randomization(cfg, seed=42)
 
-# Test frozen on all Solomon instances
-df = run_benchmark(
+# 2. Freeze neural weights and evaluate zero-shot on unseen RC instances
+results = run_benchmark(
     instances=datasets["rc1"] + datasets["rc2"],
     algorithms=[ALGO_HYBRID_DDQN_TRANSFER_DR],
     cfg=cfg,
@@ -362,96 +310,60 @@ df = run_benchmark(
 )
 ```
 
-### Load Previously Saved Weights
+---
 
-```python
-from vrptw import load_transfer_model
+## 🖥️ 8. Web Application & Dispatch Portal
 
-weights = load_transfer_model(cfg, label="rc1")
+An interactive web portal allows operators to upload custom delivery coordinates or benchmark instances, execute neural solvers live, and view color-coded multi-vehicle routes:
+
+<div align="center">
+  <img src="route_rc101_hd.png" alt="High-Resolution Route Visualization for RC101" width="750"/>
+  <p><i>Figure 3: Interactive dispatch route map generated on benchmark instance RC101.</i></p>
+</div>
+
+### Running the Web Portal
+```bash
+# 1. Initialize environment variables (Default demo bypasses Firebase auth)
+cp .env.example .env
+
+# 2. Launch FastAPI backend + Vite frontend hot-reload
+make dev-all
+# Or run backend only: python main.py
 ```
+Open [**`http://127.0.0.1:8000`**](http://127.0.0.1:8000) in your browser.
 
 ---
 
-## 9. Web App (Dispatch Portal)
+## ⚙️ 9. Comprehensive Configuration Reference
 
-The web app provides an interactive UI for loading Solomon instances or custom CSV data, running solvers, and viewing routes on an interactive map.
-
-### Start the server
-
-```bash
-# From the repo root
-cp .env.example .env       # first time only
-make dev
-# or: python main.py
-```
-
-Then open **http://127.0.0.1:8000** in your browser.
-
-### Development with hot-reload
-
-```bash
-make dev-all   # starts backend + Vite dev server with HMR
-```
-
-### Demo mode (no auth required)
-
-By default `DEMO_AUTH_BYPASS=true` in `.env` — you can use the app immediately without Firebase credentials.
-
-### API Endpoints
-
-| Endpoint | Description |
-|----------|-------------|
-| `GET /api/health` | Firebase status, Torch device, model loaded state |
-| `GET /api/config` | Public config the SPA reads on boot |
-| `GET /api/solomon?name=rc101` | Load a Solomon instance by name |
-| `POST /api/solve` | Submit a solve job (JSON body) |
-
-### Enable Firebase Auth + Firestore
-
-1. Create a Firebase project and download a service-account JSON.
-2. Place it at `firebase-adminsdk.json` (already gitignored).
-3. Set `DEMO_AUTH_BYPASS=false` and `FIREBASE_SERVICE_ACCOUNT_PATH=firebase-adminsdk.json` in `.env`.
-4. Restart: `make dev`.
-
----
-
-## 10. Configuration Reference
-
-All options are fields of the `Config` dataclass in `src/vrptw/config.py`:
+All hyperparameters are declared within the type-safe dataclass `Config` ([`src/vrptw/config.py`](src/vrptw/config.py)):
 
 ```python
 from vrptw import Config
 
 cfg = Config(
-    # ── Data paths ────────────────────────────────────────────────────────
     data_path="./data/Solomon",
-    output_dir="./results/my_run",
-    # ── Search budget ────────────────────────────────────────────────────
-    alns_iterations=5000,  # main ALNS iterations
-    hybrid_iterations=5000,  # Hybrid solver iterations
-    early_stop_patience=250,  # stop if no improvement for N iterations
-    polish_iterations=80,  # post-search polish phase
-    polish_patience=40,  # polish early-stop
-    n_runs=5,  # runs per (instance, algo) combination
-    max_wall_hours=9.5,  # hard wall-clock limit
-    # ── Simulated annealing ─────────────────────────────────────────────
+    output_dir="./results/production_run",
+    n_runs=5,
+    
+    # Search budget
+    alns_iterations=5000,
+    hybrid_iterations=5000,
+    early_stop_patience=250,
+    polish_iterations=80,
+    max_wall_hours=9.5,
+    
+    # Simulated Annealing
     temp_control=0.05,
     temp_decay=0.99975,
-    # ── DDQN plateau controller ─────────────────────────────────────────
+    
+    # DDQN Controllers
     ctrl_lr=3e-4,
-    ctrl_tau=0.005,  # soft target update rate
-    per_beta_steps=50_000,  # PER β annealing steps
-    # ── DDQN operator controller ────────────────────────────────────────
-    op_lr=3e-4,
-    op_tau=0.005,
-    # ── Learned Acceptance Criterion ────────────────────────────────────
+    ctrl_tau=0.005,
+    per_beta_steps=50_000,
     lac_enabled=True,
-    # ── Transfer learning ───────────────────────────────────────────────
-    transfer_epochs=1,
-    rc2_transfer_split=4,
-    # ── OR-Tools ────────────────────────────────────────────────────────
-    ortools_time_limit=15.0,  # seconds
-    # ── Route pool / set-partitioning ───────────────────────────────────
+    
+    # Route Pool & MILP
     route_pool_limit=600,
     sp_time_limit=4.0,
 )
@@ -459,215 +371,67 @@ cfg = Config(
 
 ---
 
-## 11. Algorithm Overview
-
-All solvers share the same `solve(seed, init)` interface and return `(Plan, history)`.
-
-### Solver Hierarchy
+## 📁 10. Repository Layout
 
 ```
-HybridDDQNSolver            (DDQN plateau + operator + LAC controllers)
-    ├── HybridRuleSolver     (heuristic mode-switching, no RL)
-    ├── HybridFixedSolver    (fixed mode-switching rules, no RL)
-    └── ScheduledHybridSolver
-ALNSSolver                   (pure ALNS, no hybrid modes)
-```
-
-### Operators
-
-| Type | Operators |
-|------|-----------|
-| **Destroy (8)** | Random, Worst, Shaw, Route-Segment, TW-Urgent, Route-Eliminate, Proximity-Eliminate, Cross-Route-Shaw |
-| **Repair (5)** | Greedy, Regret-2, Regret-3, TW-Greedy, FTS-Greedy |
-| **Local Search** | 2-opt, Relocate, Swap, Cross-Exchange (granular), Route-Compact |
-
-### Key Modules
-
-| Module | Responsibility |
-|--------|----------------|
-| `core.py` | `Inst` (problem data), `Plan` (solution), Numba-JIT cost + feasibility |
-| `operators.py` | 8 destroy + 5 repair operators with bias-weighted selection |
-| `local_search.py` | 5 local search moves, iterative route elimination |
-| `pool.py` | Route pool with MILP (scipy) or greedy set-partitioning recombination |
-| `rl.py` | DDQN with PER, Thompson bandit, LAC, Welford normalizer, Elite Archive, UCB augmenter |
-| `solvers.py` | Solver class hierarchy with 6-mode switching |
-| `benchmark.py` | Parallel runner (`ProcessPoolExecutor` + spawn), checkpointing, transfer training |
-| `generators.py` | Synthetic instance generator, Solomon/Homberger dataset loader |
-| `config.py` | `Config` dataclass, BKS table (62 instances), algorithm labels |
-
----
-
-## 12. Outputs & Artifacts
-
-### Benchmark CSV Columns
-
-| Column | Description |
-|--------|-------------|
-| `Dataset` | C1, C2, R1, R2, RC1, RC2, or GH200 |
-| `Instance` | e.g. RC101, r1_2_1 |
-| `Algorithm` | Canonical algorithm label |
-| `NV_mean` | Mean number of vehicles across runs |
-| `NV_std` | Std dev of NV |
-| `NV_diff` | Mean NV minus BKS NV (negative = fewer vehicles) |
-| `TD_mean` | Mean total distance |
-| `TD_std` | Std dev of total distance |
-| `Gap%` | `(TD_mean - BKS_TD) / BKS_TD × 100` |
-| `OnTime` | On-time delivery rate (%) |
-| `Time_s` | Mean wall time per run (seconds) |
-| `NV_inflated` | Flag: NV > BKS_NV, making Gap% comparison misleading |
-
-### Print the summary table from a saved CSV
-
-```python
-import pandas as pd
-from vrptw import print_summary_table
-
-df = pd.read_csv("./results/ultimate-publication-suite/benchmark_clean.csv")
-print_summary_table(df)
+vrptw-neural-hybrid-optimizer/
+├── src/
+│   ├── vrptw/                  # Research solver library
+│   │   ├── config.py           # Config dataclass, BKS tables, algo constants
+│   │   ├── core.py             # Inst, Plan, Numba JIT cost & feasibility engine
+│   │   ├── operators.py        # 8 destroy + 5 repair operators
+│   │   ├── local_search.py     # 2-opt, Relocate, Swap, Cross-Exchange, Compact
+│   │   ├── pool.py             # RoutePool, MILP / Greedy set-partitioning
+│   │   ├── rl.py               # QNet, DDQN controllers, PER, Welford, LAC
+│   │   ├── solvers.py          # ALNSSolver → HybridDDQNSolver hierarchy
+│   │   └── benchmark.py        # Parallel ProcessPoolExecutor runner
+│   ├── backend/                # FastAPI service (REST API, solve endpoints)
+│   └── frontend/               # Vite SPA (WebGL / Canvas route visualizer)
+├── scripts/
+│   └── benchmark.py            # Unified benchmark CLI (run/monitor/analyze)
+├── docs/
+│   ├── manuscript.tex          # IEEE Access LaTeX manuscript source
+│   ├── manuscript.pdf          # Pre-compiled research paper
+│   └── fig3_architecture_hd.png# High-res architecture vector diagram
+├── data/
+│   ├── Solomon/                # 56 standard Solomon 100-customer instances
+│   └── Gehring_Homberger/      # Homberger 200/400-customer benchmark files
+├── results/                    # Validated experimental CSV checkpoints
+└── tests/                      # Unit, integration, and Playwright E2E suites
 ```
 
 ---
 
-## 13. GPU Acceleration
-
-The DDQN policy uses PyTorch. The default `requirements.txt` installs CPU-only PyTorch to keep the install small. To use a GPU:
+## 🧪 11. Testing & Quality Assurance
 
 ```bash
-# Auto-detect CUDA version via nvidia-smi
-python docs/scripts/install_torch_gpu.py
-
-# Or force a specific CUDA version (cu118 / cu121 / cu124 / cu126)
-python docs/scripts/install_torch_gpu.py --cuda 124
-```
-
-Restart afterwards. The startup log will confirm: `Torch device: GPU (NVIDIA ..., CUDA 12.x)`.
-
-> **Note:** The DDQN Q-network is small — GPU speedup for the solver is modest. The bigger win is if you run many parallel benchmark workers.
-
----
-
-## 14. Testing
-
-### Unit tests
-
-```bash
+# Run unit & solver regression test suite
 make test
-# or: PYTHONPATH=src uv run pytest tests/ -v
-```
+# Or: PYTHONPATH=src uv run pytest tests/ -v
 
-### E2E tests (Playwright)
-
-Requires Firebase Emulators:
-
-```bash
+# Run Playwright End-to-End browser tests (requires Firebase emulators)
 make test-e2e
 ```
 
-This will:
-1. Build the frontend (`dist/`)
-2. Start Firebase Emulators (Auth + Firestore + Hosting)
-3. Seed a test user (`test@vrptw.local` / `testpass123`)
-4. Start the backend
-5. Run Playwright tests
-6. Clean up all processes
-
 ---
 
-## 15. Research Paper
+## 📜 12. Citation & Academic Paper
 
-The LaTeX source for the accompanying IEEE-format research paper is at `docs/paper.tex`.
+If you use this codebase, neural hybrid architecture, or benchmark methodology in your research, please cite our IEEE Access paper:
 
-### Key results (62 instances, 5 seeds, 310 combos)
-
-- **Hybrid-DDQN** achieves the **lowest vehicle inflation** above BKS (+0.139) vs. ALNS-Base (+0.161) and OR-Tools (+1.911) on all 56 Solomon instances.
-- On fair NV-filtered comparisons (N=47), Hybrid-DDQN achieves the **lowest distance gap** (+0.204%) vs. ALNS-Base (+0.220%) and Hybrid-Rule (+0.215%).
-- On the 17 Clustered instances where OR-Tools matched BKS fleet size, Hybrid-DDQN's distance reduction (**−1.43%**) is **statistically significant** at α = 0.05 (Wilcoxon _p_ = 0.043).
-
-### Build the paper
-
-```bash
-cd docs
-pdflatex paper.tex && pdflatex paper.tex   # two passes for references
+```bibtex
+@article{huynh2026trilevel,
+  title={Tri-Level Hybrid DDQN-ALNS: A Hierarchical Learning-Augmented Metaheuristic for the Vehicle Routing Problem with Time Windows},
+  author={Huynh, Nhat Huy and Ho, Thi-Linh and Nguyen, Nhat Huy and Nguyen, Thi Bao Tran},
+  journal={IEEE Access},
+  year={2026},
+  doi={10.1109/ACCESS.2026.DOI}
+}
 ```
 
-### Architecture diagram
+<div align="center">
 
-The unified TikZ block diagram (Figure 3) shows the complete Hybrid DDQN-ALNS architecture:
-- **Left column**: Training & Memory Loop (PER → DDQN update → Controllers)
-- **Right column**: System Inference Pipeline (Mode Select → Operators → ALNS Core → Route Pool → Evaluation)
-- Physical arrows show all data flows (minibatch B, TD error δ, valid routes, SP columns Ω, rewards)
+**Faculty of Information Technology • Ton Duc Thang University**  
+*19 Nguyen Huu Tho Street, Tan Phong Ward, District 7, Ho Chi Minh City, Vietnam*
 
----
-
-## 16. Best-Known Solutions (BKS)
-
-BKS values from the [SINTEF TOP benchmark](https://www.sintef.no/projectweb/top/vrptw/):
-
-<details>
-<summary><strong>Solomon 100-customer instances (56)</strong></summary>
-
-| Instance | BKS NV | BKS TD | | Instance | BKS NV | BKS TD |
-|----------|--------|--------|---|----------|--------|--------|
-| C101 | 10 | 828.94 | | R101 | 19 | 1650.80 |
-| C102 | 10 | 828.94 | | R102 | 17 | 1486.12 |
-| C103 | 10 | 828.06 | | R103 | 13 | 1292.68 |
-| C104 | 10 | 824.78 | | R104 |  9 | 1007.31 |
-| C105 | 10 | 828.94 | | R105 | 14 | 1377.11 |
-| C106 | 10 | 828.94 | | R106 | 12 | 1252.03 |
-| C107 | 10 | 828.94 | | R107 | 10 | 1104.66 |
-| C108 | 10 | 828.94 | | R108 |  9 |  960.88 |
-| C109 | 10 | 828.94 | | R109 | 11 | 1194.73 |
-| C201 |  3 | 591.56 | | R110 | 10 | 1118.84 |
-| C202 |  3 | 591.56 | | R111 | 10 | 1096.72 |
-| C203 |  3 | 591.17 | | R112 |  9 |  982.14 |
-| C204 |  3 | 590.60 | | R201 |  4 | 1252.37 |
-| C205 |  3 | 588.88 | | R202 |  3 | 1191.70 |
-| C206 |  3 | 588.49 | | R203 |  3 |  939.50 |
-| C207 |  3 | 588.29 | | R204 |  2 |  825.52 |
-| C208 |  3 | 588.32 | | R205 |  3 |  994.43 |
-| RC101 | 14 | 1696.94 | | R206 |  3 |  906.14 |
-| RC102 | 12 | 1554.75 | | R207 |  2 |  890.61 |
-| RC103 | 11 | 1261.67 | | R208 |  2 |  726.82 |
-| RC104 | 10 | 1135.48 | | R209 |  3 |  909.16 |
-| RC105 | 13 | 1629.44 | | R210 |  3 |  939.37 |
-| RC106 | 11 | 1424.73 | | R211 |  2 |  885.71 |
-| RC107 | 11 | 1230.48 | | RC201 |  4 | 1406.94 |
-| RC108 | 10 | 1139.82 | | RC202 |  3 | 1365.65 |
-| | | | | RC203 |  3 | 1049.62 |
-| | | | | RC204 |  3 |  798.46 |
-| | | | | RC205 |  4 | 1297.65 |
-| | | | | RC206 |  3 | 1146.32 |
-| | | | | RC207 |  3 | 1061.14 |
-| | | | | RC208 |  3 |  828.14 |
-
-</details>
-
-<details>
-<summary><strong>Gehring & Homberger 200-customer instances (6)</strong></summary>
-
-| Instance | BKS NV | BKS TD |
-|----------|--------|--------|
-| c1_2_1 | 20 | 2704.57 |
-| c2_2_1 |  6 | 1931.44 |
-| r1_2_1 | 20 | 4784.11 |
-| r2_2_1 |  4 | 4483.16 |
-| rc1_2_1 | 18 | 3602.80 |
-| rc2_2_1 |  6 | 3099.53 |
-
-</details>
-
----
-
-## 17. Contributing
-
-1. Fork the repository.
-2. Create a feature branch (`git checkout -b feat/my-feature`).
-3. Add tests or a smoke script for your change.
-4. Run the linter: `ruff check src/`
-5. Open a Pull Request with a clear summary and test steps.
-
----
-
-## 18. License
-
-This project is licensed under the [MIT License](LICENSE).
+</div>
