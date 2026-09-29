@@ -45,7 +45,7 @@ dev = [
 [tool.ruff]
 line-length = 120
 target-version = "py312"
-extend-exclude = ["docs", "logs", "model", "data"]
+extend-exclude = ["docs", "logs", "model", "data", "posters/archive", "scratch"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "UP"]
@@ -53,3 +53,8 @@ ignore = ["E501", "B008", "B905", "E402"]
 
 [tool.pyright]
 extraPaths = ["docs", "src"]
+
+[dependency-groups]
+dev = [
+    "python-pptx>=1.0.2",
+]

@@ -1,4 +1,7 @@
-.PHONY: dev dev-emulator test dist emulators test-e2e dev-all paper
+.PHONY: dev dev-emulator test dist emulators test-e2e dev-all paper poster
+
+poster:
+	uv run python posters/build_official_school_poster.py
 
 paper:
 	@python3 docs/build_paper.py

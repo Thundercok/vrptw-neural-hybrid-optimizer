@@ -8,10 +8,11 @@ from pptx import Presentation
 from pptx.dml.color import RGBColor
 from pptx.util import Inches, Mm
 
-WORKSPACE_DIR = os.path.abspath(os.path.dirname(__file__))
+POSTER_DIR = os.path.abspath(os.path.dirname(__file__))
+REPO_ROOT = os.path.abspath(os.path.join(POSTER_DIR, ".."))
 
 def get_base64_image(image_name):
-    full_path = os.path.join(WORKSPACE_DIR, image_name)
+    full_path = os.path.join(REPO_ROOT, image_name)
     if not os.path.exists(full_path):
         raise FileNotFoundError(f"Missing image: {full_path}")
     ext = os.path.splitext(image_name)[1].lower()
@@ -21,8 +22,8 @@ def get_base64_image(image_name):
     return f"data:{mime};base64,{b64}"
 
 def build_poster():
-    bg_b64 = get_base64_image("extracted_rId2.jpg")
-    qr_b64 = get_base64_image("extracted_rId3.png")
+    bg_b64 = get_base64_image("docs/poster_template_background.jpg")
+    qr_b64 = get_base64_image("docs/figures/qr_code_official.png")
     arch_b64 = get_base64_image("docs/figures/poster_architecture.png")
     r101_b64 = get_base64_image("docs/figures/route_R101.png")
     rc101_b64 = get_base64_image("docs/figures/route_RC101.png")
@@ -989,13 +990,13 @@ def build_poster():
 </html>
 """
 
-    html_file = os.path.join(WORKSPACE_DIR, "official_school_poster.html")
+    html_file = os.path.join(POSTER_DIR, "official_school_poster.html")
     with open(html_file, "w", encoding="utf-8") as f:
         f.write(html_content)
     print(f"Wrote clean academic HTML to {html_file}")
 
-    pdf_file = os.path.join(WORKSPACE_DIR, "Poster_VRPTW_NCKHSV_2026.pdf")
-    png_file = os.path.join(WORKSPACE_DIR, "Poster_VRPTW_NCKHSV_2026.png")
+    pdf_file = os.path.join(POSTER_DIR, "Poster_VRPTW_NCKHSV_2026.pdf")
+    png_file = os.path.join(POSTER_DIR, "Poster_VRPTW_NCKHSV_2026.png")
 
     print("Rendering with Playwright...")
     with sync_playwright() as p:
@@ -1016,8 +1017,8 @@ def build_poster():
 
 def export_pptx_and_sync(png_file, pdf_file):
     print("Generating PPTX deliverables...")
-    pptx_a1 = os.path.join(WORKSPACE_DIR, "Poster_VRPTW_NCKHSV_2026_A1.pptx")
-    pptx_169 = os.path.join(WORKSPACE_DIR, "Poster_VRPTW_NCKHSV_2026.pptx")
+    pptx_a1 = os.path.join(POSTER_DIR, "Poster_VRPTW_NCKHSV_2026_A1.pptx")
+    pptx_169 = os.path.join(POSTER_DIR, "Poster_VRPTW_NCKHSV_2026.pptx")
 
     # 1. ISO A1 Presentation (594 x 841 mm)
     prs_a1 = Presentation()
@@ -1047,7 +1048,7 @@ def export_pptx_and_sync(png_file, pdf_file):
     print(f"Exported 16:9 PPTX to {pptx_169}")
 
     # Synchronize to parent workspace & artifact directory
-    parent_dir = os.path.dirname(WORKSPACE_DIR)
+    parent_dir = os.path.dirname(REPO_ROOT)
     artifact_dir = "/Users/thundercock2/.gemini/antigravity/brain/dc00c957-f7cf-4b6e-b6ea-c8356bbb8d9a"
 
     files_to_sync = [

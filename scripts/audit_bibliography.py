@@ -15,7 +15,6 @@ from __future__ import annotations
 
 import json
 import re
-import sys
 import time
 import urllib.parse
 import urllib.request
@@ -126,14 +125,12 @@ def main():
     for idx, key in enumerate(all_keys, 1):
         title = ""
         author = ""
-        year = ""
         arxiv_match = None
 
         if key in bib_entries:
             _, fields = bib_entries[key]
             title = fields.get("title", "")
             author = fields.get("author", "")
-            year = fields.get("year", "")
             eprint = fields.get("eprint", "")
             journal = fields.get("journal", "")
             if eprint:
