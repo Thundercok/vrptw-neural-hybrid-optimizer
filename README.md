@@ -25,15 +25,6 @@
 
 </div>
 
----
-
-<div align="center">
-  <img src="fig3_architecture_hd.png" alt="Tri-Level Hybrid DDQN-ALNS Architecture" width="950"/>
-  <p><i>Figure 1: High-resolution architecture of the Tri-Level Hybrid DDQN-ALNS framework, detailing the Training & Memory Loop (left) and the System Inference Pipeline (right).</i></p>
-</div>
-
----
-
 ## 📑 Table of Contents
 
 - [🔬 1. Executive Summary & Core Scientific Contributions](#-1-executive-summary--core-scientific-contributions)
