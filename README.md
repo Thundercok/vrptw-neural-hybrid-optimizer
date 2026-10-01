@@ -418,24 +418,3 @@ make test-e2e
 ```
 
 ---
-
-## 📜 12. Citation & Academic Paper
-
-If you use this codebase, neural hybrid architecture, or benchmark methodology in your research, please cite our IEEE Access paper:
-
-```bibtex
-@article{huynh2026trilevel,
-  title={Tri-Level Hybrid DDQN-ALNS: A Hierarchical Learning-Augmented Metaheuristic for the Vehicle Routing Problem with Time Windows},
-  author={Huynh, Nhat Huy and Ho, Thi-Linh and Nguyen, Nhat Huy and Nguyen, Thi Bao Tran},
-  journal={IEEE Access},
-  year={2026},
-  doi={10.1109/ACCESS.2026.DOI}
-}
-```
-
-<div align="center">
-
-**Faculty of Information Technology • Ton Duc Thang University**  
-*19 Nguyen Huu Tho Street, Tan Phong Ward, District 7, Ho Chi Minh City, Vietnam*
-
-</div>
