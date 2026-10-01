@@ -17,7 +17,7 @@
 
 <br/>
 
-**Official Research Repository for Academic Publication & Production Demonstration**  
+**Research-first repository for NCKH reporting, reproducible experiments, and a secondary dispatch demo**
 *Ton Duc Thang University (TDTU) • Natural Language Processing and Knowledge Discovery Research Group*
 
 ---
@@ -31,7 +31,7 @@
 | **Nguyen Nhat Huy** | Research Engineer, Mindx, Ho Chi Minh City, Vietnam | `huynguyenwork14@gmail.com` |
 | **Nguyen Thi Bao Tran** | Systems Specialist, Vinsmart Future, Ho Chi Minh City, Vietnam | `tranntb.se@gmail.com` |
 
-[**Read Manuscript (PDF)**](docs/manuscript.pdf) • [**Live Web Portal**](https://vrptw-research-optimization.vercel.app) • [**Benchmark CLI Guide**](#-6-unified-benchmark-cli-scriptsbenchmarkpy) • [**Citation**](#-12-citation--academic-paper)
+[**Read Manuscript (PDF)**](docs/manuscript.pdf) • [**Research Pipeline**](docs/RESEARCH_PIPELINE.md) • [**Live Web Portal**](https://vrptw-research-optimization.vercel.app) • [**Benchmark CLI Guide**](#-6-unified-benchmark-cli-scriptsbenchmarkpy) • [**Citation**](#-12-citation--academic-paper)
 
 </div>
 
@@ -245,17 +245,38 @@ npm install
 Verify installation across all 4 primary solver variants on a synthetic 25-customer instance:
 
 ```bash
-PYTHONPATH=src python3 -m vrptw
+uv run python -m vrptw smoke-test --nodes 25 --dist RC
 ```
 
-Expected output:
+Expected output shape:
 ```text
-Launching VRPTW Application...
-ALNS-Base                nv=  4 cost=   580.0 BKS TD N/A NV N/A (0.4s)
-Hybrid-Fixed             nv=  3 cost=   648.0 BKS TD N/A NV N/A (1.5s)
-Hybrid-Rule              nv=  3 cost=   648.0 BKS TD N/A NV N/A (0.7s)
-Hybrid-DDQN              nv=  3 cost=   641.5 BKS TD N/A NV N/A (1.3s)
+Running synthetic smoke test (nodes=25, distribution=RC)...
+ALNS-Base                nv=... cost=... BKS TD N/A NV N/A (...s)
+Hybrid-Fixed             nv=... cost=... BKS TD N/A NV N/A (...s)
+Hybrid-Rule              nv=... cost=... BKS TD N/A NV N/A (...s)
+Hybrid-DDQN              nv=... cost=... BKS TD N/A NV N/A (...s)
 ```
+
+### Research-First Workflow
+
+The expected project outcome is, in order: **NCKH report / paper**, **reproducible research pipeline**, then **web app demo**. Use the research targets before spending time on app work:
+
+```bash
+# Print the full pipeline without running expensive stages
+make research-plan
+
+# Cheap correctness checks
+make research-smoke
+
+# Representative benchmark run for paper development
+make research-quick
+
+# Refresh report artifacts after benchmark data is ready
+make research-tables
+make research-paper
+```
+
+See [`docs/RESEARCH_PIPELINE.md`](docs/RESEARCH_PIPELINE.md) for the full operating model, gates, and stage outputs.
 
 ---
 
@@ -388,8 +409,10 @@ vrptw-neural-hybrid-optimizer/
 │   ├── backend/                # FastAPI service (REST API, solve endpoints)
 │   └── frontend/               # Vite SPA (WebGL / Canvas route visualizer)
 ├── scripts/
+│   ├── research_pipeline.py    # Research-first workflow driver
 │   └── benchmark.py            # Unified benchmark CLI (run/monitor/analyze)
 ├── docs/
+│   ├── RESEARCH_PIPELINE.md    # Paper/pipeline/app priority and commands
 │   ├── manuscript.tex          # IEEE Access LaTeX manuscript source
 │   ├── manuscript.pdf          # Pre-compiled research paper
 │   └── fig3_architecture_hd.png# High-res architecture vector diagram
