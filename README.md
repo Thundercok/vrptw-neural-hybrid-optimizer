@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🚛 Tri-Level Hybrid DDQN-ALNS with GNN Edge Guidance
+#  Tri-Level Hybrid DDQN-ALNS with GNN Edge Guidance
 ### *A Hierarchical Learning-Augmented Metaheuristic for the Vehicle Routing Problem with Time Windows*
 
 <br/>
