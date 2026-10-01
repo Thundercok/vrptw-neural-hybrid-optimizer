@@ -22,15 +22,6 @@
 
 ---
 
-### 👥 Authors & Institutional Affiliations
-
-| Author | Role / Affiliation | Contact |
-| :--- | :--- | :--- |
-| **Huynh Nhat Huy** | Lead Researcher, Faculty of Information Technology, Ton Duc Thang University | `huynhnthuy@tdtu.edu.vn` |
-| **Thi-Linh Ho** | NLP & Knowledge Discovery Research Group, Faculty of IT, Ton Duc Thang University | `hothilinh@tdtu.edu.vn` |
-| **Nguyen Nhat Huy** | Research Engineer, Mindx, Ho Chi Minh City, Vietnam | `huynguyenwork14@gmail.com` |
-| **Nguyen Thi Bao Tran** | Systems Specialist, Vinsmart Future, Ho Chi Minh City, Vietnam | `tranntb.se@gmail.com` |
-
 [**Read Manuscript (PDF)**](docs/manuscript.pdf) • [**Research Pipeline**](docs/RESEARCH_PIPELINE.md) • [**Live Web Portal**](https://vrptw-research-optimization.vercel.app) • [**Benchmark CLI Guide**](#-6-unified-benchmark-cli-scriptsbenchmarkpy) • [**Citation**](#-12-citation--academic-paper)
 
 </div>
