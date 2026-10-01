@@ -17,8 +17,7 @@
 
 <br/>
 
-**Research-first repository for NCKH reporting, reproducible experiments, and a secondary dispatch demo**
-*Ton Duc Thang University (TDTU) • Natural Language Processing and Knowledge Discovery Research Group*
+
 
 ---
 
