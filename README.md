@@ -347,24 +347,24 @@ cfg = Config(
     data_path="./data/Solomon",
     output_dir="./results/production_run",
     n_runs=5,
-    
+
     # Search budget
     alns_iterations=5000,
     hybrid_iterations=5000,
     early_stop_patience=250,
     polish_iterations=80,
     max_wall_hours=9.5,
-    
+
     # Simulated Annealing
     temp_control=0.05,
     temp_decay=0.99975,
-    
+
     # DDQN Controllers
     ctrl_lr=3e-4,
     ctrl_tau=0.005,
     per_beta_steps=50_000,
     lac_enabled=True,
-    
+
     # Route Pool & MILP
     route_pool_limit=600,
     sp_time_limit=4.0,
