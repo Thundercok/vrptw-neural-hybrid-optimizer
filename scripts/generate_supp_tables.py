@@ -84,19 +84,23 @@ for inst in insts_24:
         else:
             outcome = "Tie (Equal)"
 
-    lines_s3.extend([
-        f"\\multirow{{2}}{{*}}{{\\textbf{{{inst_tex}}}}} & ALNS-Base & {a_1_nv:.2f} & {a_1_td:.1f} & {a_10_nv:.2f} & {a_10_td:.1f} & {a_60_nv:.2f} & {a_60_td:.1f} & {a_300_nv:.2f} & {a_300_td:.1f} & \\multirow{{2}}{{*}}{{{outcome}}} \\\\",
-        f" & \\textbf{{Hybrid (Ours)}} & \\textbf{{{h_1_nv:.2f}}} & {h_1_td:.1f} & \\textbf{{{h_10_nv:.2f}}} & {h_10_td:.1f} & \\textbf{{{h_60_nv:.2f}}} & {h_60_td:.1f} & \\textbf{{{h_300_nv:.2f}}} & \\textbf{{{h_300_td:.1f}}} & \\\\",
-        r"\midrule",
-    ])
+    lines_s3.extend(
+        [
+            f"\\multirow{{2}}{{*}}{{\\textbf{{{inst_tex}}}}} & ALNS-Base & {a_1_nv:.2f} & {a_1_td:.1f} & {a_10_nv:.2f} & {a_10_td:.1f} & {a_60_nv:.2f} & {a_60_td:.1f} & {a_300_nv:.2f} & {a_300_td:.1f} & \\multirow{{2}}{{*}}{{{outcome}}} \\\\",
+            f" & \\textbf{{Hybrid (Ours)}} & \\textbf{{{h_1_nv:.2f}}} & {h_1_td:.1f} & \\textbf{{{h_10_nv:.2f}}} & {h_10_td:.1f} & \\textbf{{{h_60_nv:.2f}}} & {h_60_td:.1f} & \\textbf{{{h_300_nv:.2f}}} & \\textbf{{{h_300_td:.1f}}} & \\\\",
+            r"\midrule",
+        ]
+    )
 
 lines_s3.pop()  # remove last midrule
-lines_s3.extend([
-    r"\bottomrule",
-    r"\end{tabular*}",
-    r"{\raggedright \scriptsize \textit{Note}: Evaluated under strictly isolated independent cold-starts ($N=5$ seeds). Instances where ALNS-Base wins at $t=300\text{s}$ (e.g. $R202$, $c1\_2\_2$, $r2\_2\_1$, $r2\_2\_2$, $rc2\_2\_1$, $rc2\_2\_2$) are explicitly highlighted without omission.\par}",
-    r"\end{table*}",
-])
+lines_s3.extend(
+    [
+        r"\bottomrule",
+        r"\end{tabular*}",
+        r"{\raggedright \scriptsize \textit{Note}: Evaluated under strictly isolated independent cold-starts ($N=5$ seeds). Instances where ALNS-Base wins at $t=300\text{s}$ (e.g. $R202$, $c1\_2\_2$, $r2\_2\_1$, $r2\_2\_2$, $rc2\_2\_1$, $rc2\_2\_2$) are explicitly highlighted without omission.\par}",
+        r"\end{table*}",
+    ]
+)
 
 out_path = ROOT / "docs" / "supp_tables.tex"
 with open(out_path, "w") as f:

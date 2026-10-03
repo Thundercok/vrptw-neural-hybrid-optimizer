@@ -13,12 +13,14 @@ import base64
 import mimetypes
 import os
 import shutil
+
 from playwright.sync_api import sync_playwright
 
 REPO_ROOT = "/Users/thundercock2/Documents/Github/VRPTW-Research-Optimization"
 SRC_ROOT = os.path.join(REPO_ROOT, "VRPTW-Research-Optimization")
 OUT_DIR = "/Users/thundercock2/Desktop/Giao_Dien_Poster_Chat_Luong_Cao"
 os.makedirs(OUT_DIR, exist_ok=True)
+
 
 def get_b64(path):
     full = os.path.join(SRC_ROOT, path)
@@ -28,6 +30,7 @@ def get_b64(path):
     mime = mimetypes.types_map.get(ext, "image/png")
     with open(full, "rb") as f:
         return f"data:{mime};base64,{base64.b64encode(f.read()).decode('utf-8')}"
+
 
 r101_b64 = get_b64("docs/figures/route_R101.png")
 rc101_b64 = get_b64("docs/figures/route_RC101.png")
@@ -499,5 +502,5 @@ with sync_playwright() as p:
     browser.close()
 
 # Also zip these ready-made graphic cards into Desktop
-shutil.make_archive("/Users/thundercock2/Desktop/Anh_Render_Bang_Bieu_Figures_Poster", 'zip', OUT_DIR)
+shutil.make_archive("/Users/thundercock2/Desktop/Anh_Render_Bang_Bieu_Figures_Poster", "zip", OUT_DIR)
 print("Created zip archive at: /Users/thundercock2/Desktop/Anh_Render_Bang_Bieu_Figures_Poster.zip")

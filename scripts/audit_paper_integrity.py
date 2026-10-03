@@ -76,22 +76,33 @@ class PaperAuditor:
     def load_ground_truth(self) -> None:
         # Load BKS
         import json
+
         with open(BKS_JSON) as f:
             bks_data = json.load(f)
         self.bks: dict[str, dict[str, float]] = {
-            k: {"nv": float(v["nv"]), "td": float(v["td"])}
-            for k, v in bks_data.items()
+            k: {"nv": float(v["nv"]), "td": float(v["td"])} for k, v in bks_data.items()
         }
 
         # Load Combined Clean
         self.df_comb = pd.read_csv(CSV_COMBINED)
 
         # 74 target instances
-        self.sol_insts = sorted(list(self.df_comb[self.df_comb["Instance"].str.match(r"^[A-Z]{1,2}\d{3}$")]["Instance"].unique()))
+        self.sol_insts = sorted(
+            list(self.df_comb[self.df_comb["Instance"].str.match(r"^[A-Z]{1,2}\d{3}$")]["Instance"].unique())
+        )
         self.h200_insts = [
-            "c1_2_1", "c1_2_5", "c2_2_1", "c2_2_5",
-            "r1_2_1", "r1_2_5", "r2_2_1", "r2_2_5",
-            "rc1_2_1", "rc1_2_5", "rc2_2_1", "rc2_2_5"
+            "c1_2_1",
+            "c1_2_5",
+            "c2_2_1",
+            "c2_2_5",
+            "r1_2_1",
+            "r1_2_5",
+            "r2_2_1",
+            "r2_2_5",
+            "rc1_2_1",
+            "rc1_2_5",
+            "rc2_2_1",
+            "rc2_2_5",
         ]
         self.h400_insts = ["c1_4_1", "c2_4_1", "r1_4_1", "r2_4_1", "rc1_4_1", "rc2_4_1"]
         self.suite_74 = self.sol_insts + self.h200_insts + self.h400_insts
@@ -108,7 +119,9 @@ class PaperAuditor:
         self.supp_tables_text = SUPP_TABLES_TEX.read_text(encoding="utf-8") if SUPP_TABLES_TEX.exists() else ""
         self.supp_proofs_text = SUPP_PROOFS_TEX.read_text(encoding="utf-8") if SUPP_PROOFS_TEX.exists() else ""
 
-    def add_check(self, table: str, row: str, col: str, exp: float | str, fnd: float | str, tol: float = 0.05, notes: str = "") -> None:
+    def add_check(
+        self, table: str, row: str, col: str, exp: float | str, fnd: float | str, tol: float = 0.05, notes: str = ""
+    ) -> None:
         if isinstance(exp, (int, float)) and isinstance(fnd, (int, float)):
             diff = abs(exp - fnd)
             status = "PASS" if diff <= tol else "FAIL"
@@ -118,16 +131,18 @@ class PaperAuditor:
             diff = None
             status = "PASS" if exp_s == fnd_s else "FAIL"
 
-        self.records.append(AuditRecord(
-            table=table,
-            row=row,
-            column=col,
-            expected=exp,
-            found=fnd,
-            diff=diff,
-            status=status,
-            notes=notes,
-        ))
+        self.records.append(
+            AuditRecord(
+                table=table,
+                row=row,
+                column=col,
+                expected=exp,
+                found=fnd,
+                diff=diff,
+                status=status,
+                notes=notes,
+            )
+        )
 
     # -----------------------------------------------------------------------
     # Table III Audit: Solomon-100 Tri-Paradigm Benchmark
@@ -181,7 +196,10 @@ class PaperAuditor:
         # Parse ALNS-Base row
         alns_match = re.search(r"ALNS-Base.*?&(.*?)\\\\\\", tbl_text)
         if alns_match:
-            tokens = [t.strip().replace("\\textbf{", "").replace("}", "").replace("\\%", "%") for t in alns_match.group(1).split("&")]
+            tokens = [
+                t.strip().replace("\\textbf{", "").replace("}", "").replace("\\%", "%")
+                for t in alns_match.group(1).split("&")
+            ]
             idx = 0
             for f in fams:
                 exp_nv = float(sol_nv[sol_nv["Fam"] == f]["ALNS-Base"].mean())
@@ -194,12 +212,22 @@ class PaperAuditor:
             self.add_check(table_name, "ALNS-Base", "Overall NV", exp_all_nv, float(tokens[idx]), tol=0.05)
             self.add_check(table_name, "ALNS-Base", "Overall TD", exp_all_td, float(tokens[idx + 1]), tol=0.15)
             exp_gap = (exp_all_td - bks_means["Overall"]["td"]) / bks_means["Overall"]["td"] * 100.0
-            self.add_check(table_name, "ALNS-Base", "Gap% BKS", exp_gap, float(tokens[idx + 2].replace("+", "").replace("%", "")), tol=0.05)
+            self.add_check(
+                table_name,
+                "ALNS-Base",
+                "Gap% BKS",
+                exp_gap,
+                float(tokens[idx + 2].replace("+", "").replace("%", "")),
+                tol=0.05,
+            )
 
         # Parse Tri-Level (Ours) row -> GNN-Hybrid-DDQN
         ours_match = re.search(r"Tri-Level Hybrid DDQN-ALNS \(Ours\).*?&(.*?)\\\\\\", tbl_text)
         if ours_match:
-            tokens = [t.strip().replace("\\textbf{", "").replace("}", "").replace("\\%", "%") for t in ours_match.group(1).split("&")]
+            tokens = [
+                t.strip().replace("\\textbf{", "").replace("}", "").replace("\\%", "%")
+                for t in ours_match.group(1).split("&")
+            ]
             idx = 0
             for f in fams:
                 exp_nv = float(sol_nv[sol_nv["Fam"] == f]["GNN-Hybrid-DDQN"].mean())
@@ -213,15 +241,31 @@ class PaperAuditor:
             self.add_check(table_name, "Tri-Level (Ours)", "Overall TD", exp_all_td, float(tokens[idx + 1]), tol=0.15)
             exp_gap = (exp_all_td - bks_means["Overall"]["td"]) / bks_means["Overall"]["td"] * 100.0
             exp_delta = (exp_all_td - sol_td["ALNS-Base"].mean()) / sol_td["ALNS-Base"].mean() * 100.0
-            self.add_check(table_name, "Tri-Level (Ours)", "Gap% BKS", exp_gap, float(tokens[idx + 2].replace("+", "").replace("%", "")), tol=0.05)
-            self.add_check(table_name, "Tri-Level (Ours)", "Delta% ALNS", exp_delta, float(tokens[idx + 3].replace("+", "").replace("%", "")), tol=0.05)
+            self.add_check(
+                table_name,
+                "Tri-Level (Ours)",
+                "Gap% BKS",
+                exp_gap,
+                float(tokens[idx + 2].replace("+", "").replace("%", "")),
+                tol=0.05,
+            )
+            self.add_check(
+                table_name,
+                "Tri-Level (Ours)",
+                "Delta% ALNS",
+                exp_delta,
+                float(tokens[idx + 3].replace("+", "").replace("%", "")),
+                tol=0.05,
+            )
 
     # -----------------------------------------------------------------------
     # Table IV Audit: Gehring-Homberger 200- and 400-Customer Benchmarks
     # -----------------------------------------------------------------------
     def audit_table_iv(self) -> None:
         table_name = "Table IV (Homberger 200 & 400)"
-        m = re.search(r"\\label\{tab:homberger_scale_benchmark\}(.*?)\\end\{tabular\*\}", self.manuscript_text, re.DOTALL)
+        m = re.search(
+            r"\\label\{tab:homberger_scale_benchmark\}(.*?)\\end\{tabular\*\}", self.manuscript_text, re.DOTALL
+        )
         if not m:
             print(f"{RED}[FAIL] Could not locate tab:homberger_scale_benchmark in manuscript.tex{RESET}")
             return
@@ -232,10 +276,29 @@ class PaperAuditor:
             pattern = re.compile(rf"{re.escape(inst_escaped)}\s*\(\d+-c\)\s*&(.*?)\\\\\\", re.MULTILINE)
             row_match = pattern.search(tbl_text)
             if not row_match:
-                self.records.append(AuditRecord(table_name, inst, "Row Found", "Present", "Missing", None, "FAIL", "Instance row not found in Table IV"))
+                self.records.append(
+                    AuditRecord(
+                        table_name,
+                        inst,
+                        "Row Found",
+                        "Present",
+                        "Missing",
+                        None,
+                        "FAIL",
+                        "Instance row not found in Table IV",
+                    )
+                )
                 continue
 
-            raw_tokens = [t.strip().replace("\\textbf{", "").replace("}", "").replace(r"$^\dagger$", "").replace(r"^\dagger", "").replace("$", "") for t in row_match.group(1).split("&")]
+            raw_tokens = [
+                t.strip()
+                .replace("\\textbf{", "")
+                .replace("}", "")
+                .replace(r"$^\dagger$", "")
+                .replace(r"^\dagger", "")
+                .replace("$", "")
+                for t in row_match.group(1).split("&")
+            ]
             tokens = [t for t in raw_tokens]
 
             b_nv, b_td = self.bks[inst]["nv"], self.bks[inst]["td"]
@@ -252,10 +315,19 @@ class PaperAuditor:
             exp_d_nv_bks = g_nv - b_nv
             exp_gap_td_bks = (g_td - b_td) / b_td * 100.0
             self.add_check(table_name, inst, "Gap NV BKS", exp_d_nv_bks, float(tokens[6].replace("+", "")), tol=0.05)
-            self.add_check(table_name, inst, "Gap% TD BKS", exp_gap_td_bks, float(tokens[7].replace("+", "").replace("%", "")), tol=0.05)
+            self.add_check(
+                table_name,
+                inst,
+                "Gap% TD BKS",
+                exp_gap_td_bks,
+                float(tokens[7].replace("+", "").replace("%", "")),
+                tol=0.05,
+            )
 
             exp_d_nv_alns = g_nv - a_nv
-            self.add_check(table_name, inst, "Delta NV ALNS", exp_d_nv_alns, float(tokens[8].replace("+", "")), tol=0.05)
+            self.add_check(
+                table_name, inst, "Delta NV ALNS", exp_d_nv_alns, float(tokens[8].replace("+", "")), tol=0.05
+            )
 
             if abs(exp_d_nv_alns) < 1e-4:
                 exp_d_td_alns = (g_td - a_td) / a_td * 100.0
@@ -278,7 +350,9 @@ class PaperAuditor:
         loco_6 = ["C101", "R101", "RC101", "c1_2_1", "r1_2_1", "rc1_2_1"]
         cutoffs = [1.0, 10.0, 60.0, 300.0]
 
-        piv_any = self.df_anytime.pivot_table(index=["instance", "cutoff_sec"], columns="solver", values=["nv", "td"], aggfunc="mean")
+        piv_any = self.df_anytime.pivot_table(
+            index=["instance", "cutoff_sec"], columns="solver", values=["nv", "td"], aggfunc="mean"
+        )
 
         for inst in loco_6:
             inst_escaped = inst.replace("_", r"\_")
@@ -286,15 +360,30 @@ class PaperAuditor:
                 rf"\\multirow\{{3\}}\{{\*\}}\{{\\textbf\{{{re.escape(inst_escaped)}\}}\}}\s*&\s*ALNS-Base\s*&(.*?)\\\\\s*"
                 rf"&\s*\\textbf\{{Tri-Level Hybrid \(Ours\)\}}\s*&(.*?)\\\\\s*"
                 rf"&\s*\\textit\{{Lexicographic Delta\}}\s*&(.*?)\\\\\\",
-                re.DOTALL
+                re.DOTALL,
             )
             block_match = pattern.search(tbl_text)
             if not block_match:
-                self.records.append(AuditRecord(table_name, inst, "Block Found", "Present", "Missing", None, "FAIL", "Instance block missing in Table V"))
+                self.records.append(
+                    AuditRecord(
+                        table_name,
+                        inst,
+                        "Block Found",
+                        "Present",
+                        "Missing",
+                        None,
+                        "FAIL",
+                        "Instance block missing in Table V",
+                    )
+                )
                 continue
 
-            alns_tokens = [float(t.strip().replace("\\textbf{", "").replace("}", "")) for t in block_match.group(1).split("&")]
-            ours_tokens = [float(t.strip().replace("\\textbf{", "").replace("}", "")) for t in block_match.group(2).split("&")]
+            alns_tokens = [
+                float(t.strip().replace("\\textbf{", "").replace("}", "")) for t in block_match.group(1).split("&")
+            ]
+            ours_tokens = [
+                float(t.strip().replace("\\textbf{", "").replace("}", "")) for t in block_match.group(2).split("&")
+            ]
 
             idx = 0
             for c in cutoffs:
@@ -306,7 +395,9 @@ class PaperAuditor:
                 self.add_check(table_name, f"{inst} t={int(c)}s", "ALNS NV", exp_a_nv, alns_tokens[idx], tol=0.05)
                 self.add_check(table_name, f"{inst} t={int(c)}s", "ALNS TD", exp_a_td, alns_tokens[idx + 1], tol=0.05)
                 self.add_check(table_name, f"{inst} t={int(c)}s", "Tri-Level NV", exp_o_nv, ours_tokens[idx], tol=0.05)
-                self.add_check(table_name, f"{inst} t={int(c)}s", "Tri-Level TD", exp_o_td, ours_tokens[idx + 1], tol=0.05)
+                self.add_check(
+                    table_name, f"{inst} t={int(c)}s", "Tri-Level TD", exp_o_td, ours_tokens[idx + 1], tol=0.05
+                )
                 idx += 2
 
     # -----------------------------------------------------------------------
@@ -322,36 +413,68 @@ class PaperAuditor:
 
         loco_expected: dict[str, dict[str, tuple[float, float]]] = {
             "Full Tri-Level Hybrid DDQN-ALNS": {
-                "C101": (10.00, 828.94), "R101": (19.00, 1650.80), "RC101": (14.60, 1697.89),
-                "c1_2_1": (20.00, 2704.57), "r1_2_1": (20.00, 4843.60), "rc1_2_1": (18.80, 3718.06),
+                "C101": (10.00, 828.94),
+                "R101": (19.00, 1650.80),
+                "RC101": (14.60, 1697.89),
+                "c1_2_1": (20.00, 2704.57),
+                "r1_2_1": (20.00, 4843.60),
+                "rc1_2_1": (18.80, 3718.06),
             },
             "w/o Micro-DDQN": {
-                "C101": (10.20, 854.14), "R101": (19.00, 1652.55), "RC101": (15.40, 1690.46),
-                "c1_2_1": (20.00, 2715.30), "r1_2_1": (20.00, 5093.16), "rc1_2_1": (19.00, 3754.49),
+                "C101": (10.20, 854.14),
+                "R101": (19.00, 1652.55),
+                "RC101": (15.40, 1690.46),
+                "c1_2_1": (20.00, 2715.30),
+                "r1_2_1": (20.00, 5093.16),
+                "rc1_2_1": (19.00, 3754.49),
             },
             "w/o Policy-Concentration Gate": {
-                "C101": (10.00, 828.94), "R101": (19.00, 1651.85), "RC101": (15.20, 1686.40),
-                "c1_2_1": (20.00, 2708.40), "r1_2_1": (20.00, 5035.40), "rc1_2_1": (19.00, 3738.20),
+                "C101": (10.00, 828.94),
+                "R101": (19.00, 1651.85),
+                "RC101": (15.20, 1686.40),
+                "c1_2_1": (20.00, 2708.40),
+                "r1_2_1": (20.00, 5035.40),
+                "rc1_2_1": (19.00, 3738.20),
             },
             "w/o Learned Acceptance": {
-                "C101": (10.00, 828.94), "R101": (19.00, 1651.73), "RC101": (15.20, 1671.14),
-                "c1_2_1": (20.00, 2706.10), "r1_2_1": (20.00, 5012.80), "rc1_2_1": (19.00, 3725.10),
+                "C101": (10.00, 828.94),
+                "R101": (19.00, 1651.73),
+                "RC101": (15.20, 1671.14),
+                "c1_2_1": (20.00, 2706.10),
+                "r1_2_1": (20.00, 5012.80),
+                "rc1_2_1": (19.00, 3725.10),
             },
             "w/o GNN Spatial Edge Guidance": {
-                "C101": (10.00, 828.94), "R101": (19.00, 1652.42), "RC101": (14.60, 1698.20),
-                "c1_2_1": (20.00, 2704.57), "r1_2_1": (20.00, 4863.58), "rc1_2_1": (19.00, 3664.76),
+                "C101": (10.00, 828.94),
+                "R101": (19.00, 1652.42),
+                "RC101": (14.60, 1698.20),
+                "c1_2_1": (20.00, 2704.57),
+                "r1_2_1": (20.00, 4863.58),
+                "rc1_2_1": (19.00, 3664.76),
             },
             "w/o RoutePool Set Partitioning": {
-                "C101": (10.00, 828.94), "R101": (19.00, 1651.50), "RC101": (14.80, 1692.30),
-                "c1_2_1": (20.00, 2712.80), "r1_2_1": (20.00, 4902.88), "rc1_2_1": (19.00, 3660.29),
+                "C101": (10.00, 828.94),
+                "R101": (19.00, 1651.50),
+                "RC101": (14.80, 1692.30),
+                "c1_2_1": (20.00, 2712.80),
+                "r1_2_1": (20.00, 4902.88),
+                "rc1_2_1": (19.00, 3660.29),
             },
             "w/o Macro Plateau Controller": {
-                "C101": (10.00, 828.94), "R101": (19.00, 1652.02), "RC101": (14.80, 1695.10),
-                "c1_2_1": (20.00, 2718.50), "r1_2_1": (20.00, 4916.73), "rc1_2_1": (19.00, 3658.10),
+                "C101": (10.00, 828.94),
+                "R101": (19.00, 1652.02),
+                "RC101": (14.80, 1695.10),
+                "c1_2_1": (20.00, 2718.50),
+                "r1_2_1": (20.00, 4916.73),
+                "rc1_2_1": (19.00, 3658.10),
             },
             "w/o Generalized Ejection Chains": {
-                "C101": (10.00, 828.94), "R101": (19.00, 1650.80), "RC101": (14.60, 1678.55),
-                "c1_2_1": (20.00, 2704.57), "r1_2_1": (20.40, 4866.11), "rc1_2_1": (18.60, 3904.95),
+                "C101": (10.00, 828.94),
+                "R101": (19.00, 1650.80),
+                "RC101": (14.60, 1678.55),
+                "c1_2_1": (20.00, 2704.57),
+                "r1_2_1": (20.40, 4866.11),
+                "rc1_2_1": (18.60, 3904.95),
             },
         }
 
@@ -360,10 +483,20 @@ class PaperAuditor:
             pattern = re.compile(rf".*{re.escape(key)}.*&([^\\]+)\\\\\\", re.MULTILINE)
             row_match = pattern.search(tbl_text)
             if not row_match:
-                self.records.append(AuditRecord(table_name, key, "Row Found", "Present", "Missing", None, "FAIL", "LOCO row missing"))
+                self.records.append(
+                    AuditRecord(table_name, key, "Row Found", "Present", "Missing", None, "FAIL", "LOCO row missing")
+                )
                 continue
 
-            raw_tokens = [t.strip().replace("\\textbf{", "").replace("}", "").replace(r"$^\dagger$", "").replace(r"^\dagger", "").replace("$", "") for t in row_match.group(1).split("&")]
+            raw_tokens = [
+                t.strip()
+                .replace("\\textbf{", "")
+                .replace("}", "")
+                .replace(r"$^\dagger$", "")
+                .replace(r"^\dagger", "")
+                .replace("$", "")
+                for t in row_match.group(1).split("&")
+            ]
             idx = 0
             for inst in insts:
                 exp_nv, exp_td = exp_data[inst]
@@ -394,7 +527,11 @@ class PaperAuditor:
             pattern = re.compile(rf"\\textbf\{{{code}\}}.*?&(.*?)\\\\\\", re.MULTILINE)
             row_match = pattern.search(tbl_text)
             if not row_match:
-                self.records.append(AuditRecord(table_name, code, "Row Found", "Present", "Missing", None, "FAIL", f"Ladder arm {code} missing"))
+                self.records.append(
+                    AuditRecord(
+                        table_name, code, "Row Found", "Present", "Missing", None, "FAIL", f"Ladder arm {code} missing"
+                    )
+                )
                 continue
 
             raw_tokens = [t.strip().replace("\\textbf{", "").replace("}", "") for t in row_match.group(1).split("&")]
@@ -420,7 +557,9 @@ class PaperAuditor:
 
             if i > 0:
                 prev_col = arms[i - 1][1]
-                w, p = wilcoxon(self.piv_td.loc[self.suite_74, col], self.piv_td.loc[self.suite_74, prev_col], zero_method="pratt")
+                w, p = wilcoxon(
+                    self.piv_td.loc[self.suite_74, col], self.piv_td.loc[self.suite_74, prev_col], zero_method="pratt"
+                )
                 fnd_w = float(tokens[8])
                 fnd_p = float(tokens[9])
                 self.add_check(table_name, f"Arm {code}", "Wilcoxon W", w, fnd_w, tol=1.0)
@@ -440,7 +579,9 @@ class PaperAuditor:
             return
         tbl_text = m.group(1)
 
-        piv_any = self.df_anytime.pivot_table(index=["instance", "cutoff_sec"], columns="solver", values=["nv", "td"], aggfunc="mean")
+        piv_any = self.df_anytime.pivot_table(
+            index=["instance", "cutoff_sec"], columns="solver", values=["nv", "td"], aggfunc="mean"
+        )
         insts_24 = sorted(self.df_anytime["instance"].unique().tolist())
         cutoffs = [1.0, 10.0, 60.0, 300.0]
 
@@ -449,14 +590,18 @@ class PaperAuditor:
             pattern = re.compile(
                 rf"\\multirow\{{2\}}\{{\*\}}\{{\\textbf\{{{re.escape(inst_escaped)}\}}\}}\s*&\s*ALNS-Base\s*&(.*?)\\\\\s*"
                 rf"&\s*\\textbf\{{Hybrid \(Ours\)\}}\s*&(.*?)\\\\\\",
-                re.DOTALL
+                re.DOTALL,
             )
             block_match = pattern.search(tbl_text)
             if not block_match:
                 continue
 
-            alns_tokens = [float(t.strip().replace("\\textbf{", "").replace("}", "")) for t in block_match.group(1).split("&")[:8]]
-            ours_tokens = [float(t.strip().replace("\\textbf{", "").replace("}", "")) for t in block_match.group(2).split("&")[:8]]
+            alns_tokens = [
+                float(t.strip().replace("\\textbf{", "").replace("}", "")) for t in block_match.group(1).split("&")[:8]
+            ]
+            ours_tokens = [
+                float(t.strip().replace("\\textbf{", "").replace("}", "")) for t in block_match.group(2).split("&")[:8]
+            ]
 
             idx = 0
             for c in cutoffs:
@@ -468,7 +613,9 @@ class PaperAuditor:
                 self.add_check(table_name, f"{inst} t={int(c)}s", "ALNS NV", exp_a_nv, alns_tokens[idx], tol=0.05)
                 self.add_check(table_name, f"{inst} t={int(c)}s", "ALNS TD", exp_a_td, alns_tokens[idx + 1], tol=0.15)
                 self.add_check(table_name, f"{inst} t={int(c)}s", "Tri-Level NV", exp_o_nv, ours_tokens[idx], tol=0.05)
-                self.add_check(table_name, f"{inst} t={int(c)}s", "Tri-Level TD", exp_o_td, ours_tokens[idx + 1], tol=0.15)
+                self.add_check(
+                    table_name, f"{inst} t={int(c)}s", "Tri-Level TD", exp_o_td, ours_tokens[idx + 1], tol=0.15
+                )
                 idx += 2
 
     # -----------------------------------------------------------------------
@@ -479,7 +626,7 @@ class PaperAuditor:
 
         alns_nv = self.piv_nv.loc[self.suite_74, "ALNS-Base"]
         gnn_nv = self.piv_nv.loc[self.suite_74, "GNN-Hybrid-DDQN"]
-        matched_mask = (alns_nv == gnn_nv)
+        matched_mask = alns_nv == gnn_nv
         matched_count = int(matched_mask.sum())
         exp_matched_str = f"{matched_count}/74"
 
@@ -526,7 +673,18 @@ class PaperAuditor:
         nv_ties = int((nv_diff.abs() <= 1e-4).sum())
         nv_losses = int((nv_diff > 1e-4).sum())
         exp_nv_wtl = f"{nv_wins} / {nv_ties} / {nv_losses}"
-        self.records.append(AuditRecord(table_name, "Full 74 NV W/T/L", "NV Wins/Ties/Losses", exp_nv_wtl, exp_nv_wtl, None, "PASS", f"Calculated: {exp_nv_wtl}"))
+        self.records.append(
+            AuditRecord(
+                table_name,
+                "Full 74 NV W/T/L",
+                "NV Wins/Ties/Losses",
+                exp_nv_wtl,
+                exp_nv_wtl,
+                None,
+                "PASS",
+                f"Calculated: {exp_nv_wtl}",
+            )
+        )
 
     # -----------------------------------------------------------------------
     # Cross-Reference Audit: Cross-Document and Hardcoded Numbers
@@ -545,16 +703,18 @@ class PaperAuditor:
         # Audit occurrences of "Supplementary Table S..." in manuscript.tex
         supp_refs = re.findall(r"Supplementary (?:Material )?Table~?(S\d+)", self.manuscript_text)
         for s_ref in set(supp_refs):
-            self.records.append(AuditRecord(
-                table=table_name,
-                row=f"Ref {s_ref}",
-                column="In-Text Mention",
-                expected="Defined in Supplementary Document",
-                found=s_ref,
-                diff=None,
-                status="PASS" if s_ref in ["S1", "S2", "S6", "S8"] else "WARNING",
-                notes=f"Found: Supplementary Table {s_ref}. Note: in supp_tables.tex tables are S1, S2. In supplementary_proofs.tex tables are S1--S8.",
-            ))
+            self.records.append(
+                AuditRecord(
+                    table=table_name,
+                    row=f"Ref {s_ref}",
+                    column="In-Text Mention",
+                    expected="Defined in Supplementary Document",
+                    found=s_ref,
+                    diff=None,
+                    status="PASS" if s_ref in ["S1", "S2", "S6", "S8"] else "WARNING",
+                    notes=f"Found: Supplementary Table {s_ref}. Note: in supp_tables.tex tables are S1, S2. In supplementary_proofs.tex tables are S1--S8.",
+                )
+            )
 
     # -----------------------------------------------------------------------
     # Literature Attributions Audit
@@ -563,16 +723,18 @@ class PaperAuditor:
         table_name = "Literature Citation Audit"
         has_lin_ev = "lin2021deep" in self.manuscript_text
 
-        self.records.append(AuditRecord(
-            table=table_name,
-            row="Attention Model Citation",
-            column="BibTeX Key",
-            expected="kool2019attention / falkner2020learning (VRPTW)",
-            found="lin2021deep (EV-VRPTW)" if has_lin_ev else "kool2019attention",
-            diff=None,
-            status="NOTE",
-            notes="Lin et al. (2022) is EV-VRPTW with charging constraints; Falkner et al. (2020) is VRPTW Attention Model.",
-        ))
+        self.records.append(
+            AuditRecord(
+                table=table_name,
+                row="Attention Model Citation",
+                column="BibTeX Key",
+                expected="kool2019attention / falkner2020learning (VRPTW)",
+                found="lin2021deep (EV-VRPTW)" if has_lin_ev else "kool2019attention",
+                diff=None,
+                status="NOTE",
+                notes="Lin et al. (2022) is EV-VRPTW with charging constraints; Falkner et al. (2020) is VRPTW Attention Model.",
+            )
+        )
 
     def run_all(self) -> bool:
         self.audit_table_iii()
@@ -608,15 +770,17 @@ class PaperAuditor:
             status_str = f"{GREEN}PASS{RESET}" if fails == 0 else f"{RED}FAIL ({fails}){RESET}"
             if fails > 0:
                 all_passed = False
-            summary.append({
-                "Table / Section": t,
-                "Total Audited": total,
-                "Passed": passes,
-                "Failed": fails,
-                "Notes/Warnings": notes,
-                "Max Diff": f"{max_diff:.4f}" if max_diff > 0 else "0.0000",
-                "Status": status_str,
-            })
+            summary.append(
+                {
+                    "Table / Section": t,
+                    "Total Audited": total,
+                    "Passed": passes,
+                    "Failed": fails,
+                    "Notes/Warnings": notes,
+                    "Max Diff": f"{max_diff:.4f}" if max_diff > 0 else "0.0000",
+                    "Status": status_str,
+                }
+            )
 
         df_sum = pd.DataFrame(summary)
         print("\n" + BOLD + "SUMMARY MATRIX ACROSS ALL AUDITED SECTIONS:" + RESET)
@@ -628,9 +792,13 @@ class PaperAuditor:
         if not fails_df.empty:
             print(f"\n{RED}{BOLD}DISCREPANCIES REQUIRING HUMAN ATTENTION ({len(fails_df)}):{RESET}")
             for _, r in fails_df.iterrows():
-                print(f"  [{r['table']}] {r['row']} | {r['column']}: Expected={r['expected']} vs Found={r['found']} (Diff={r['diff']})")
+                print(
+                    f"  [{r['table']}] {r['row']} | {r['column']}: Expected={r['expected']} vs Found={r['found']} (Diff={r['diff']})"
+                )
         else:
-            print(f"\n{GREEN}{BOLD}✓ ZERO DISCREPANCIES: All audited empirical cells and text claims match ground-truth raw data.{RESET}")
+            print(
+                f"\n{GREEN}{BOLD}✓ ZERO DISCREPANCIES: All audited empirical cells and text claims match ground-truth raw data.{RESET}"
+            )
 
         # Print notable notes
         notes_df = df_rec[df_rec["status"].isin(["NOTE", "WARNING"])]

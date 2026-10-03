@@ -55,9 +55,18 @@ def load_canonical_74_data() -> tuple[pd.DataFrame, pd.DataFrame]:
 
     sol_insts = list(df_pub[df_pub["Instance"].str.match(r"^[A-Z]{1,2}\d{3}$")]["Instance"].unique())
     h200_insts = [
-        "c1_2_1", "c1_2_5", "c2_2_1", "c2_2_5",
-        "r1_2_1", "r1_2_5", "r2_2_1", "r2_2_5",
-        "rc1_2_1", "rc1_2_5", "rc2_2_1", "rc2_2_5"
+        "c1_2_1",
+        "c1_2_5",
+        "c2_2_1",
+        "c2_2_5",
+        "r1_2_1",
+        "r1_2_5",
+        "r2_2_1",
+        "r2_2_5",
+        "rc1_2_1",
+        "rc1_2_5",
+        "rc2_2_1",
+        "rc2_2_5",
     ]
     h400_insts = ["c1_4_1", "c2_4_1", "r1_4_1", "r2_4_1", "rc1_4_1", "rc2_4_1"]
     target_74 = sol_insts + h200_insts + h400_insts
@@ -158,9 +167,18 @@ def generate_table_iv_latex() -> str:
     piv_nv, piv_td = load_canonical_74_data()
 
     h200_insts = [
-        "c1_2_1", "c1_2_5", "c2_2_1", "c2_2_5",
-        "r1_2_1", "r1_2_5", "r2_2_1", "r2_2_5",
-        "rc1_2_1", "rc1_2_5", "rc2_2_1", "rc2_2_5"
+        "c1_2_1",
+        "c1_2_5",
+        "c2_2_1",
+        "c2_2_5",
+        "r1_2_1",
+        "r1_2_5",
+        "r2_2_1",
+        "r2_2_5",
+        "rc1_2_1",
+        "rc1_2_5",
+        "rc2_2_1",
+        "rc2_2_5",
     ]
     h400_insts = ["c1_4_1", "c2_4_1", "r1_4_1", "r2_4_1", "rc1_4_1", "rc2_4_1"]
 
@@ -206,7 +224,9 @@ def generate_table_iv_latex() -> str:
         )
 
     lines.append(r"\midrule")
-    lines.append(r"\multicolumn{11}{l}{\textit{\textbf{Scale 2: Homberger 400-Customer Scale (BKS Floor Attainment \& Graceful Degradation)}}} \\")
+    lines.append(
+        r"\multicolumn{11}{l}{\textit{\textbf{Scale 2: Homberger 400-Customer Scale (BKS Floor Attainment \& Graceful Degradation)}}} \\"
+    )
 
     for inst in h400_insts:
         b_nv = BKS[inst]["nv"]
@@ -233,12 +253,14 @@ def generate_table_iv_latex() -> str:
             f"{d_nv_alns:+.1f} & {d_alns_str} \\\\"
         )
 
-    lines.extend([
-        r"\bottomrule",
-        r"\end{tabular*}",
-        r"{\raggedright \footnotesize $^\dagger$Denotes vehicle-unmatched fleets ($NV > NV_{\text{BKS}}$). Both Gap vs.\ BKS and Delta vs.\ ALNS-Base are reported in explicit dedicated columns to preserve comparative transparency.\par}",
-        r"\end{table*}",
-    ])
+    lines.extend(
+        [
+            r"\bottomrule",
+            r"\end{tabular*}",
+            r"{\raggedright \footnotesize $^\dagger$Denotes vehicle-unmatched fleets ($NV > NV_{\text{BKS}}$). Both Gap vs.\ BKS and Delta vs.\ ALNS-Base are reported in explicit dedicated columns to preserve comparative transparency.\par}",
+            r"\end{table*}",
+        ]
+    )
     return "\n".join(lines)
 
 
@@ -291,20 +313,24 @@ def generate_table_v_anytime_latex() -> str:
             final_delta = f"$\\Delta NV = {h_300_nv - a_300_nv:+.2f}$"
 
         inst_tex = inst.replace("_", r"\_")
-        lines.extend([
-            f"\\multirow{{3}}{{*}}{{\\textbf{{{inst_tex}}}}} & ALNS-Base & {a_1_nv:.2f} & {a_1_td:.2f} & {a_10_nv:.2f} & {a_10_td:.2f} & {a_60_nv:.2f} & {a_60_td:.2f} & {a_300_nv:.2f} & {a_300_td:.2f} \\\\",
-            f" & \\textbf{{Tri-Level Hybrid (Ours)}} & \\textbf{{{h_1_nv:.2f}}} & {h_1_td:.2f} & \\textbf{{{h_10_nv:.2f}}} & {h_10_td:.2f} & \\textbf{{{h_60_nv:.2f}}} & {h_60_td:.2f} & \\textbf{{{h_300_nv:.2f}}} & \\textbf{{{h_300_td:.2f}}} \\\\",
-            f" & \\textit{{Lexicographic Delta}} & \\multicolumn{{2}}{{c}}{{$\\Delta NV = {h_1_nv - a_1_nv:+.2f}$}} & \\multicolumn{{2}}{{c}}{{$\\Delta NV = {h_10_nv - a_10_nv:+.2f}$}} & \\multicolumn{{2}}{{c}}{{$\\Delta NV = {h_60_nv - a_60_nv:+.2f}$}} & \\multicolumn{{2}}{{c}}{{{final_delta}}} \\\\",
-            r"\midrule",
-        ])
+        lines.extend(
+            [
+                f"\\multirow{{3}}{{*}}{{\\textbf{{{inst_tex}}}}} & ALNS-Base & {a_1_nv:.2f} & {a_1_td:.2f} & {a_10_nv:.2f} & {a_10_td:.2f} & {a_60_nv:.2f} & {a_60_td:.2f} & {a_300_nv:.2f} & {a_300_td:.2f} \\\\",
+                f" & \\textbf{{Tri-Level Hybrid (Ours)}} & \\textbf{{{h_1_nv:.2f}}} & {h_1_td:.2f} & \\textbf{{{h_10_nv:.2f}}} & {h_10_td:.2f} & \\textbf{{{h_60_nv:.2f}}} & {h_60_td:.2f} & \\textbf{{{h_300_nv:.2f}}} & \\textbf{{{h_300_td:.2f}}} \\\\",
+                f" & \\textit{{Lexicographic Delta}} & \\multicolumn{{2}}{{c}}{{$\\Delta NV = {h_1_nv - a_1_nv:+.2f}$}} & \\multicolumn{{2}}{{c}}{{$\\Delta NV = {h_10_nv - a_10_nv:+.2f}$}} & \\multicolumn{{2}}{{c}}{{$\\Delta NV = {h_60_nv - a_60_nv:+.2f}$}} & \\multicolumn{{2}}{{c}}{{{final_delta}}} \\\\",
+                r"\midrule",
+            ]
+        )
 
     lines.pop()
-    lines.extend([
-        r"\bottomrule",
-        r"\end{tabular*}",
-        r"{\raggedright \scriptsize \textit{Note}: Evaluated under cold-starts ($N=5$ seeds). Anytime trajectory sampling reflects the pre-GNN learning hierarchy (Tri-Level MARL: Macro/Micro DDQN + LAC); offline Contrastive GNN spatial arc filtering operates as an $\mathcal{O}(NK)$ one-time preprocessing step prior to search with zero per-iteration runtime overhead. Lexicographic evaluation ($\NV \succ \TD$): $\Delta TD\%$ is reported strictly when fleet sizes match ($NV_{\text{Ours}} = NV_{\text{ALNS}}$); otherwise, fleet difference $\Delta NV$ is reported. Full 24-instance results including cases where ALNS-Base wins (e.g., $c1\_2\_2$, $r2\_2\_1$) are documented in Supplementary Table~S2.\par}",
-        r"\end{table*}",
-    ])
+    lines.extend(
+        [
+            r"\bottomrule",
+            r"\end{tabular*}",
+            r"{\raggedright \scriptsize \textit{Note}: Evaluated under cold-starts ($N=5$ seeds). Anytime trajectory sampling reflects the pre-GNN learning hierarchy (Tri-Level MARL: Macro/Micro DDQN + LAC); offline Contrastive GNN spatial arc filtering operates as an $\mathcal{O}(NK)$ one-time preprocessing step prior to search with zero per-iteration runtime overhead. Lexicographic evaluation ($\NV \succ \TD$): $\Delta TD\%$ is reported strictly when fleet sizes match ($NV_{\text{Ours}} = NV_{\text{ALNS}}$); otherwise, fleet difference $\Delta NV$ is reported. Full 24-instance results including cases where ALNS-Base wins (e.g., $c1\_2\_2$, $r2\_2\_1$) are documented in Supplementary Table~S2.\par}",
+            r"\end{table*}",
+        ]
+    )
     return "\n".join(lines)
 
 
@@ -410,7 +436,7 @@ def generate_table_vi_loco_latex() -> str:
     for label, cfg_key in configs:
         row_cells = []
         cfg_tds = []
-        is_bold = (cfg_key == "Full")
+        is_bold = cfg_key == "Full"
         for i in insts:
             nv, td = table_data[cfg_key][i]
             cfg_tds.append(td)
@@ -431,12 +457,14 @@ def generate_table_vi_loco_latex() -> str:
         if is_bold:
             lines.append(r"\midrule")
 
-    lines.extend([
-        r"\bottomrule",
-        r"\end{tabular*}",
-        r"{\raggedright \footnotesize $^\dagger$Degradation in fleet size ($NV$) across 5 seeds ($T_{\max}=2000$). Baseline Full row reflects the contemporaneous paired cold-start evaluation ($NV=14.60$ on RC101, matching w/o GEC). Two-tailed paired Wilcoxon signed-rank tests ($W, p$) evaluated vs.\ Full architecture.\par}",
-        r"\end{table*}",
-    ])
+    lines.extend(
+        [
+            r"\bottomrule",
+            r"\end{tabular*}",
+            r"{\raggedright \footnotesize $^\dagger$Degradation in fleet size ($NV$) across 5 seeds ($T_{\max}=2000$). Baseline Full row reflects the contemporaneous paired cold-start evaluation ($NV=14.60$ on RC101, matching w/o GEC). Two-tailed paired Wilcoxon signed-rank tests ($W, p$) evaluated vs.\ Full architecture.\par}",
+            r"\end{table*}",
+        ]
+    )
     return "\n".join(lines)
 
 
@@ -446,9 +474,18 @@ def generate_table_vii_ladder_latex() -> str:
 
     sol_insts = list(piv_nv[piv_nv.index.str.match(r"^[A-Z]{1,2}\d{3}$")].index)
     h200_insts = [
-        "c1_2_1", "c1_2_5", "c2_2_1", "c2_2_5",
-        "r1_2_1", "r1_2_5", "r2_2_1", "r2_2_5",
-        "rc1_2_1", "rc1_2_5", "rc2_2_1", "rc2_2_5"
+        "c1_2_1",
+        "c1_2_5",
+        "c2_2_1",
+        "c2_2_5",
+        "r1_2_1",
+        "r1_2_5",
+        "r2_2_1",
+        "r2_2_5",
+        "rc1_2_1",
+        "rc1_2_5",
+        "rc2_2_1",
+        "rc2_2_5",
     ]
     h400_insts = ["c1_4_1", "c2_4_1", "r1_4_1", "r2_4_1", "rc1_4_1", "rc2_4_1"]
 
@@ -500,12 +537,14 @@ def generate_table_vii_ladder_latex() -> str:
         prefix = f"\\textbf{{{code}}}"
         lines.append(f"{prefix} & {desc} & " + " & ".join(cells) + f" & {wilc_str} \\\\")
 
-    lines.extend([
-        r"\bottomrule",
-        r"\end{tabular*}",
-        r"{\raggedright \footnotesize \textit{Note}: All arms evaluated across identical 5 independent random seeds under strict cold-start execution protocols ($T_{\max}=2000$). Arms $A_0, A_1, A_2, A_3, A_4$ all drawn from verified benchmark suite archive, holding the underlying metaheuristic search engine and operator set fixed. Step-wise Wilcoxon evaluated on full 74-instance paired travel distance.\par}",
-        r"\end{table*}",
-    ])
+    lines.extend(
+        [
+            r"\bottomrule",
+            r"\end{tabular*}",
+            r"{\raggedright \footnotesize \textit{Note}: All arms evaluated across identical 5 independent random seeds under strict cold-start execution protocols ($T_{\max}=2000$). Arms $A_0, A_1, A_2, A_3, A_4$ all drawn from verified benchmark suite archive, holding the underlying metaheuristic search engine and operator set fixed. Step-wise Wilcoxon evaluated on full 74-instance paired travel distance.\par}",
+            r"\end{table*}",
+        ]
+    )
     return "\n".join(lines)
 
 
@@ -525,18 +564,23 @@ def main():
 
     if args.write:
         out_path = ROOT / "docs" / "generated_tables.tex"
-        content = "\n\n".join([
-            "% TABLE III: SOLOMON-100",
-            t3,
-            "% TABLE IV: HOMBERGER-200 & HOMBERGER-400",
-            t4,
-            "% TABLE V: EXTENDED ANYTIME 300S",
-            t5,
-            "% TABLE VI: LOCO ABLATION",
-            t6,
-            "% TABLE VII: CONSTRUCTIVE LADDER",
-            t7,
-        ]) + "\n"
+        content = (
+            "\n\n".join(
+                [
+                    "% TABLE III: SOLOMON-100",
+                    t3,
+                    "% TABLE IV: HOMBERGER-200 & HOMBERGER-400",
+                    t4,
+                    "% TABLE V: EXTENDED ANYTIME 300S",
+                    t5,
+                    "% TABLE VI: LOCO ABLATION",
+                    t6,
+                    "% TABLE VII: CONSTRUCTIVE LADDER",
+                    t7,
+                ]
+            )
+            + "\n"
+        )
         out_path.write_text(content, encoding="utf-8")
         print(f"✓ Successfully wrote all 5 tables to {out_path}")
 

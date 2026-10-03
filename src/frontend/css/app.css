@@ -1768,7 +1768,7 @@ body.demo-active .demo-badge {
     width: 280px;
     z-index: 9999;
     transition: left 0.3s;
-    box-shadow: 4px 0 24px rgba(0,0,0,0.3);
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.3);
   }
   .saas-sidebar.mobile-open {
     left: 0;
@@ -3928,6 +3928,10 @@ body.demo-active .demo-badge {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }

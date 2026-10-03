@@ -14,7 +14,6 @@ import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_QUICK_OUT = ROOT / "results" / "research_pipeline" / "quick"
 DEFAULT_TABLE_SWEEP = ROOT / "results" / "ultimate-publication-suite" / "combined_clean.csv"

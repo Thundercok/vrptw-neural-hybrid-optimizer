@@ -11,15 +11,17 @@ from pptx.util import Inches, Mm
 POSTER_DIR = os.path.abspath(os.path.dirname(__file__))
 REPO_ROOT = os.path.abspath(os.path.join(POSTER_DIR, ".."))
 
+
 def get_base64_image(image_name):
     full_path = os.path.join(REPO_ROOT, image_name)
     if not os.path.exists(full_path):
         raise FileNotFoundError(f"Missing image: {full_path}")
     ext = os.path.splitext(image_name)[1].lower()
-    mime = mimetypes.types_map.get(ext, 'image/jpeg')
+    mime = mimetypes.types_map.get(ext, "image/jpeg")
     with open(full_path, "rb") as f:
         b64 = base64.b64encode(f.read()).decode("utf-8")
     return f"data:{mime};base64,{b64}"
+
 
 def build_poster():
     bg_b64 = get_base64_image("docs/poster_template_background.jpg")
@@ -1007,13 +1009,20 @@ def build_poster():
         page.screenshot(path=png_file, full_page=True)
         print(f"Exported PNG to {png_file}")
 
-        page.pdf(path=pdf_file, width="594mm", height="841mm", print_background=True, margin={"top": "0mm", "bottom": "0mm", "left": "0mm", "right": "0mm"})
+        page.pdf(
+            path=pdf_file,
+            width="594mm",
+            height="841mm",
+            print_background=True,
+            margin={"top": "0mm", "bottom": "0mm", "left": "0mm", "right": "0mm"},
+        )
         print(f"Exported PDF to {pdf_file}")
 
         browser.close()
 
     # Generate PPTX files
     export_pptx_and_sync(png_file, pdf_file)
+
 
 def export_pptx_and_sync(png_file, pdf_file):
     print("Generating PPTX deliverables...")
@@ -1067,6 +1076,7 @@ def export_pptx_and_sync(png_file, pdf_file):
             a_dst = os.path.join(artifact_dir, fname)
             shutil.copy2(src, a_dst)
             print(f"Synced {fname} -> {a_dst}")
+
 
 if __name__ == "__main__":
     build_poster()

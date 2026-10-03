@@ -191,4 +191,3 @@ if __name__ == "__main__":
     test_peer_review_counterexample_and_formula()
     test_forward_slack_correctness()
     print("✅ 100% REGRESSION TEST PASSED")
-

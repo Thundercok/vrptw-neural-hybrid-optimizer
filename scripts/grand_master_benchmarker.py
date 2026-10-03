@@ -617,7 +617,9 @@ def export_html_dashboard(stats: dict[str, Any], output_path: Path):
             bks_str = "---"
         else:
             bks_str = f"{r['bks_nv']:.0f} / {r['bks_td']:.2f}"
-            gap_bks = f"<b>{r['gap_bks_pct']:+.2f}%</b>" if abs(r["gap_bks_pct"]) < 0.01 else f"{r['gap_bks_pct']:+.2f}%"
+            gap_bks = (
+                f"<b>{r['gap_bks_pct']:+.2f}%</b>" if abs(r["gap_bks_pct"]) < 0.01 else f"{r['gap_bks_pct']:+.2f}%"
+            )
 
         rows_html.append(f"""
         <tr>
@@ -719,7 +721,17 @@ def main():
     parser = argparse.ArgumentParser(description="Grand Master VRPTW Benchmark Orchestrator")
     parser.add_argument(
         "--suite",
-        choices=["ultimate", "paper74", "super18", "solomon56", "homberger200", "homberger400", "multiscale36", "mega36", "all"],
+        choices=[
+            "ultimate",
+            "paper74",
+            "super18",
+            "solomon56",
+            "homberger200",
+            "homberger400",
+            "multiscale36",
+            "mega36",
+            "all",
+        ],
         default="ultimate",
         help="Benchmark instance suite preset",
     )
@@ -844,7 +856,10 @@ def main():
             f"  Matched Distance: {stats['matched_td_scorecard']['wins']} Wins / {stats['matched_td_scorecard']['ties']} Ties / {stats['matched_td_scorecard']['losses']} Losses",
             flush=True,
         )
-        print(f"  Wilcoxon Pratt:   W = {stats['stats_nv']['w_pratt']:.1f}, p = {stats['stats_nv']['p_pratt']:.2e}", flush=True)
+        print(
+            f"  Wilcoxon Pratt:   W = {stats['stats_nv']['w_pratt']:.1f}, p = {stats['stats_nv']['p_pratt']:.2e}",
+            flush=True,
+        )
         print(f"  Rank-Biserial r:  r = {stats['stats_nv']['r_rb']:+.3f}", flush=True)
         print("=" * 90, flush=True)
         print(f"📁 LaTeX Table saved:     {tex_path}", flush=True)

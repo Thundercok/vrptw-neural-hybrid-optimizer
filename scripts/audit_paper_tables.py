@@ -41,14 +41,21 @@ SOLOMON_FAMILIES = {
 }
 
 H200_INSTANCES = [
-    "c1_2_1", "c1_2_5", "c2_2_1", "c2_2_5",
-    "r1_2_1", "r1_2_5", "r2_2_1", "r2_2_5",
-    "rc1_2_1", "rc1_2_5", "rc2_2_1", "rc2_2_5"
+    "c1_2_1",
+    "c1_2_5",
+    "c2_2_1",
+    "c2_2_5",
+    "r1_2_1",
+    "r1_2_5",
+    "r2_2_1",
+    "r2_2_5",
+    "rc1_2_1",
+    "rc1_2_5",
+    "rc2_2_1",
+    "rc2_2_5",
 ]
 
-H400_INSTANCES = [
-    "c1_4_1", "c2_4_1", "r1_4_1", "r2_4_1", "rc1_4_1", "rc2_4_1"
-]
+H400_INSTANCES = ["c1_4_1", "c2_4_1", "r1_4_1", "r2_4_1", "rc1_4_1", "rc2_4_1"]
 
 ALL_SOLOMON_56 = [inst for fam in SOLOMON_FAMILIES.values() for inst in fam]
 ALL_74_INSTANCES = ALL_SOLOMON_56 + H200_INSTANCES + H400_INSTANCES
@@ -116,14 +123,18 @@ def audit_table_iii(manuscript_tex: str, df: pd.DataFrame):
                 diff_td = abs(td_tex - td_exp) if td_tex is not None else 999
                 status_nv = "PASS" if diff_nv < 0.05 else f"MISMATCH (exp={nv_exp:.2f})"
                 status_td = "PASS" if diff_td < 0.2 else f"MISMATCH (exp={td_exp:.1f})"
-                print(f"  {fam:<4} NV: tex={cells[col_idx]:<6} csv={nv_exp:.2f} [{status_nv}] | TD: tex={cells[col_idx+1]:<7} csv={td_exp:.1f} [{status_td}]")
+                print(
+                    f"  {fam:<4} NV: tex={cells[col_idx]:<6} csv={nv_exp:.2f} [{status_nv}] | TD: tex={cells[col_idx + 1]:<7} csv={td_exp:.1f} [{status_td}]"
+                )
                 col_idx += 2
             # Overall
             nv_all_exp = piv_nv.loc[ALL_SOLOMON_56, "ALNS-Base"].mean()
             td_all_exp = piv_td.loc[ALL_SOLOMON_56, "ALNS-Base"].mean()
             nv_all_tex = clean_num(cells[col_idx])
             td_all_tex = clean_num(cells[col_idx + 1])
-            print(f"  Overall NV: tex={cells[col_idx]:<6} csv={nv_all_exp:.2f} [{'PASS' if abs(nv_all_tex - nv_all_exp)<0.05 else 'MISMATCH'}] | TD: tex={cells[col_idx+1]:<7} csv={td_all_exp:.1f} [{'PASS' if abs(td_all_tex - td_all_exp)<0.2 else 'MISMATCH'}]")
+            print(
+                f"  Overall NV: tex={cells[col_idx]:<6} csv={nv_all_exp:.2f} [{'PASS' if abs(nv_all_tex - nv_all_exp) < 0.05 else 'MISMATCH'}] | TD: tex={cells[col_idx + 1]:<7} csv={td_all_exp:.1f} [{'PASS' if abs(td_all_tex - td_all_exp) < 0.2 else 'MISMATCH'}]"
+            )
 
         elif "Tri-Level" in row_name:
             print(f"\nEvaluating Row: {row_name} (Target Arm A4: GNN-Hybrid-DDQN)")
@@ -138,14 +149,18 @@ def audit_table_iii(manuscript_tex: str, df: pd.DataFrame):
                 diff_td = abs(td_tex - td_exp) if td_tex is not None else 999
                 status_nv = "PASS" if diff_nv < 0.05 else f"MISMATCH (exp={nv_exp:.2f})"
                 status_td = "PASS" if diff_td < 0.2 else f"MISMATCH (exp={td_exp:.1f})"
-                print(f"  {fam:<4} NV: tex={cells[col_idx]:<6} csv={nv_exp:.2f} [{status_nv}] | TD: tex={cells[col_idx+1]:<7} csv={td_exp:.1f} [{status_td}]")
+                print(
+                    f"  {fam:<4} NV: tex={cells[col_idx]:<6} csv={nv_exp:.2f} [{status_nv}] | TD: tex={cells[col_idx + 1]:<7} csv={td_exp:.1f} [{status_td}]"
+                )
                 col_idx += 2
             # Overall
             nv_all_exp = piv_nv.loc[ALL_SOLOMON_56, "GNN-Hybrid-DDQN"].mean()
             td_all_exp = piv_td.loc[ALL_SOLOMON_56, "GNN-Hybrid-DDQN"].mean()
             nv_all_tex = clean_num(cells[col_idx])
             td_all_tex = clean_num(cells[col_idx + 1])
-            print(f"  Overall NV: tex={cells[col_idx]:<6} csv={nv_all_exp:.2f} [{'PASS' if abs(nv_all_tex - nv_all_exp)<0.05 else 'MISMATCH'}] | TD: tex={cells[col_idx+1]:<7} csv={td_all_exp:.1f} [{'PASS' if abs(td_all_tex - td_all_exp)<0.2 else 'MISMATCH'}]")
+            print(
+                f"  Overall NV: tex={cells[col_idx]:<6} csv={nv_all_exp:.2f} [{'PASS' if abs(nv_all_tex - nv_all_exp) < 0.05 else 'MISMATCH'}] | TD: tex={cells[col_idx + 1]:<7} csv={td_all_exp:.1f} [{'PASS' if abs(td_all_tex - td_all_exp) < 0.2 else 'MISMATCH'}]"
+            )
         elif any(k in row_name for k in ["HGS", "SISR", "Attention", "Single-Agent"]):
             print(f"\nLiterature Row: {row_name} [EXTERNAL LITERATURE BASELINE - NOT IN REPO RAW RUNS]")
 
@@ -188,7 +203,9 @@ def audit_table_iv(manuscript_tex: str, df: pd.DataFrame):
             pass_gnn_nv = abs(gnn_nv_tex - gnn_nv_exp) < 0.05
             pass_gnn_td = abs(gnn_td_tex - gnn_td_exp) < 0.1
 
-            s_alns = "PASS" if (pass_alns_nv and pass_alns_td) else f"FAIL (exp NV={alns_nv_exp:.1f}, TD={alns_td_exp:.2f})"
+            s_alns = (
+                "PASS" if (pass_alns_nv and pass_alns_td) else f"FAIL (exp NV={alns_nv_exp:.1f}, TD={alns_td_exp:.2f})"
+            )
             s_gnn = "PASS" if (pass_gnn_nv and pass_gnn_td) else f"FAIL (exp NV={gnn_nv_exp:.1f}, TD={gnn_td_exp:.2f})"
 
             delta_str = cells[10]
@@ -196,11 +213,21 @@ def audit_table_iv(manuscript_tex: str, df: pd.DataFrame):
             if matched:
                 pct_exp = (gnn_td_exp - alns_td_exp) / alns_td_exp * 100.0
                 pct_tex = clean_num(delta_str)
-                delta_status = "PASS" if (pct_tex is not None and abs(pct_tex - pct_exp) < 0.05) else f"MISMATCH (exp {pct_exp:+.2f}%)"
+                delta_status = (
+                    "PASS"
+                    if (pct_tex is not None and abs(pct_tex - pct_exp) < 0.05)
+                    else f"MISMATCH (exp {pct_exp:+.2f}%)"
+                )
             else:
-                delta_status = "PASS (--)" if delta_str.strip() == "--" else f"MISMATCH (unmatched fleet must be '--', got {delta_str})"
+                delta_status = (
+                    "PASS (--)"
+                    if delta_str.strip() == "--"
+                    else f"MISMATCH (unmatched fleet must be '--', got {delta_str})"
+                )
 
-            print(f"  {inst_tex:<10} | ALNS: tex=({alns_nv_tex:.1f}, {alns_td_tex:.2f}) [{s_alns}] | GNN: tex=({gnn_nv_tex:.1f}, {gnn_td_tex:.2f}) [{s_gnn}] | Delta: {delta_str} [{delta_status}]")
+            print(
+                f"  {inst_tex:<10} | ALNS: tex=({alns_nv_tex:.1f}, {alns_td_tex:.2f}) [{s_alns}] | GNN: tex=({gnn_nv_tex:.1f}, {gnn_td_tex:.2f}) [{s_gnn}] | Delta: {delta_str} [{delta_status}]"
+            )
 
 
 def audit_table_vii_ladder(manuscript_tex: str, df: pd.DataFrame):
@@ -246,10 +273,18 @@ def audit_table_vii_ladder(manuscript_tex: str, df: pd.DataFrame):
             all_nv_t, all_td_t = clean_num(cells[8]), clean_num(cells[9])
 
             print(f"Arm {arm_tag} ({algo}):")
-            print(f"  Solomon-100: tex=({sol_nv_t}, {sol_td_t}) | csv=({sol_nv:.2f}, {sol_td:.1f}) [{'PASS' if abs(sol_nv_t-sol_nv)<0.05 and abs(sol_td_t-sol_td)<0.2 else 'MISMATCH'}]")
-            print(f"  GH-200:      tex=({h200_nv_t}, {h200_td_t}) | csv=({h200_nv:.2f}, {h200_td:.1f}) [{'PASS' if abs(h200_nv_t-h200_nv)<0.05 and abs(h200_td_t-h200_td)<0.2 else 'MISMATCH'}]")
-            print(f"  GH-400:      tex=({h400_nv_t}, {h400_td_t}) | csv=({h400_nv:.2f}, {h400_td:.1f}) [{'PASS' if abs(h400_nv_t-h400_nv)<0.05 and abs(h400_td_t-h400_td)<0.2 else 'MISMATCH'}]")
-            print(f"  Overall:     tex=({all_nv_t}, {all_td_t}) | csv=({all_nv:.2f}, {all_td:.1f}) [{'PASS' if abs(all_nv_t-all_nv)<0.05 and abs(all_td_t-all_td)<0.2 else 'MISMATCH'}]")
+            print(
+                f"  Solomon-100: tex=({sol_nv_t}, {sol_td_t}) | csv=({sol_nv:.2f}, {sol_td:.1f}) [{'PASS' if abs(sol_nv_t - sol_nv) < 0.05 and abs(sol_td_t - sol_td) < 0.2 else 'MISMATCH'}]"
+            )
+            print(
+                f"  GH-200:      tex=({h200_nv_t}, {h200_td_t}) | csv=({h200_nv:.2f}, {h200_td:.1f}) [{'PASS' if abs(h200_nv_t - h200_nv) < 0.05 and abs(h200_td_t - h200_td) < 0.2 else 'MISMATCH'}]"
+            )
+            print(
+                f"  GH-400:      tex=({h400_nv_t}, {h400_td_t}) | csv=({h400_nv:.2f}, {h400_td:.1f}) [{'PASS' if abs(h400_nv_t - h400_nv) < 0.05 and abs(h400_td_t - h400_td) < 0.2 else 'MISMATCH'}]"
+            )
+            print(
+                f"  Overall:     tex=({all_nv_t}, {all_td_t}) | csv=({all_nv:.2f}, {all_td:.1f}) [{'PASS' if abs(all_nv_t - all_nv) < 0.05 and abs(all_td_t - all_td) < 0.2 else 'MISMATCH'}]"
+            )
 
 
 def audit_table_v_anytime(manuscript_tex: str):
@@ -297,7 +332,9 @@ def audit_table_v_anytime(manuscript_tex: str):
                 td_exp = piv.loc[co, "td"]
                 p_nv = abs(nv_tex - nv_exp) < 0.05
                 p_td = abs(td_tex - td_exp) < 0.2
-                print(f"  t={co:3.0f}s: tex=({nv_tex:.2f}, {td_tex:.2f}) | csv=({nv_exp:.2f}, {td_exp:.2f}) [{'PASS' if (p_nv and p_td) else 'MISMATCH'}]")
+                print(
+                    f"  t={co:3.0f}s: tex=({nv_tex:.2f}, {td_tex:.2f}) | csv=({nv_exp:.2f}, {td_exp:.2f}) [{'PASS' if (p_nv and p_td) else 'MISMATCH'}]"
+                )
 
 
 def audit_supp_tables(supp_tex: str, df: pd.DataFrame, df_any: pd.DataFrame):
@@ -338,12 +375,16 @@ def audit_supp_tables(supp_tex: str, df: pd.DataFrame, df_any: pd.DataFrame):
                     nv_t, td_t = clean_num(cells[col_idx]), clean_num(cells[col_idx + 1])
                     p_nv = abs(nv_t - nv_exp) < 0.05
                     p_td = abs(td_t - td_exp) < 0.2
-                    print(f"    {fam:<4} NV: tex={cells[col_idx]:<6} csv={nv_exp:.2f} [{'PASS' if p_nv else 'MISMATCH'}] | TD: tex={cells[col_idx+1]:<7} csv={td_exp:.1f} [{'PASS' if p_td else 'MISMATCH'}]")
+                    print(
+                        f"    {fam:<4} NV: tex={cells[col_idx]:<6} csv={nv_exp:.2f} [{'PASS' if p_nv else 'MISMATCH'}] | TD: tex={cells[col_idx + 1]:<7} csv={td_exp:.1f} [{'PASS' if p_td else 'MISMATCH'}]"
+                    )
                     col_idx += 2
                 nv_all_exp = piv_nv.loc[ALL_SOLOMON_56, "ALNS-Base"].mean()
                 td_all_exp = piv_td.loc[ALL_SOLOMON_56, "ALNS-Base"].mean()
                 nv_all_t, td_all_t = clean_num(cells[col_idx]), clean_num(cells[col_idx + 1])
-                print(f"    Overall NV: tex={cells[col_idx]:<6} csv={nv_all_exp:.2f} [{'PASS' if abs(nv_all_t - nv_all_exp)<0.05 else 'MISMATCH'}] | TD: tex={cells[col_idx+1]:<7} csv={td_all_exp:.1f} [{'PASS' if abs(td_all_t - td_all_exp)<0.2 else 'MISMATCH'}]")
+                print(
+                    f"    Overall NV: tex={cells[col_idx]:<6} csv={nv_all_exp:.2f} [{'PASS' if abs(nv_all_t - nv_all_exp) < 0.05 else 'MISMATCH'}] | TD: tex={cells[col_idx + 1]:<7} csv={td_all_exp:.1f} [{'PASS' if abs(td_all_t - td_all_exp) < 0.2 else 'MISMATCH'}]"
+                )
 
             elif "Tri-Level" in row_name:
                 print(f"\n  Row: {row_name}")
@@ -358,7 +399,9 @@ def audit_supp_tables(supp_tex: str, df: pd.DataFrame, df_any: pd.DataFrame):
                     p_a4 = abs(nv_t - nv_a4) < 0.05 and abs(td_t - td_a4) < 0.2
                     p_a3 = abs(nv_t - nv_a3) < 0.05 and abs(td_t - td_a3) < 0.2
                     status = "PASS (A4)" if p_a4 else ("STALE A3" if p_a3 else "MISMATCH")
-                    print(f"    {fam:<4} NV: tex={cells[col_idx]:<6} A4={nv_a4:.2f} | TD: tex={cells[col_idx+1]:<7} A4={td_a4:.1f} [{status}]")
+                    print(
+                        f"    {fam:<4} NV: tex={cells[col_idx]:<6} A4={nv_a4:.2f} | TD: tex={cells[col_idx + 1]:<7} A4={td_a4:.1f} [{status}]"
+                    )
                     col_idx += 2
                 nv_all_a4 = piv_nv.loc[ALL_SOLOMON_56, "GNN-Hybrid-DDQN"].mean()
                 td_all_a4 = piv_td.loc[ALL_SOLOMON_56, "GNN-Hybrid-DDQN"].mean()
@@ -368,7 +411,9 @@ def audit_supp_tables(supp_tex: str, df: pd.DataFrame, df_any: pd.DataFrame):
                 p_all_a4 = abs(nv_all_t - nv_all_a4) < 0.05 and abs(td_all_t - td_all_a4) < 0.2
                 p_all_a3 = abs(nv_all_t - nv_all_a3) < 0.05 and abs(td_all_t - td_all_a3) < 0.2
                 status_all = "PASS (A4)" if p_all_a4 else ("STALE A3" if p_all_a3 else "MISMATCH")
-                print(f"    Overall NV: tex={cells[col_idx]:<6} A4={nv_all_a4:.2f} | TD: tex={cells[col_idx+1]:<7} A4={td_all_a4:.1f} [{status_all}]")
+                print(
+                    f"    Overall NV: tex={cells[col_idx]:<6} A4={nv_all_a4:.2f} | TD: tex={cells[col_idx + 1]:<7} A4={td_all_a4:.1f} [{status_all}]"
+                )
 
     # 2. Audit tab:supp_anytime_full_24 across all 24 instances
     tbl2 = extract_table(supp_tex, "tab:supp_anytime_full_24")
@@ -408,7 +453,9 @@ def audit_supp_tables(supp_tex: str, df: pd.DataFrame, df_any: pd.DataFrame):
                         pass_cnt += 1
                     else:
                         fail_cnt += 1
-                        print(f"    MISMATCH: {cur_inst} {solver} t={co}s: tex=({nv_tex}, {td_tex}) vs csv=({nv_exp:.2f}, {td_exp:.1f})")
+                        print(
+                            f"    MISMATCH: {cur_inst} {solver} t={co}s: tex=({nv_tex}, {td_tex}) vs csv=({nv_exp:.2f}, {td_exp:.1f})"
+                        )
 
         print(f"  Anytime 24-Instance Audit Result: {pass_cnt}/192 cells PASS, {fail_cnt} FAIL.")
 
@@ -434,8 +481,16 @@ def audit_cross_references(manuscript_tex: str, aux_path: Path):
     checks = [
         ("Table~S6", "tab:supp_reward_coefficients", label_map.get("tab:supp_reward_coefficients")),
         ("Section~10", "sec:supp_reward_parameters", label_map.get("sec:supp_reward_parameters")),
-        ("Table~S8 / Section~12", "tab:supp_anytime_full_24 (Technical Report)", f"Resolved as Table {label_map.get('tab:supp_anytime_full_24')}, Section {label_map.get('sec:supp_anytime_trajectories')} in supplementary_proofs.pdf"),
-        ("Table~S2 of Supplementary Tables", "tab:supp_anytime_full_24 (2-table bundle)", "Table S2 in docs/supp_tables.tex"),
+        (
+            "Table~S8 / Section~12",
+            "tab:supp_anytime_full_24 (Technical Report)",
+            f"Resolved as Table {label_map.get('tab:supp_anytime_full_24')}, Section {label_map.get('sec:supp_anytime_trajectories')} in supplementary_proofs.pdf",
+        ),
+        (
+            "Table~S2 of Supplementary Tables",
+            "tab:supp_anytime_full_24 (2-table bundle)",
+            "Table S2 in docs/supp_tables.tex",
+        ),
     ]
     for text_claim, target_label, resolved_in_aux in checks:
         found = (text_claim in manuscript_tex) or (text_claim.replace("~", " ") in manuscript_tex)
@@ -468,7 +523,13 @@ def audit_author_images(manuscript_tex: str):
 
     print("\nManuscript LaTeX IEEEbiography Environment Verification:")
     for author, name in photo_names:
-        pattern = r"\\begin\{IEEEbiography\}\[\{\\includegraphics\[[^\]]*\]\{" + re.escape(name) + r"\}\}\]\{" + re.escape(author) + r"\}"
+        pattern = (
+            r"\\begin\{IEEEbiography\}\[\{\\includegraphics\[[^\]]*\]\{"
+            + re.escape(name)
+            + r"\}\}\]\{"
+            + re.escape(author)
+            + r"\}"
+        )
         found = bool(re.search(pattern, manuscript_tex))
         print(f"  Author '{author}' with image '{name}': {'FOUND & VERIFIED' if found else 'NOT FOUND'}")
 
@@ -478,7 +539,9 @@ def audit_author_images(manuscript_tex: str):
         print("  FINDING: All 4 author photo files on disk currently share identical SHA-256 hash.")
         print("  VERIFICATION: In docs/manuscript.tex, ALL FOUR AUTHOR IMAGES ARE USED SEPARATELY AND FULLY")
         print("  in 4 dedicated IEEEbiography environments, each pointing to its own image file.")
-        print("  Status: Structure is 100% correct. Authors simply replace disk files with real photos before final camera-ready.")
+        print(
+            "  Status: Structure is 100% correct. Authors simply replace disk files with real photos before final camera-ready."
+        )
     else:
         print(f"  Found {len(unique_hashes)} distinct binaries among 4 photos.")
 
@@ -520,4 +583,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

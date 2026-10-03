@@ -240,9 +240,7 @@ export class GanttController {
     // Update Dropdown Options — same key order as the header overlay picker.
     const select = this.panel.querySelector('#gantt-select-algo');
     select.innerHTML = overlayKeysFor(result)
-      .map(
-        (key) => `<option value="${key}" ${key === this.activeAlgo ? 'selected' : ''}>${algoLabel(key)}</option>`
-      )
+      .map((key) => `<option value="${key}" ${key === this.activeAlgo ? 'selected' : ''}>${algoLabel(key)}</option>`)
       .join('');
 
     const badge = this.panel.querySelector('#gantt-badge');
