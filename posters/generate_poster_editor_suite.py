@@ -19,6 +19,7 @@ import mimetypes
 import os
 import shutil
 import zipfile
+
 from playwright.sync_api import sync_playwright
 
 REPO_ROOT = "/Users/thundercock2/Documents/Github/VRPTW-Research-Optimization"
@@ -27,6 +28,7 @@ OUT_DIR = "/Users/thundercock2/Desktop/Bo_Hinh_Anh_Poster_Cho_Editor"
 ZIP_PATH = "/Users/thundercock2/Desktop/Bo_Hinh_Anh_Poster_Cho_Editor.zip"
 
 os.makedirs(OUT_DIR, exist_ok=True)
+
 
 def get_b64(path):
     full = os.path.join(SRC_ROOT, path)
@@ -38,6 +40,7 @@ def get_b64(path):
     mime = mimetypes.types_map.get(ext, "image/png")
     with open(full, "rb") as f:
         return f"data:{mime};base64,{base64.b64encode(f.read()).decode('utf-8')}"
+
 
 # Existing high-res assets
 r101_b64 = get_b64("docs/figures/route_R101.png")
@@ -1748,15 +1751,12 @@ cards_to_capture = [
     ("fig5-nami", "05_Giam_Sat_Dieu_Phoi_Thuc_Te_NAMI_TPHCM_4K.png"),
     ("fig6-routes", "06_Cap_Hai_Do_Lo_Trinh_R101_RC101_4K.png"),
     ("fig7-table", "07_Bang_Ket_Qua_Thuc_Nghiem_Doi_Chuan_4K.png"),
-    ("fig8-kpi", "08_Bo_The_Chi_So_KPI_Vang_4K.png")
+    ("fig8-kpi", "08_Bo_The_Chi_So_KPI_Vang_4K.png"),
 ]
 
 with sync_playwright() as p:
     browser = p.chromium.launch(args=["--no-sandbox", "--disable-setuid-sandbox"])
-    context = browser.new_context(
-        viewport={"width": 2500, "height": 1800},
-        device_scale_factor=2
-    )
+    context = browser.new_context(viewport={"width": 2500, "height": 1800}, device_scale_factor=2)
     page = context.new_page()
     page.goto(f"file://{html_path}", wait_until="networkidle")
 
@@ -1772,13 +1772,13 @@ with sync_playwright() as p:
 # Copy official IEEE vector architecture
 shutil.copyfile(
     os.path.join(SRC_ROOT, "docs/figures/poster_architecture.png"),
-    os.path.join(OUT_DIR, "03B_Kien_Truc_He_Thong_Chuan_IEEE_Vector_4K.png")
+    os.path.join(OUT_DIR, "03B_Kien_Truc_He_Thong_Chuan_IEEE_Vector_4K.png"),
 )
 print("  ✓ Exported: 03B_Kien_Truc_He_Thong_Chuan_IEEE_Vector_4K.png")
 
 # Create clean zip archive for Zalo transfer
 print(f"Compressing into {ZIP_PATH}...")
-with zipfile.ZipFile(ZIP_PATH, 'w', zipfile.ZIP_DEFLATED) as zipf:
+with zipfile.ZipFile(ZIP_PATH, "w", zipfile.ZIP_DEFLATED) as zipf:
     for root, _, files in os.walk(OUT_DIR):
         for file in files:
             if file.endswith(".png"):

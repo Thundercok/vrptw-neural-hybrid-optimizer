@@ -48,7 +48,7 @@ def parse_refs_bib(bib_path: Path) -> dict[str, tuple[str, dict[str, str]]]:
     bib_dict = {}
     for entry_type, key, body in entries:
         fields = {}
-        for f_match in re.finditer(r'(\w+)\s*=\s*[\{\"](.*?)[\"\}],?', body, re.DOTALL):
+        for f_match in re.finditer(r"(\w+)\s*=\s*[\{\"](.*?)[\"\}],?", body, re.DOTALL):
             val = " ".join(f_match.group(2).split())
             fields[f_match.group(1).lower()] = val
         bib_dict[key] = (entry_type.lower(), fields)
@@ -61,9 +61,7 @@ def query_crossref(title: str, author_hint: str = "") -> dict | None:
     url = f"https://api.crossref.org/works?query.bibliographic={urllib.parse.quote(query_str)}&rows=2"
     req = urllib.request.Request(
         url,
-        headers={
-            "User-Agent": "VRPTWBibAuditor/1.0 (mailto:academic_verification@tdtu.edu.vn)"
-        },
+        headers={"User-Agent": "VRPTWBibAuditor/1.0 (mailto:academic_verification@tdtu.edu.vn)"},
     )
     try:
         with urllib.request.urlopen(req, timeout=15) as resp:
@@ -157,40 +155,46 @@ def main():
 
         # Handle special portals
         if key == "sintef_homberger":
-            results.append({
-                "key": key,
-                "status": "VERIFIED-MATCH",
-                "source": "https://www.sintef.no/projectweb/top/vrptw/homberger-benchmark/",
-                "notes": "Verified official SINTEF VRPTW Homberger benchmark portal repository.",
-                "doi": "N/A (Web Portal)",
-                "title_local": "SINTEF VRPTW benchmark portal: Best known solutions for Homberger extended instances",
-                "crossref": None,
-            })
+            results.append(
+                {
+                    "key": key,
+                    "status": "VERIFIED-MATCH",
+                    "source": "https://www.sintef.no/projectweb/top/vrptw/homberger-benchmark/",
+                    "notes": "Verified official SINTEF VRPTW Homberger benchmark portal repository.",
+                    "doi": "N/A (Web Portal)",
+                    "title_local": "SINTEF VRPTW benchmark portal: Best known solutions for Homberger extended instances",
+                    "crossref": None,
+                }
+            )
             continue
 
         # Handle arXiv papers directly if arxiv id known
         if arxiv_match:
             ar_data = query_arxiv(arxiv_match)
             if ar_data and "error" not in ar_data:
-                results.append({
-                    "key": key,
-                    "title_local": title,
-                    "arxiv": ar_data,
-                    "source": ar_data["url"],
-                    "doi": f"arXiv:{arxiv_match}",
-                })
+                results.append(
+                    {
+                        "key": key,
+                        "title_local": title,
+                        "arxiv": ar_data,
+                        "source": ar_data["url"],
+                        "doi": f"arXiv:{arxiv_match}",
+                    }
+                )
                 time.sleep(0.3)
                 continue
 
         first_author = author.split(" and ")[0].split(",")[-1].strip() if author else ""
         cr_data = query_crossref(title, first_author)
-        results.append({
-            "key": key,
-            "title_local": title,
-            "author_local": author,
-            "crossref": cr_data,
-            "source": f"https://doi.org/{cr_data['doi']}" if cr_data and cr_data.get("doi") else "NOT FOUND",
-        })
+        results.append(
+            {
+                "key": key,
+                "title_local": title,
+                "author_local": author,
+                "crossref": cr_data,
+                "source": f"https://doi.org/{cr_data['doi']}" if cr_data and cr_data.get("doi") else "NOT FOUND",
+            }
+        )
         time.sleep(0.35)
 
     out_file = ROOT / "audit_bib_results.json"

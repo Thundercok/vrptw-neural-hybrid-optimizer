@@ -1404,7 +1404,6 @@ export class App {
       const hasCurrentValue = datasets.some((ds) => ds.name === currentValue);
       this.el.datasetSelect.value = hasCurrentValue ? currentValue : 'demo';
     } catch (error) {
-
       this.toast('Solomon List Failed', this.parseApiError(error), 'error');
     }
   }
@@ -3814,7 +3813,7 @@ export class App {
 
       const payload = {
         mode: this.state.mode,
-        dataset: this.state.mode === 'sample' ? (this.el.datasetSelect?.value || 'demo') : '',
+        dataset: this.state.mode === 'sample' ? this.el.datasetSelect?.value || 'demo' : '',
         preset: this.state.preset || 'fast',
         pretrained_transfer: Boolean(this.state.pretrainedTransfer),
         use_gnn: Boolean(this.state.useGnn !== false),

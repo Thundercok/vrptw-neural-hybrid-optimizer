@@ -11,6 +11,7 @@ with open(tables_path) as f:
 with open(manuscript_path) as f:
     tex = f.read()
 
+
 def extract_generated_table(label):
     lbl = r"\label{" + label + "}"
     pos = tables_content.find(lbl)
@@ -18,6 +19,7 @@ def extract_generated_table(label):
     start = tables_content.rfind(r"\begin{table*}", 0, pos)
     end = tables_content.find(r"\end{table*}", pos) + len(r"\end{table*}")
     return tables_content[start:end]
+
 
 def replace_table_in_tex(tex_content, label, new_table):
     lbl = r"\label{" + label + "}"
@@ -28,6 +30,7 @@ def replace_table_in_tex(tex_content, label, new_table):
     old_table = tex_content[start:end]
     print(f"Replacing {label} (old length {len(old_table)} chars -> new length {len(new_table)} chars)")
     return tex_content[:start] + new_table + tex_content[end:]
+
 
 t3_new = extract_generated_table("tab:solomon_tri_paradigm")
 t4_new = extract_generated_table("tab:homberger_scale_benchmark")
@@ -64,7 +67,8 @@ if r"\label{tab:constructive_ladder}" in tex:
     tex = replace_table_in_tex(tex, "tab:constructive_ladder", t7_new)
     print("✓ Replaced Table VII (Constructive Ladder)")
 else:
-    ladder_section = r"""
+    ladder_section = (
+        r"""
 \subsection{Constructive Contribution Ladder: Isolating Learning vs.\ Heuristic Components (RQ3)}
 \label{sec:constructive_ladder}
 
@@ -76,7 +80,10 @@ To complement the top-down LOCO sensitivity analysis and directly establish whet
     \item $\mathbf{A_3 \to A_4}$ \textbf{(Tri-Level MARL $\to$ Contrastive GNN Guidance)}: Augmenting the MARL hierarchy with offline Contrastive GNN spatial edge heatmaps prunes $98.74\%$ of search candidate arcs, achieving the lowest overall fleet count floor across the entire benchmark suite ($NV=9.68$ overall, and $NV=7.49$ on Solomon-100).
 \end{itemize}
 
-""" + t7_new + "\n"
+"""
+        + t7_new
+        + "\n"
+    )
     loco_end_marker = r"\section{Discussion and Managerial Insights}"
     assert loco_end_marker in tex, "loco_end_marker not found"
     tex = tex.replace(loco_end_marker, ladder_section + "\n" + loco_end_marker)
