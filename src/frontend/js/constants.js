@@ -28,7 +28,16 @@ function resolveApiBase() {
       return `${o}/api`;
     }
   }
-  // 4. Use origin-relative path (works with Vite proxy in dev and direct serving in prod)
+  // 4. Firebase Hosting Emulator dev fallback (frontend on 5050, backend on 8000)
+  if (
+    typeof window !== 'undefined' &&
+    (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+  ) {
+    if (window.location.port === '5050') {
+      return 'http://127.0.0.1:8000/api';
+    }
+  }
+  // 5. Use origin-relative path (works with Vite proxy in dev and direct serving in prod)
   return '/api';
 }
 
