@@ -35,6 +35,9 @@ def test_record_full_app_workflow(page: Page):
     page.on("console", lambda msg: print(f"\n[Console]: {msg.text}"))
     page.on("pageerror", lambda err: print(f"\n[FATAL JS ERROR]: {err}"))
 
+    # Suppress onboarding tour during automated testing
+    page.add_init_script("localStorage.setItem('vrptw_onboarding_complete', 'true');")
+
     # --- Step 1: Initial Load of Login Page ---
     print("\n[E2E] Loading auth page...")
     page.goto(f"{HOSTING_BASE}/auth.html")
@@ -55,9 +58,17 @@ def test_record_full_app_workflow(page: Page):
     page.wait_for_selector("#app-shell", state="visible", timeout=15000)
     shot(page, "03_app_shell_loaded")
 
+    # Dismiss the onboarding tour if it appears
+    try:
+        if page.locator(".tour-close").is_visible():
+            page.locator(".tour-close").click()
+            print("[E2E] Onboarding tour dismissed.")
+    except Exception:
+        pass
+
     # Dismiss the help modal if it appears
     try:
-        page.wait_for_selector("#help-modal-close", state="visible", timeout=3000)
+        page.wait_for_selector("#help-modal-close", state="visible", timeout=2000)
         page.click("#help-modal-close")
         print("[E2E] Help modal dismissed.")
     except Exception:
@@ -94,6 +105,12 @@ def test_record_full_app_workflow(page: Page):
 
     # --- Step 5: Execute Optimization Pipeline Manually ---
     print("[E2E] Clicking Run Model button manually...")
+    try:
+        if page.locator(".tour-root").is_visible():
+            page.keyboard.press("Escape")
+            page.wait_for_selector(".tour-root", state="hidden", timeout=2000)
+    except Exception:
+        pass
     page.click("#run-model")
     page.wait_for_selector("#loading", state="visible", timeout=5000)
     shot(page, "07_solver_running")
