@@ -161,7 +161,11 @@ export default function Header() {
                 </option>
               ))
             ) : (
-              <option value="demo">Solomon RC101 (Demo)</option>
+              <>
+                <option value="demo">Demo RC (12 customers, HCMC)</option>
+                <option value="c1_demo">Demo C1 (12 customers, HCMC)</option>
+                <option value="r1_demo">Demo R1 (12 customers, HCMC)</option>
+              </>
             )}
             <option value="custom">{t('headerCustomImport')}</option>
           </select>

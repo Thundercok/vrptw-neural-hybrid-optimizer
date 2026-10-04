@@ -120,7 +120,11 @@ export function createInitialState() {
     vehicles: fleet.length || 7,
     capacity: 120,
     customers: [],
-    solomonDatasets: [],
+    solomonDatasets: [
+      { name: 'demo', label: 'Demo RC (12 customers, HCMC)', builtin: true },
+      { name: 'c1_demo', label: 'Demo C1 (12 customers, HCMC)', builtin: true },
+      { name: 'r1_demo', label: 'Demo R1 (12 customers, HCMC)', builtin: true },
+    ],
     selectedDataset: 'demo',
     suggest: [],
     selectedSuggest: null,

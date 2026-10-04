@@ -42,6 +42,8 @@ from services.text_block_parser import is_vietnamese_text_block, parse_vietnames
 router = APIRouter(tags=["ops"])
 
 _LOGS_PATH = _ROOT_PATH / "docs" / "logs"
+if not _LOGS_PATH.exists() and (_ROOT_PATH / "docs" / "legacy_archive" / "logs").exists():
+    _LOGS_PATH = _ROOT_PATH / "docs" / "legacy_archive" / "logs"
 
 
 def _parse_result_version(folder_name: str) -> str | None:

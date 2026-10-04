@@ -461,11 +461,11 @@ export function AppContextProvider({ children }) {
 
   // Auto-load Solomon dataset on initial dashboard render when unlocked
   useEffect(() => {
-    if (state.unlocked && state.mode === 'sample' && state.customers.length === 0) {
-      loadAvailableDatasets().then(async (list) => {
-        const defaultDs = list.some(d => d.name === 'demo') ? 'demo' : (list[0]?.name || 'demo');
-        await loadSolomonDataset(defaultDs);
-      });
+    if (state.unlocked) {
+      loadAvailableDatasets();
+      if (state.mode === 'sample' && state.customers.length === 0) {
+        loadSolomonDataset(state.selectedDataset || 'demo');
+      }
     }
   }, [state.unlocked, state.mode]);
 
