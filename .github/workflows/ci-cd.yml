@@ -267,13 +267,37 @@ jobs:
           channelId: live
           projectId: vrptw-cd89d
 
+  # ── DEPLOY GITHUB PAGES (FOR MAIN BRANCH) ──────────────────────────────────
+  deploy-pages:
+    name: Deploy to GitHub Pages
+    needs: [build-and-test, docker-build]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install & Build
+        run: |
+          npm ci
+          npm run build
+
       - name: Upload Page Assets (GitHub Pages)
-        if: github.ref == 'refs/heads/main'
         uses: actions/upload-pages-artifact@v3
         with:
           path: dist
 
       - name: Deploy to GitHub Pages
-        if: github.ref == 'refs/heads/main'
         id: deployment
         uses: actions/deploy-pages@v4
