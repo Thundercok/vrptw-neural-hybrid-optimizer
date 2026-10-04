@@ -41,6 +41,9 @@ def authed_page(page: Page):
     page.on("console", lambda msg: print(f"\n[Console]: {msg.text}"))
     page.on("pageerror", lambda err: print(f"\n[FATAL JS ERROR]: {err}"))
 
+    # Suppress onboarding tour during automated testing
+    page.add_init_script("localStorage.setItem('vrptw_onboarding_complete', 'true');")
+
     page.goto(f"{HOSTING_BASE}/app.html")
     page.wait_for_load_state("networkidle")
 
@@ -49,8 +52,15 @@ def authed_page(page: Page):
 
     # Dismiss the help modal if it appears
     try:
-        page.wait_for_selector("#help-modal-close", state="visible", timeout=3000)
+        page.wait_for_selector("#help-modal-close", state="visible", timeout=2000)
         page.click("#help-modal-close")
+    except Exception:
+        pass
+
+    # Dismiss the tour modal if it appears
+    try:
+        if page.locator(".tour-close").is_visible():
+            page.locator(".tour-close").click()
     except Exception:
         pass
 
