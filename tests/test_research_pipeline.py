@@ -33,6 +33,11 @@ def test_audit_precedes_paper_build():
     assert stages.index("audit") < stages.index("paper")
 
 
+def test_research_plan_has_no_retired_demo_stage():
+    assert "app" not in commands()
+    assert "app" not in PIPELINE["_ordered_stages"]("plan")
+
+
 def test_make_uses_supported_runner():
     result = subprocess.run(["make", "-n", "benchmark"], cwd=ROOT, capture_output=True, text=True, check=True)
     assert "scripts/run_paper_benchmarks.py --mode quick" in result.stdout
@@ -40,6 +45,7 @@ def test_make_uses_supported_runner():
 
 def test_pure_research_dependencies():
     project = tomllib.loads((ROOT / "pyproject.toml").read_text())["project"]
-    assert "fastapi" not in project["dependencies"]
+    assert not any(dependency.startswith("fastapi") for dependency in project["dependencies"])
     assert "demo" not in project.get("optional-dependencies", {})
     assert "torch>=2.4" in project["dependencies"]
+    assert not any("playwright" in dependency for dependency in project["optional-dependencies"]["dev"])

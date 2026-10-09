@@ -36,7 +36,7 @@ make research-paper     # PDF and Overleaf ZIP
 
 The pipeline uses `run_paper_benchmarks.py`, `make_paper_tables.py`,
 `generate_paper_figures.py`, `audit_paper_integrity.py`, and `docs/build_paper.py`.
-Other scripts provide specific ablations, extended benchmarks, or deployment
+Other scripts provide specific ablations, extended benchmarks, or model publishing
 tools; they are not additional required setup steps.
 
 `make benchmark` uses the same paper runner. For a larger suite:
@@ -53,6 +53,8 @@ separate because they measure different quantities.
 `make poster` regenerates the poster HTML, PNG, and PPTX exports and copies the
 deliverables to `../workspace-artifacts/`. Generated ZIP/HTML/PNG/PPTX exports
 are ignored; only the final paper and poster PDFs are versioned.
+Poster rendering dependencies are isolated in the `poster` dependency group;
+`make poster` enables it automatically. Browser tools are not needed for solver tests.
 
 Tables and figures use `results/ultimate-publication-suite/combined_clean.csv`.
 To generate tables from another sweep:
@@ -68,11 +70,11 @@ discrepancies. `research-all` stops at that failed audit.
 
 ## Web Demo Archive
 
-The interactive web demo and full-stack dispatch application have been archived from the main branch to keep the repository 100% focused on research optimization.
-The complete working demo (FastAPI backend + React frontend + Firebase auth + Vite/Docker deployment) is preserved at Git tag `v1.0-with-web-demo`:
+The retired frontend, backend, browser tests, and deployment sources are preserved
+at Git tag `v1.0-with-web-demo`. Restore them without switching the research checkout:
 
 ```sh
-git checkout v1.0-with-web-demo
+git archive --format=zip --output=/tmp/vrptw-web-demo.zip v1.0-with-web-demo
 ```
 
 ## Historical Files
@@ -95,6 +97,8 @@ before running it, since these scripts resolve inputs relative to the repo.
 Firebase Dockerfile, and duplicate development launcher in the same archive.
 `deep-manifest.json` inventories the unused frontend stack, legacy benchmark
 wrappers, alternative poster asset generators, and consolidated tool configs.
+`research-only-manifest.json` inventories the remaining retired environment
+template and deployment/emulator scripts.
 
 The main model checkpoint is `rl_alns_dr_v15.safetensors` at the repository root.
 Canonical benchmark instances live in `data/Solomon/` and
