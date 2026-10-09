@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
-"""Research-first workflow driver for the VRPTW project.
-
-The script is deliberately a thin orchestrator over existing tools. It makes
-the intended NCKH/report pipeline discoverable without hiding the underlying
-benchmark, table, figure, and manuscript commands.
-"""
+"""Run research commands or print their execution plan."""
 
 from __future__ import annotations
 

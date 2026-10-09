@@ -1,18 +1,7 @@
-# ---------------------------------------------------------------
-# OS & System Junk
-# ---------------------------------------------------------------
+# Local files and generated outputs.
 .DS_Store
 Thumbs.db
 desktop.ini
-
-# ---------------------------------------------------------------
-# Office Temporary / Lock Files
-# ---------------------------------------------------------------
-
-
-# ---------------------------------------------------------------
-# Secrets & Credentials
-# ---------------------------------------------------------------
 secret
 .env
 .env.*
@@ -23,10 +12,6 @@ secret
 *.db-journal
 *.sqlite
 *.sqlite3
-
-# ---------------------------------------------------------------
-# Python, Pytest & Virtual Environments
-# ---------------------------------------------------------------
 __pycache__/
 *.py[cod]
 *$py.class
@@ -43,18 +28,11 @@ env/
 .python-version
 .uv/
 .vercel
-# ---------------------------------------------------------------
-# IDE, Editor & Tooling
-# ---------------------------------------------------------------
 .idea/
 .vscode/
 *.iml
 *.swp
 *.swo
-
-# ---------------------------------------------------------------
-# Project Artifacts, Temporary Runs & Output Dirs
-# ---------------------------------------------------------------
 tmp/
 scratch/
 output_*/
@@ -64,15 +42,6 @@ results/
 node_modules/
 dist/
 /dist/
-
-# ---------------------------------------------------------------
-# Benchmark Checkpoints & Logs
-# ---------------------------------------------------------------
-
-
-# ---------------------------------------------------------------
-# LaTeX Auxiliary Compilation Files
-# ---------------------------------------------------------------
 *.aux
 *.log
 *.out
@@ -84,39 +53,17 @@ dist/
 *.bcf
 *.run.xml
 *.qlpreview/
-
-
-
-# ---------------------------------------------------------------
-# E2E Test Outputs & Media
-# ---------------------------------------------------------------
-
-
-# ---------------------------------------------------------------
-# Notes & Internal Workings
-# ---------------------------------------------------------------
 CLAUDE.md
 .env.test
-
-.vercel
 .vercel_python_packages/
-
-# Superseded by deploying the real Vite build from the repo root.
 vercel-static-deploy/
-
-# Scratch prompt notes. Has held live API keys; GitHub push protection
-# rejected a push that included it.
 prompt_ai.md
-
-# Temporary scratch & build files
 *.bak
 *.pre_trim
 *.bbl
 extracted_rId*
 test_keynote_export*
 audit_bib_results.json
-
-# Historical material is preserved at tag research-history-before-cleanup.
 /docs/legacy_archive/
 /docs/overleaf_bundle/
 /posters/archive/
