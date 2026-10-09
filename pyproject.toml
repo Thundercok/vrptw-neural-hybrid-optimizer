@@ -26,9 +26,6 @@ where = ["src"]
 dev = [
     "ruff>=0.7",
     "pytest>=8.0",
-    "pytest-asyncio>=0.23",
-    "playwright>=1.41",
-    "pytest-playwright>=0.4",
 ]
 
 [tool.ruff]
@@ -44,8 +41,9 @@ ignore = ["E501", "B008", "B905", "E402"]
 extraPaths = ["docs", "src"]
 
 [dependency-groups]
-dev = [
+poster = [
     "python-pptx>=1.0.2",
+    "playwright>=1.41",
 ]
 
 [tool.pytest.ini_options]

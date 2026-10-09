@@ -10,7 +10,7 @@ help:
 	@echo "Solver:    make benchmark | smoke-test | solve-c101 | train-gnn"
 
 poster:
-	uv run --extra dev python posters/build_official_school_poster.py
+	uv run --group poster python posters/build_official_school_poster.py
 
 paper:
 	@uv run python docs/build_paper.py

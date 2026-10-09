@@ -1,9 +1,7 @@
 """Publish the trained DDQN-ALNS weights to a Hugging Face model repo.
 
-The solver service bundles a copy of the weights in its image, but pulls from
-the Hub at boot when ``VRPTW_HF_MODEL_REPO`` is set. Publishing here is what
-lets a retrained checkpoint reach production without rebuilding and
-redeploying the container.
+Publishing checkpoints separately makes research weights available without
+bundling a web service. The retired demo is preserved at v1.0-with-web-demo.
 
     python scripts/publish_model_hf.py --repo oggishi/vrptw-ddqn-alns
 
@@ -40,7 +38,7 @@ library_name: safetensors
 # DDQN-ALNS weights for VRPTW
 
 Trained controller weights for the hybrid DDQN-ALNS solver in
-[VRPTW-Research-Optimization](https://github.com/Thundercok/VRPTW-Research-Optimization).
+[VRPTW Neural Hybrid Solver](https://github.com/Thundercok/vrptw-neural-hybrid-optimizer).
 The network selects destroy/repair operators and acceptance behaviour inside an
 Adaptive Large Neighbourhood Search over the Vehicle Routing Problem with Time
 Windows.
@@ -65,7 +63,7 @@ edge is small and only significant on two of three instances tested
 ## Usage
 
 These are controller weights for a specific solver, not a standalone model. The
-production service downloads them at boot:
+checkpoint can be downloaded independently:
 
 ```python
 from huggingface_hub import hf_hub_download
@@ -73,7 +71,7 @@ from huggingface_hub import hf_hub_download
 path = hf_hub_download("{repo}", "rl_alns_dr_v15.safetensors")
 ```
 
-See `solver_service/app.py` in the repository for the full loading path.
+See `src/vrptw/solvers.py` for the controller weight-loading implementation.
 """
 
 

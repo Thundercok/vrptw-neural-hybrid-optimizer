@@ -54,7 +54,7 @@ def _commands(args: argparse.Namespace) -> dict[str, list[PipelineCommand]]:
         "smoke": [
             PipelineCommand(
                 "pytest",
-                "Run the solver regression suite, excluding slower e2e tests.",
+                "Run solver and research workflow regression tests.",
                 ["uv", "run", "--extra", "dev", "pytest", "tests/", "-v"],
             ),
             PipelineCommand(
@@ -109,19 +109,12 @@ def _commands(args: argparse.Namespace) -> dict[str, list[PipelineCommand]]:
                 [*_project_python(), "scripts/audit_paper_integrity.py"],
             )
         ],
-        "app": [
-            PipelineCommand(
-                "app-demo",
-                "Start the secondary FastAPI/Vite dispatch demo.",
-                ["make", "dev-all"],
-            )
-        ],
     }
 
 
 def _ordered_stages(selected: str) -> list[str]:
     if selected == "plan":
-        return ["smoke", "quick", "tables", "figures", "paper", "audit", "app"]
+        return ["smoke", "quick", "tables", "figures", "paper", "audit"]
     if selected == "all":
         return ["smoke", "tables", "figures", "audit", "paper"]
     return [selected]
@@ -129,7 +122,7 @@ def _ordered_stages(selected: str) -> list[str]:
 
 def _print_plan(commands_by_stage: dict[str, list[PipelineCommand]], stages: list[str]) -> None:
     print("Research-first workflow")
-    print("Priority: paper/report -> reproducible pipeline -> app demo")
+    print("Priority: reproducible experiments -> verified claims -> paper/report")
     print()
     for stage in stages:
         print(f"[{stage}]")
@@ -155,7 +148,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Run or print the VRPTW research pipeline.")
     parser.add_argument(
         "--stage",
-        choices=["plan", "smoke", "quick", "tables", "figures", "paper", "audit", "app", "all"],
+        choices=["plan", "smoke", "quick", "tables", "figures", "paper", "audit", "all"],
         default="plan",
         help="Pipeline stage to run. 'plan' only prints commands.",
     )
