@@ -33,14 +33,13 @@ def test_audit_precedes_paper_build():
     assert stages.index("audit") < stages.index("paper")
 
 
-def test_make_uses_supported_runner_and_demo_extra():
-    result = subprocess.run(["make", "-n", "benchmark", "dev"], cwd=ROOT, capture_output=True, text=True, check=True)
+def test_make_uses_supported_runner():
+    result = subprocess.run(["make", "-n", "benchmark"], cwd=ROOT, capture_output=True, text=True, check=True)
     assert "scripts/run_paper_benchmarks.py --mode quick" in result.stdout
-    assert "uv run --extra demo uvicorn" in result.stdout
 
 
-def test_demo_dependencies_are_optional():
+def test_pure_research_dependencies():
     project = tomllib.loads((ROOT / "pyproject.toml").read_text())["project"]
-    assert "fastapi>=0.116" not in project["dependencies"]
-    assert "fastapi>=0.116" in project["optional-dependencies"]["demo"]
+    assert "fastapi" not in project["dependencies"]
+    assert "demo" not in project.get("optional-dependencies", {})
     assert "torch>=2.4" in project["dependencies"]

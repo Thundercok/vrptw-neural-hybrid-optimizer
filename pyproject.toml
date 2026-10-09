@@ -23,25 +23,12 @@ build-backend = "setuptools.build_meta"
 where = ["src"]
 
 [project.optional-dependencies]
-demo = [
-    "fastapi>=0.116",
-    "uvicorn[standard]>=0.35",
-    "httpx>=0.28",
-    "pydantic>=2.11",
-    "firebase-admin>=7.0",
-    "python-dotenv>=1.0",
-    "passlib[argon2]>=1.7.4",
-    "argon2-cffi>=23.1",
-    "slowapi>=0.1.9",
-    "sentry-sdk[fastapi]>=2.0",
-    "python-multipart>=0.0.7",
-]
 dev = [
     "ruff>=0.7",
     "pytest>=8.0",
     "pytest-asyncio>=0.23",
     "playwright>=1.41",
-    "pytest-playwright>=0.4"
+    "pytest-playwright>=0.4",
 ]
 
 [tool.ruff]
@@ -62,6 +49,5 @@ dev = [
 ]
 
 [tool.pytest.ini_options]
-addopts = "--ignore=tests/e2e"
 testpaths = ["tests"]
 

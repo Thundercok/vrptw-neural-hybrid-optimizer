@@ -14,13 +14,11 @@ ALNS and DDQN-based solvers for the vehicle routing problem with time windows.
 | `scripts/` | Experiments, statistics, figures, tables, and audits |
 | `results/` | Recorded publication CSVs; new runs are ignored by Git |
 | `docs/`, `posters/` | Paper and poster sources, required assets, and final PDFs |
-| `tests/` | Solver tests and optional browser tests |
-| `src/backend/`, `src/frontend/` | Dispatch demo |
+| `tests/` | Solver and regression test suites |
 | `archive/` | Historical file index; experiment archives stay outside Git |
 
 Start with `src/vrptw/__main__.py` for the solver CLI and
 `scripts/research_pipeline.py` for the supported research workflow.
-The dispatch demo is optional, not part of solver benchmarking.
 
 ## Research
 
@@ -68,16 +66,14 @@ Use independent cold starts and equal budgets; compare distance at matched
 fleet sizes. The last paper audit reported 39 table-format and text-claim
 discrepancies. `research-all` stops at that failed audit.
 
-## Demo
+## Web Demo Archive
 
-Requires Node.js 20+. `npm ci && make dev-all` starts the API on port 8000 and
-the frontend at http://127.0.0.1:5050/app.html. Anonymous demo access is enabled
-by default; set `DEMO_AUTH_BYPASS=false` and configure Firebase for authentication.
-`make dev` enables the Python `demo` extra automatically; research-only installs
-do not need the API/authentication dependencies. For a manual demo installation,
-run `uv sync --extra demo --extra dev`. Frontend lint/format configuration lives
-in `package.json`. Dashboard, authentication, and feedback pages use React;
-the landing page retains its own script. There is no second legacy dashboard.
+The interactive web demo and full-stack dispatch application have been archived from the main branch to keep the repository 100% focused on research optimization.
+The complete working demo (FastAPI backend + React frontend + Firebase auth + Vite/Docker deployment) is preserved at Git tag `v1.0-with-web-demo`:
+
+```sh
+git checkout v1.0-with-web-demo
+```
 
 ## Historical Files
 
