@@ -30,6 +30,7 @@ env/
 .vercel
 .idea/
 .vscode/
+.mcp.json
 *.iml
 *.swp
 *.swo
@@ -70,3 +71,16 @@ audit_bib_results.json
 /archive/local-manifest.json
 /logs/
 /posters/generated/
+
+# Reproducible exports and retired workspace material.
+/docs/overleaf_ieee_access.zip
+/docs/ai_figures/
+/docs/figures_3d/
+/docs/figures_code/
+/data/combined_sweep/
+/data/checkpoints/
+/archive/local-experiments.zip
+/posters/official_school_poster.html
+/posters/Poster_VRPTW_NCKHSV_2026.png
+/posters/Poster_VRPTW_NCKHSV_2026*.pptx
+/src/rl_alns_dr_v15.safetensors

@@ -1056,9 +1056,9 @@ def export_pptx_and_sync(png_file, pdf_file):
     prs_169.save(pptx_169)
     print(f"Exported 16:9 PPTX to {pptx_169}")
 
-    # Synchronize to parent workspace & artifact directory
-    parent_dir = os.path.dirname(REPO_ROOT)
-    artifact_dir = "/Users/thundercock2/.gemini/antigravity/brain/dc00c957-f7cf-4b6e-b6ea-c8356bbb8d9a"
+    # Keep workspace exports outside the source checkout.
+    artifact_dir = os.path.join(os.path.dirname(REPO_ROOT), "workspace-artifacts")
+    os.makedirs(artifact_dir, exist_ok=True)
 
     files_to_sync = [
         ("Poster_VRPTW_NCKHSV_2026.png", png_file),
@@ -1068,14 +1068,9 @@ def export_pptx_and_sync(png_file, pdf_file):
     ]
 
     for fname, src in files_to_sync:
-        p_dst = os.path.join(parent_dir, fname)
-        shutil.copy2(src, p_dst)
-        print(f"Synced {fname} -> {p_dst}")
-
-        if os.path.exists(artifact_dir):
-            a_dst = os.path.join(artifact_dir, fname)
-            shutil.copy2(src, a_dst)
-            print(f"Synced {fname} -> {a_dst}")
+        dst = os.path.join(artifact_dir, fname)
+        shutil.copy2(src, dst)
+        print(f"Synced {fname} -> {dst}")
 
 
 if __name__ == "__main__":
