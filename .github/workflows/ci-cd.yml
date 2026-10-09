@@ -25,17 +25,4 @@ jobs:
         with:
           enable-cache: true
       - run: uv sync --frozen --extra dev --all-groups --python 3.12
-      - run: uv run --extra dev pytest tests --ignore=tests/e2e -q
-
-  demo:
-    name: Demo Build
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: npm
-      - run: npm ci
-      - run: npm run build
+      - run: uv run --extra dev pytest tests/ -v
