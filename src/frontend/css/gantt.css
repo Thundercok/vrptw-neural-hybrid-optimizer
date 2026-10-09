@@ -18,9 +18,7 @@
     max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1),
     opacity 0.25s ease,
     transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  /* Capped against the viewport so a large fleet cannot push the map off the
-     bottom of the screen. */
-  max-height: min(600px, 42vh);
+  max-height: 600px;
   opacity: 1;
   transform: translateY(0);
   flex-shrink: 0;
@@ -141,15 +139,14 @@
 /* ── Canvas Wrapper ──────────────────────────────────── */
 .gantt-canvas-wrap {
   padding: 8px 12px 12px;
-  overflow: auto;
-  max-height: calc(min(600px, 42vh) - 74px);
+  overflow-x: auto;
+  overflow-y: hidden;
   scrollbar-width: thin;
   scrollbar-color: var(--border) transparent;
 }
 
 .gantt-canvas-wrap::-webkit-scrollbar {
   height: 6px;
-  width: 6px;
 }
 
 .gantt-canvas-wrap::-webkit-scrollbar-thumb {
@@ -163,22 +160,23 @@
 }
 
 /* ── Tooltip ─────────────────────────────────────────── */
-/* A surface card like every other popover in the app, not an inverted black
-   box — it used to be the one dark element floating over a light dashboard,
-   and it inverted itself into an unreadable white-on-white in dark mode. */
 .gantt-tooltip {
   position: fixed;
   z-index: 9999;
   pointer-events: none;
-  background: var(--bg-surface);
-  color: var(--text-main);
-  padding: 9px 12px;
+  background: rgba(15, 23, 42, 0.94);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #f1f5f9;
+  padding: 10px 14px;
   border-radius: var(--r);
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow-lg);
   font-family: var(--font-main);
   font-size: 11.5px;
   line-height: 1.55;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.28),
+    0 2px 8px rgba(0, 0, 0, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   max-width: 280px;
   opacity: 0;
   transform: translateY(4px);
@@ -195,9 +193,9 @@
 .gantt-tooltip-title {
   font-weight: 700;
   font-size: 12px;
-  margin-bottom: 6px;
-  color: var(--text-main);
-  border-bottom: 1px solid var(--border);
+  margin-bottom: 5px;
+  color: #fff;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   padding-bottom: 5px;
 }
 
@@ -209,30 +207,15 @@
 }
 
 .gantt-tooltip-label {
-  color: var(--text-muted);
+  color: #94a3b8;
   font-weight: 500;
 }
 
 .gantt-tooltip-value {
   font-family: var(--font-data);
   font-weight: 500;
-  color: var(--text-main);
+  color: #e2e8f0;
   font-size: 11px;
-  text-align: right;
-}
-
-/* Activity line borrows the legend's colours, so the tooltip names the same
-   thing the bar under the cursor is coloured. */
-.gantt-tooltip-value.is-travel {
-  color: var(--ink-faint);
-}
-
-.gantt-tooltip-value.is-wait {
-  color: var(--warn);
-}
-
-.gantt-tooltip-value.is-service {
-  color: var(--primary);
 }
 
 /* ── Legend ───────────────────────────────────────────── */
@@ -262,18 +245,12 @@
 }
 
 .gantt-legend-swatch.travel {
-  background: repeating-linear-gradient(
-    45deg,
-    var(--ink-faint),
-    var(--ink-faint) 2px,
-    transparent 2px,
-    transparent 4px
-  );
+  background: repeating-linear-gradient(45deg, #94a3b8, #94a3b8 2px, transparent 2px, transparent 4px);
   opacity: 0.6;
 }
 
 .gantt-legend-swatch.wait {
-  background: var(--warn);
+  background: #f59e0b;
   opacity: 0.55;
 }
 

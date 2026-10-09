@@ -79,14 +79,6 @@ class MatrixRequest(BaseModel):
 
 class JobRequest(BaseModel):
     mode: str = "sample"
-    # Name of the bundled instance the points came from ("rc101", "demo", ...).
-    # Empty for custom imports. Lets the solver rebuild the instance in its
-    # native Solomon frame and score the plan against the published BKS.
-    dataset: str = ""
-    preset: str = Field(default="fast", description="Execution preset: fast, standard, or deep")
-    pretrained_transfer: bool = Field(default=False, description="Enable pretrained transfer weights (Hybrid-DDQN*)")
-    use_gnn: bool = Field(default=True, description="Enable GNN spatial edge guidance")
-    iterations: int | None = Field(default=None, description="Custom iteration count override")
     fleet: FleetConfig
     customers: list[Point]
 
@@ -112,6 +104,7 @@ class FeedbackEntry(BaseModel):
     source: str = "anonymous"
     user_agent: str = ""
     status: str = "new"
+    developer_note: str = ""
 
 
 @dataclass
@@ -124,10 +117,6 @@ class JobState:
 
 
 class ReoptimizeRequest(BaseModel):
-    # Same role as on JobRequest: keeps the polish step in the same coordinate
-    # frame the original solve used, so it cannot "improve" a route by a
-    # fraction of a percent that is really just a projection difference.
-    dataset: str = ""
     fleet: FleetConfig
     customers: list[Point]
     routes: list[list[int]]

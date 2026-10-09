@@ -128,7 +128,7 @@ def _ordered_stages(selected: str) -> list[str]:
     if selected == "plan":
         return ["smoke", "quick", "tables", "figures", "paper", "audit", "app"]
     if selected == "all":
-        return ["smoke", "quick", "tables", "figures", "paper", "audit"]
+        return ["smoke", "tables", "figures", "audit", "paper"]
     return [selected]
 
 

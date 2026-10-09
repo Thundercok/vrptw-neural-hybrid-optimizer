@@ -5,6 +5,7 @@ Phase 1 and Phase 2 of the optimisation work are behaviour-preserving by design:
 they remove Python/Numba marshalling overhead and redundant recomputation without
 changing which moves the search makes. This test enforces that — if a "pure speed"
 change shifts (nv, cost) at all, it changed the search, and that is a bug.
+Wall-clock-limited MILP recombination is excluded from these fingerprints.
 
 Regenerate the baseline with:
     python scripts/capture_golden.py

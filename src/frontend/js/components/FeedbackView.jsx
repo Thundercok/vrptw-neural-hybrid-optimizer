@@ -99,7 +99,9 @@ export default function FeedbackView() {
 
   return (
     <>
-      <a className="back-to-landing" href="app.html" title="Back to demo">&larr; Demo</a>
+      <a className="back-to-landing" href="app.html" title="Back to demo">
+        &larr; Demo
+      </a>
       <button
         id="lang-toggle"
         className="lang-fab"
@@ -116,7 +118,9 @@ export default function FeedbackView() {
           <div className="feedback-grid">
             <div className="feedback-copy">
               <p className="tag">PROJECT NAMI</p>
-              <p className="feedback-badge" id="feedback-badge">{dict['feedback-badge']}</p>
+              <p className="feedback-badge" id="feedback-badge">
+                {dict['feedback-badge']}
+              </p>
               <h1 id="feedback-title">{dict['feedback-title']}</h1>
               <p id="feedback-lead" className="feedback-lead">
                 {dict['feedback-lead']}
@@ -131,11 +135,7 @@ export default function FeedbackView() {
             <form id="feedback-form" className="feedback-form" onSubmit={handleSubmit}>
               <label className="feedback-field" htmlFor="feedback-category">
                 <span id="feedback-category-label">{dict['feedback-category-label']}</span>
-                <select
-                  id="feedback-category"
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                >
+                <select id="feedback-category" value={category} onChange={(e) => setCategory(e.target.value)}>
                   <option value="general">{lang === 'vn' ? 'Chung' : 'General'}</option>
                   <option value="bug">{lang === 'vn' ? 'Lỗi' : 'Bug'}</option>
                   <option value="idea">{lang === 'vn' ? 'Ý tưởng' : 'Idea'}</option>
@@ -159,11 +159,7 @@ export default function FeedbackView() {
               <div className="feedback-row">
                 <label className="feedback-field" htmlFor="feedback-rating">
                   <span id="feedback-rating-label">{dict['feedback-rating-label']}</span>
-                  <select
-                    id="feedback-rating"
-                    value={rating}
-                    onChange={(e) => setRating(e.target.value)}
-                  >
+                  <select id="feedback-rating" value={rating} onChange={(e) => setRating(e.target.value)}>
                     <option value="">{lang === 'vn' ? 'Tùy chọn' : 'Optional'}</option>
                     <option value="5">{lang === 'vn' ? '5 - Xuất sắc' : '5 - Excellent'}</option>
                     <option value="4">{lang === 'vn' ? '4 - Tốt' : '4 - Good'}</option>
@@ -179,7 +175,11 @@ export default function FeedbackView() {
                     id="feedback-contact"
                     type="text"
                     maxLength="120"
-                    placeholder={lang === 'vn' ? 'Để lại email hoặc tên nếu muốn liên hệ lại' : 'Leave an email or name if you want follow-up'}
+                    placeholder={
+                      lang === 'vn'
+                        ? 'Để lại email hoặc tên nếu muốn liên hệ lại'
+                        : 'Leave an email or name if you want follow-up'
+                    }
                     value={contact}
                     onChange={(e) => setContact(e.target.value)}
                   />
@@ -187,12 +187,7 @@ export default function FeedbackView() {
               </div>
 
               <div className="feedback-actions">
-                <button
-                  id="feedback-submit"
-                  className="btn primary"
-                  type="submit"
-                  disabled={isSubmitting}
-                >
+                <button id="feedback-submit" className="btn primary" type="submit" disabled={isSubmitting}>
                   {dict['feedback-submit']}
                 </button>
                 <a className="btn ghost" href="index.html" id="feedback-home-link">
@@ -200,7 +195,9 @@ export default function FeedbackView() {
                 </a>
               </div>
 
-              <p id="feedback-status" className="status">{statusText}</p>
+              <p id="feedback-status" className="status">
+                {statusText}
+              </p>
             </form>
           </div>
         </section>

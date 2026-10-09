@@ -3,6 +3,10 @@
 This repository is operated as a research project first, a reproducible
 experimental pipeline second, and a web application third.
 
+`main` is the single development branch. The short project map lives in the
+root README; historical experiments and cached plans are preserved at the Git
+tag `research-history-before-cleanup` (see `archive/README.md` for restoration).
+
 ## Outcome Priority
 
 1. **NCKH report / paper**
@@ -41,6 +45,12 @@ fresh raw output under `results/research_pipeline/quick/`. By default, table
 generation uses the aggregate publication sweep at
 `results/ultimate-publication-suite/combined_clean.csv`; pass `--sweep-csv` to
 `research_pipeline.py` when a new aggregate sweep is ready.
+
+`make research-all` checks the recorded publication evidence and rebuilds the
+paper. It deliberately excludes new exploratory benchmarks: `research-quick`
+produces a separate screening dataset, not a replacement for the publication
+sweep. Tables are generated snippets; check and integrate them into the
+manuscript before presenting new numbers.
 
 ## Pipeline Stages
 

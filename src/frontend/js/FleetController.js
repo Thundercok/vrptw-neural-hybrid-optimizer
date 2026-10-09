@@ -1,5 +1,3 @@
-import { createSkillBadge } from './skillUtils.js';
-
 export class FleetController {
   constructor(app) {
     this.app = app;
@@ -171,15 +169,11 @@ export class FleetController {
             <input type="number" class="table-inline-input fleet-input num" data-field="breakDuration" value="${veh.breakDuration}" min="0" max="120" />
           </td>
           <td>
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <select class="table-inline-input fleet-input" data-field="skills" style="font-weight: 500; width: 120px;">
-                <option value="None" ${veh.skills === 'None' ? 'selected' : ''}>None (Standard)</option>
-                <option value="Refrigerated" ${veh.skills === 'Refrigerated' ? 'selected' : ''}>Refrigerated</option>
-                <option value="Hazmat" ${veh.skills === 'Hazmat' ? 'selected' : ''}>Hazmat</option>
-                <option value="Express" ${veh.skills === 'Express' ? 'selected' : ''}>Express</option>
-              </select>
-              <div class="skill-preview-badge">${createSkillBadge(veh.skills)}</div>
-            </div>
+            <select class="table-inline-input fleet-input" data-field="skills" style="font-weight: 500;">
+              <option value="None" ${veh.skills === 'None' ? 'selected' : ''}>None (Standard)</option>
+              <option value="Refrigerated" ${veh.skills === 'Refrigerated' ? 'selected' : ''}>Refrigerated</option>
+              <option value="Hazmat" ${veh.skills === 'Hazmat' ? 'selected' : ''}>Hazmat</option>
+            </select>
           </td>
           <td>
             <select class="table-inline-input fleet-input" data-field="status" style="color: ${statusColor}; font-weight: 600;">

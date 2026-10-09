@@ -1,5 +1,3 @@
-import { algoColor, overlayKeysFor, resolveActiveOverlay } from './algoMeta.js';
-
 function darkenHex(hex, percent) {
   if (!hex || !hex.startsWith('#')) return hex;
   let raw = hex.replace('#', '');
@@ -50,10 +48,18 @@ export class MapController {
     this.ddqnMap = this.map;
     this.alnsMap = this.map;
 
-    // No +/- control: the buttons crowded the driver rail and every zoom
-    // gesture (wheel, pinch, double-click, box-zoom) still works without them.
+    L.control.zoom({ position: 'bottomright' }).addTo(this.map);
 
-    this.setTileTheme(localStorage.getItem('vrptw_map_theme') || 'carto-light');
+    const savedTheme = localStorage.getItem('vrptw_map_theme') || 'carto-light';
+    const tileUrl =
+      savedTheme === 'carto-dark'
+        ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+        : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
+
+    L.tileLayer(tileUrl, {
+      maxZoom: 19,
+      attribution: '&copy; CARTO',
+    }).addTo(this.map);
 
     this.canvasRenderer = L.canvas({ padding: 0.5 });
     this.markerLayer = L.layerGroup().addTo(this.map);
@@ -69,28 +75,6 @@ export class MapController {
     // Switch listeners are dynamically updated in App.js when solver runs,
     // but we setup standard ones here as a fallback.
     this.currentView = 'ddqn';
-  }
-
-  /**
-   * Swap the basemap in place. Settings calls this so a style change is visible
-   * immediately instead of waiting for the next full page load.
-   */
-  setTileTheme(theme) {
-    if (!this.map) return;
-    const tileUrl =
-      theme === 'carto-dark'
-        ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-        : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
-
-    if (this.tileLayer) {
-      this.map.removeLayer(this.tileLayer);
-    }
-    this.tileLayer = L.tileLayer(tileUrl, {
-      maxZoom: 19,
-      attribution: '&copy; CARTO',
-    }).addTo(this.map);
-    this.tileLayer.bringToBack();
-    this.mapTheme = theme;
   }
 
   getRouteLayer(algoName) {
@@ -119,9 +103,6 @@ export class MapController {
 
   switchView(view) {
     this.currentView = view;
-
-    // No dropdown sync here: `state.activeOverlay` is the single source of
-    // truth and LiveDispatchView drives this method from it.
 
     // Remove all route and vehicle layers
     if (this.routeLayers) {
@@ -183,12 +164,22 @@ export class MapController {
     this.ddqnVehicles.clear();
     this.alnsVehicles.clear();
 
-    this.roadRoutes.clear();
+    // NOTE: roadRoutes is intentionally NOT cleared here so that
+    // road geometry fetched by OSRM persists across view-switches.
   }
 
   renderMarkers() {
     this.markerLayer.clearLayers();
     const bounds = [];
+    const formatMinutesToTime = (minutes) => {
+      if (minutes === undefined || minutes === null || isNaN(minutes)) return '00:00';
+      const h = Math.floor(minutes / 60)
+        .toString()
+        .padStart(2, '0');
+      const m = (minutes % 60).toString().padStart(2, '0');
+      return `${h}:${m}`;
+    };
+
     this.app.state.customers.forEach((c) => {
       const p = [c.lat, c.lng];
       bounds.push(p);
@@ -196,9 +187,15 @@ export class MapController {
         icon: c.isDepot ? this.buildDepotIcon() : this.buildCustomerIcon(c.ready, c.due),
       };
 
+      const timeWindowStr =
+        c.address && typeof c.ready === 'number'
+          ? `${formatMinutesToTime(c.ready)} - ${formatMinutesToTime(c.due)}`
+          : `${c.ready} - ${c.due}`;
+
       let popupContent = `
-        <div style="font-family: Inter, sans-serif; min-width: 140px;">
+        <div style="font-family: Inter, sans-serif; min-width: 150px; max-width: 240px; line-height: 1.4;">
           <strong style="font-size: 13px; color: #0f172a; display: block; margin-bottom: 2px;">${c.name}</strong>
+          ${c.address ? `<div style="color: #475569; font-size: 10px; margin-bottom: 4px; font-weight: 500; word-break: break-word;">📍 ${c.address}</div>` : ''}
           <div style="color: #64748b; font-size: 11px; margin-bottom: 2px;">Demand: ${c.demand} units</div>
       `;
 
@@ -220,7 +217,7 @@ export class MapController {
         `;
       } else {
         popupContent += `
-          <div style="color: #64748b; font-size: 11px;">Time Window: ${c.ready} - ${c.due}</div>
+          <div style="color: #64748b; font-size: 11px;">Time Window: ${timeWindowStr}</div>
         `;
       }
       popupContent += `</div>`;
@@ -235,19 +232,22 @@ export class MapController {
   renderAlgoRoutes(algo, algoNameOrIsDdqn, color, capacity) {
     const algoName = typeof algoNameOrIsDdqn === 'boolean' ? (algoNameOrIsDdqn ? 'ddqn' : 'alns') : algoNameOrIsDdqn;
     const layerGroup = this.getRouteLayer(algoName);
+    const prefix = algoName;
     (algo.routes || []).forEach((route, routeIndex) => {
       if (!route.path || route.path.length < 2) return;
       const popupContent = this._buildRoutePopup(route, capacity, routeIndex);
       const routeColor = this.colorForRoute(routeIndex, route, color);
-      L.polyline(
-        route.path.map((p) => [p[0], p[1]]),
-        {
-          renderer: this.canvasRenderer,
-          color: routeColor,
-          weight: 4,
-          opacity: 0.9,
-        }
-      )
+
+      const key = `${prefix}_${route.vehicle_id}`;
+      const road = this.roadRoutes.get(key);
+      const coords = road ? road.geometry : route.path.map((p) => [p[0], p[1]]);
+
+      L.polyline(coords, {
+        renderer: this.canvasRenderer,
+        color: routeColor,
+        weight: 4,
+        opacity: 0.9,
+      })
         .bindPopup(popupContent)
         .addTo(layerGroup);
     });
@@ -276,21 +276,53 @@ export class MapController {
   // ── OSRM road geometry fetching ──────────────────────────────────────
 
   async fetchRoadGeometries(result) {
+    if (!result) return;
+
     this.roadRoutes.clear();
     this.osrmWarned = false;
-    const jobs = [];
+
+    // Collect jobs: prefer backend road_geometry, fallback to client OSRM fetch
+    const clientFetchJobs = [];
     for (const prefix in result) {
       const algo = result[prefix];
       if (!algo || !algo.routes) continue;
       for (const route of algo.routes) {
         if (!route.path || route.path.length < 2) continue;
-        jobs.push({ route, prefix });
+        if (route.road_geometry && route.road_geometry.length >= 2) {
+          // Backend already resolved the road shape — load straight into cache
+          const geo = route.road_geometry;
+          const waypoints = route.path;
+          const cumDist = [0];
+          for (let i = 1; i < geo.length; i++) cumDist.push(cumDist[i - 1] + this._approxDist(geo[i - 1], geo[i]));
+          const legBounds = [0];
+          for (let wi = 1; wi < waypoints.length; wi++) {
+            let bestIdx = legBounds[legBounds.length - 1];
+            let bestD = Infinity;
+            for (let gi = bestIdx; gi < geo.length; gi++) {
+              const d = this._approxDist(geo[gi], waypoints[wi]);
+              if (d < bestD) {
+                bestD = d;
+                bestIdx = gi;
+              }
+              if (d > bestD * 4 && gi > bestIdx + 10) break;
+            }
+            legBounds.push(bestIdx);
+          }
+          this.roadRoutes.set(`${prefix}_${route.vehicle_id}`, { geometry: geo, cumDist, legBounds });
+        } else if (route.path.length > 2) {
+          // Need client-side OSRM fetch
+          clientFetchJobs.push({ route, prefix });
+        }
       }
     }
-    // Fetch sequentially with small delays to be polite to OSRM
-    for (const job of jobs) {
+
+    // Immediately repaint with backend geometries already in cache
+    this._rerenderWithRoads(result);
+
+    // Then fetch remaining routes from OSRM client-side (sequentially, rate-limited)
+    for (const job of clientFetchJobs) {
       await this._fetchSingleRoute(job.route, job.prefix);
-      await new Promise((r) => setTimeout(r, 80));
+      await new Promise((r) => setTimeout(r, 120));
     }
     // Re-render polylines with road geometry
     this._rerenderWithRoads(result);
@@ -313,59 +345,49 @@ export class MapController {
     const waypoints = route.path; // [[lat,lng], ...]
     if (waypoints.length < 2) return;
     const coords = waypoints.map((w) => `${w[1]},${w[0]}`).join(';');
-    const proxyUrl = `/api/route-geometry?coords=${encodeURIComponent(coords)}`;
-    const directUrl = `https://router.project-osrm.org/route/v1/driving/${coords}?overview=full&geometries=geojson`;
 
-    try {
-      let resp;
+    // Try multiple OSRM hosts in order (matching backend fallback list)
+    const OSRM_HOSTS = ['https://router.project-osrm.org', 'https://routing.openstreetmap.de/routed-car'];
+
+    for (const host of OSRM_HOSTS) {
+      const url = `${host}/route/v1/driving/${coords}?overview=full&geometries=geojson`;
       try {
-        resp = await fetch(proxyUrl);
-      } catch (err) {
-        console.info('Backend route proxy unavailable, trying direct OSRM:', err);
-      }
+        const resp = await fetch(url, { signal: AbortSignal.timeout(8000) });
+        if (!resp.ok) continue;
+        const data = await resp.json();
+        if (data.code !== 'Ok' || !data.routes?.length) continue;
 
-      if (!resp || !resp.ok) {
-        resp = await fetch(directUrl);
-      }
-
-      if (!resp.ok) {
-        this.triggerOsrmWarning();
-        return;
-      }
-      const data = await resp.json();
-
-      if (data.code !== 'Ok' || !data.routes?.length) {
-        this.triggerOsrmWarning();
-        return;
-      }
-
-      const geo = data.routes[0].geometry.coordinates.map((c) => [c[1], c[0]]); // [lng,lat]→[lat,lng]
-      // Cumulative distances along the geometry
-      const cumDist = [0];
-      for (let i = 1; i < geo.length; i++) {
-        cumDist.push(cumDist[i - 1] + this._approxDist(geo[i - 1], geo[i]));
-      }
-      // Find geometry indices closest to each original waypoint
-      const legBounds = [0];
-      for (let wi = 1; wi < waypoints.length; wi++) {
-        let bestIdx = legBounds[legBounds.length - 1];
-        let bestD = Infinity;
-        for (let gi = bestIdx; gi < geo.length; gi++) {
-          const d = this._approxDist(geo[gi], waypoints[wi]);
-          if (d < bestD) {
-            bestD = d;
-            bestIdx = gi;
-          }
-          if (d > bestD * 4 && gi > bestIdx + 10) break;
+        const geo = data.routes[0].geometry.coordinates.map((c) => [c[1], c[0]]); // [lng,lat]→[lat,lng]
+        // Cumulative distances along the geometry
+        const cumDist = [0];
+        for (let i = 1; i < geo.length; i++) {
+          cumDist.push(cumDist[i - 1] + this._approxDist(geo[i - 1], geo[i]));
         }
-        legBounds.push(bestIdx);
+        // Find geometry indices closest to each original waypoint
+        const legBounds = [0];
+        for (let wi = 1; wi < waypoints.length; wi++) {
+          let bestIdx = legBounds[legBounds.length - 1];
+          let bestD = Infinity;
+          for (let gi = bestIdx; gi < geo.length; gi++) {
+            const d = this._approxDist(geo[gi], waypoints[wi]);
+            if (d < bestD) {
+              bestD = d;
+              bestIdx = gi;
+            }
+            if (d > bestD * 4 && gi > bestIdx + 10) break;
+          }
+          legBounds.push(bestIdx);
+        }
+        const key = `${prefix}_${route.vehicle_id}`;
+        this.roadRoutes.set(key, { geometry: geo, cumDist, legBounds });
+        return; // success, stop trying
+      } catch (e) {
+        console.warn(`OSRM ${host} failed for ${prefix} v${route.vehicle_id}:`, e);
       }
-      const key = `${prefix}_${route.vehicle_id}`;
-      this.roadRoutes.set(key, { geometry: geo, cumDist, legBounds });
-    } catch (e) {
-      console.warn(`OSRM failed for ${prefix} v${route.vehicle_id}:`, e);
-      this.triggerOsrmWarning();
     }
+
+    // All hosts failed
+    this.triggerOsrmWarning();
   }
 
   _rerenderWithRoads(result) {
@@ -925,17 +947,69 @@ export class MapController {
     }
   }
 
+  loadBackendRoadGeometries(result) {
+    if (!result) return;
+    for (const prefix in result) {
+      const algo = result[prefix];
+      if (!algo || !algo.routes) continue;
+      algo.routes.forEach((route) => {
+        if (route.road_geometry && route.road_geometry.length >= 2) {
+          const geo = route.road_geometry;
+          const waypoints = route.path || [];
+          if (waypoints.length < 2) return;
+
+          // Compute cumulative distances along the geometry
+          const cumDist = [0];
+          for (let i = 1; i < geo.length; i++) {
+            cumDist.push(cumDist[i - 1] + this._approxDist(geo[i - 1], geo[i]));
+          }
+
+          // Map each waypoint stop index to its index in OSRM coordinates
+          const legBounds = [0];
+          for (let wi = 1; wi < waypoints.length; wi++) {
+            let bestIdx = legBounds[legBounds.length - 1];
+            let bestD = Infinity;
+            for (let gi = bestIdx; gi < geo.length; gi++) {
+              const d = this._approxDist(geo[gi], waypoints[wi]);
+              if (d < bestD) {
+                bestD = d;
+                bestIdx = gi;
+              }
+              if (d > bestD * 4 && gi > bestIdx + 10) break;
+            }
+            legBounds.push(bestIdx);
+          }
+
+          const key = `${prefix}_${route.vehicle_id}`;
+          this.roadRoutes.set(key, { geometry: geo, cumDist, legBounds });
+        }
+      });
+    }
+  }
+
   paintResult() {
     const result = this.app.state.lastResult;
     if (!result) return;
 
     this.clearRoutes();
+    this.roadRoutes.clear(); // Reset road cache before loading fresh geometries
+    this.loadBackendRoadGeometries(result);
     const routeCapacity = Number(this.app.state.lastRunFleet?.capacity ?? this.app.state.capacity);
 
-    // overlayKeysFor, not `for...in`: the result map also carries the
-    // `_failed_algos` bookkeeping key, which has no routes to draw.
-    for (const algoName of overlayKeysFor(result)) {
-      this.renderAlgoRoutes(result[algoName], algoName, algoColor(algoName), routeCapacity);
+    const colors = {
+      ddqn: '#0b8a65',
+      alns: '#2563eb',
+      ortools: '#e11d48',
+      hybrid_fixed: '#d97706',
+      hybrid_ddqn: '#7c3aed',
+      hybrid_ddqn_transfer_rc1: '#0284c7',
+      hybrid_ddqn_transfer_dr: '#4f46e5',
+      hybrid: '#0b8a65',
+    };
+
+    for (const algoName in result) {
+      const color = colors[algoName] || '#6b7280';
+      this.renderAlgoRoutes(result[algoName], algoName, color, routeCapacity);
     }
 
     if (result.ddqn && result.alns) {
@@ -944,10 +1018,41 @@ export class MapController {
 
     this.initSimulation(result);
 
-    // The overlay dropdown is rendered by Header from `availableOverlays`; this
-    // method no longer writes its options or its change handler. It only has to
-    // show whichever overlay state already points at.
-    this.switchView(resolveActiveOverlay(result, this.app.state.activeOverlay));
+    // Dynamic map view radios in the DOM
+    const toggleContainer = document.querySelector('.map-toggles');
+    if (toggleContainer) {
+      const labels = {
+        ddqn: 'Hybrid DDQN (Transfer)',
+        alns: 'ALNS Base',
+        ortools: 'OR-Tools',
+        hybrid_fixed: 'Hybrid Fixed',
+        hybrid_ddqn: 'Hybrid DDQN (Random)',
+        hybrid_ddqn_transfer_rc1: 'Hybrid DDQN (RC1)',
+        hybrid_ddqn_transfer_dr: 'Hybrid DDQN (DR)',
+      };
+
+      let html = '';
+      const currentSelected = this.currentView || 'ddqn';
+
+      Object.keys(result).forEach((algoName) => {
+        const isChecked = algoName === currentSelected ? 'checked' : '';
+        const label = labels[algoName] || algoName;
+        html += `<label style="margin-right: 12px; display: inline-flex; align-items: center; gap: 4px; font-weight: 500; cursor: pointer; color: var(--text-main); font-size: 11px;">
+          <input type="radio" name="map_view" value="${algoName}" ${isChecked} /> ${label}
+        </label>`;
+      });
+      toggleContainer.innerHTML = html;
+
+      const radios = toggleContainer.querySelectorAll('input[name="map_view"]');
+      radios.forEach((radio) => {
+        radio.addEventListener('change', (e) => {
+          this.switchView(e.target.value);
+        });
+      });
+    }
+
+    const initialView = result.ddqn ? 'ddqn' : Object.keys(result)[0];
+    this.switchView(initialView);
     this.updateGnnHeatmapOverlay();
 
     this.fetchRoadGeometries(result)

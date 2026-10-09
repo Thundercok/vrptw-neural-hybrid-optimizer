@@ -1,6 +1,10 @@
-.PHONY: dev dev-emulator test dist emulators test-e2e dev-all paper poster \
-	research-plan research-smoke research-quick research-tables research-figures \
-	research-paper research-audit research-all
+.DEFAULT_GOAL := help
+RESEARCH_TARGETS := $(addprefix research-,plan smoke quick tables figures paper audit all)
+.PHONY: help dev dev-emulator test dist emulators test-e2e dev-all paper poster $(RESEARCH_TARGETS)
+
+help:
+	@echo "Research: make research-plan | research-smoke | research-quick | research-audit | research-paper"
+	@echo "Artifacts: make paper | poster    Demo: make dev-all    Tests: make test"
 
 poster:
 	uv run python posters/build_official_school_poster.py
@@ -8,29 +12,8 @@ poster:
 paper:
 	@python3 docs/build_paper.py
 
-research-plan:
-	PYTHONPATH=./src python3 scripts/research_pipeline.py --stage plan
-
-research-smoke:
-	PYTHONPATH=./src python3 scripts/research_pipeline.py --stage smoke
-
-research-quick:
-	PYTHONPATH=./src python3 scripts/research_pipeline.py --stage quick
-
-research-tables:
-	PYTHONPATH=./src python3 scripts/research_pipeline.py --stage tables
-
-research-figures:
-	PYTHONPATH=./src python3 scripts/research_pipeline.py --stage figures
-
-research-paper:
-	PYTHONPATH=./src python3 scripts/research_pipeline.py --stage paper
-
-research-audit:
-	PYTHONPATH=./src python3 scripts/research_pipeline.py --stage audit
-
-research-all:
-	PYTHONPATH=./src python3 scripts/research_pipeline.py --stage all
+$(RESEARCH_TARGETS): research-%:
+	PYTHONPATH=./src python3 scripts/research_pipeline.py --stage $*
 
 dev:
 	PYTHONPATH=./src/backend uv run uvicorn main:app --host 127.0.0.1 --port 8000 --reload --app-dir src/backend
@@ -43,8 +26,6 @@ dev-all:
 		echo "node_modules not found. Installing frontend dependencies..."; \
 		npm install; \
 	fi
-	@echo "Flushing old background processes..."
-	-@lsof -ti:4000,5050,8000,8080,9099,4400,4500 | xargs kill -9 2>/dev/null || true
 	@npm run dev:all
 
 test:

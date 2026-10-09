@@ -4,10 +4,9 @@
 
 .saas-layout {
   display: grid;
-  grid-template-columns: var(--sidebar-width, 220px) 1fr;
+  grid-template-columns: 220px 1fr;
   height: 100vh;
   overflow: hidden;
-  transition: grid-template-columns 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* ── SIDEBAR ────────────────────────────────────────── */
@@ -16,70 +15,6 @@
   border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
-  transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.saas-sidebar.collapsed {
-  align-items: center;
-}
-
-.saas-sidebar.collapsed .brand {
-  flex-direction: column;
-  padding: 17px 0;
-  width: 100%;
-}
-
-.saas-sidebar.collapsed .saas-nav {
-  padding: 10px 6px;
-  width: 100%;
-}
-
-.saas-sidebar.collapsed .nav-item {
-  padding: 10px 0;
-  display: flex;
-  justify-content: center;
-  margin-bottom: 8px;
-}
-
-.saas-sidebar.collapsed .sidebar-footer {
-  padding: 14px 6px;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.sidebar-collapse-btn {
-  background: none;
-  border: none;
-  color: var(--text-muted);
-  font-size: 16px;
-  cursor: pointer;
-  padding: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: color 0.2s;
-  margin-left: auto;
-}
-
-.sidebar-collapse-btn:hover {
-  color: var(--text-main);
-}
-
-.saas-sidebar.collapsed .sidebar-collapse-btn {
-  margin-left: 0;
-  margin-top: 12px;
-}
-
-.nav-icon {
-  margin-right: 10px;
-  vertical-align: middle;
-  flex-shrink: 0;
-}
-
-.saas-sidebar.collapsed .nav-icon {
-  margin-right: 0;
 }
 
 .brand {
@@ -112,110 +47,36 @@
 
 .saas-nav {
   flex: 1;
-  padding: 12px 10px;
-}
-
-/* ── Nav zones ─────────────────────────────────────────
-   PLANNING and INTELLIGENCE are two distinct workspaces, not two adjacent
-   labels. Each zone is a boxed group with its own rule, so the section title
-   clearly outranks the items nested beneath it. */
-.nav-group {
-  position: relative;
-  padding: 4px 0 8px;
-}
-
-.nav-group + .nav-group {
-  margin-top: 18px;
-  padding-top: 14px;
-  border-top: 1px solid var(--border);
-}
-
-/* The items of a zone hang off a hairline that starts under the label dot,
-   which is what makes them read as children of the title. */
-.nav-group .nav-item {
-  margin-left: 9px;
-  border-left: 2px solid transparent;
-  border-top-left-radius: 0;
-  border-bottom-left-radius: 0;
+  padding: 10px 10px;
 }
 
 .nav-label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 10.5px;
+  font-size: 10px;
   text-transform: uppercase;
-  color: var(--text-main);
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  margin: 0 0 10px;
-  padding-left: 4px;
-}
-
-.nav-label-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  flex-shrink: 0;
-  background: var(--border-strong);
-  transition: background 0.2s ease;
-}
-
-/* Each zone gets its own accent so the two halves are told apart at a glance. */
-.nav-group-planning .nav-label-dot {
-  background: var(--primary);
-  box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.16);
-}
-
-.nav-group-intelligence .nav-label-dot {
-  background: var(--orange);
-  box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.16);
-}
-
-/* The label text is followed by a rule that runs to the edge of the rail. */
-.nav-label-text {
-  flex-shrink: 0;
-}
-
-.nav-label::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: linear-gradient(to right, var(--border) 0%, transparent 100%);
-}
-
-/* Collapsed rail: no room for text, so the zones are separated by a rule. */
-.nav-group-rule {
-  height: 1px;
-  background: var(--border);
-  margin: 0 6px 10px;
-}
-
-.saas-sidebar.collapsed .nav-group + .nav-group {
+  color: var(--text-muted);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  margin-bottom: 4px;
   margin-top: 14px;
-  padding-top: 10px;
+  padding-left: 6px;
 }
 
-.saas-sidebar.collapsed .nav-group .nav-item {
-  margin-left: 0;
-  border-left: none;
-  border-radius: var(--r-sm);
+.nav-label:first-child {
+  margin-top: 4px;
 }
 
 .nav-item {
-  display: flex;
-  align-items: center;
+  display: block;
   padding: 7px 10px;
   color: var(--text-muted);
   text-decoration: none;
   border-radius: var(--r-sm);
   font-weight: 500;
   font-size: 13px;
-  margin-bottom: 2px;
+  margin-bottom: 1px;
   transition:
     background 0.15s,
     color 0.15s,
-    border-color 0.15s,
     padding-left 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -229,20 +90,6 @@
   background: var(--primary-soft);
   color: var(--primary);
   font-weight: 600;
-}
-
-.nav-group-planning .nav-item.active {
-  border-left-color: var(--primary);
-}
-
-.nav-group-intelligence .nav-item.active {
-  background: var(--orange-soft);
-  color: var(--orange);
-  border-left-color: var(--orange);
-}
-
-.nav-group-intelligence .nav-item:hover:not(.active) {
-  color: var(--orange);
 }
 
 .sidebar-footer {
@@ -265,63 +112,6 @@
   font-family: var(--font-data);
 }
 
-.btn-back-home {
-  display: flex;
-  align-items: center;
-  padding: 8px 12px;
-  background: var(--bg-base);
-  border: 1px solid var(--border-strong);
-  color: var(--text-muted);
-  border-radius: var(--r-sm);
-  font-weight: 500;
-  font-size: 13px;
-  text-decoration: none;
-  margin-bottom: 12px;
-  transition: all 0.15s;
-  width: 100%;
-}
-
-.btn-back-home:hover {
-  border-color: var(--primary);
-  color: var(--primary);
-  background: var(--primary-soft);
-}
-
-.btn-icon-only {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 8px;
-  background: var(--bg-base);
-  border: 1px solid var(--border-strong);
-  color: var(--text-muted);
-  border-radius: var(--r-sm);
-  margin-bottom: 12px;
-  cursor: pointer;
-  transition: all 0.15s;
-  width: 100%;
-}
-
-.btn-icon-only:hover {
-  border-color: var(--primary);
-  color: var(--primary);
-  background: var(--primary-soft);
-}
-
-.btn-icon-only-primary {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 8px;
-  background: var(--primary);
-  border: none;
-  color: white;
-  border-radius: var(--r-sm);
-  cursor: pointer;
-  transition: all 0.15s;
-  width: 100%;
-}
-
 /* ── MAIN AREA ──────────────────────────────────────── */
 .saas-main {
   display: flex;
@@ -332,19 +122,19 @@
 /* ── HEADER ─────────────────────────────────────────── */
 .saas-header {
   background: var(--bg-surface);
-  min-height: 60px;
+  height: 60px;
   border-bottom: 1px solid var(--border);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 24px;
+  padding: 0 24px;
   gap: 16px;
   transition: border-color 0.2s;
   flex-shrink: 0;
 }
 
 body.demo-active .saas-header {
-  border-bottom-color: var(--warn);
+  border-bottom-color: #fed7aa;
 }
 
 .header-left {
@@ -358,20 +148,6 @@ body.demo-active .saas-header {
   font-size: 16px;
   font-weight: 700;
   letter-spacing: -0.01em;
-}
-
-.page-title-group {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.page-subtitle {
-  font-size: 10px;
-  text-transform: uppercase;
-  color: var(--primary);
-  font-weight: 700;
-  letter-spacing: 0.05em;
 }
 
 /* Status pill with animated dot */
@@ -404,9 +180,9 @@ body.demo-active .saas-header {
 }
 
 .status-ready {
-  background: var(--ok-wash);
+  background: #ecfdf5;
   color: var(--success);
-  border: 1px solid var(--ok);
+  border: 1px solid #a7f3d0;
 }
 
 .status-ready::before {
@@ -425,7 +201,7 @@ body.demo-active .saas-header {
   padding: 2px 8px;
   background: var(--orange-soft);
   color: var(--orange);
-  border: 1px solid var(--warn);
+  border: 1px solid #fed7aa;
   border-radius: 20px;
   animation: badge-pop 0.2s ease;
 }
@@ -449,7 +225,7 @@ body.demo-active .demo-badge {
   display: flex;
   align-items: center;
   gap: 10px;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
 }
 
 .fleet-toggles {
@@ -541,87 +317,53 @@ body.demo-active .demo-badge {
   color: var(--orange);
 }
 
-/* ── FORM ELEMENTS ──────────────────────────────────────
-   All text-entry controls share one light field skin (see --field-* in
-   style.css). Resting state is near-borderless; contrast is added on hover
-   and focus instead of being carried permanently by a heavy grey outline. */
-.saas-input,
-.saas-input-small,
-.saas-textarea,
-.saas-select {
-  border: 1px solid var(--field-border);
-  border-radius: var(--r);
-  background-color: var(--field-bg);
-  color: var(--field-text);
-  font-family: var(--font-main);
-  font-size: 13px;
-  font-weight: 500;
-  outline: none;
-  box-shadow: var(--field-shadow);
-  transition:
-    border-color 0.15s ease,
-    background-color 0.15s ease,
-    box-shadow 0.15s ease;
-}
-
-.saas-input:hover:not(:focus),
-.saas-input-small:hover:not(:focus),
-.saas-textarea:hover:not(:focus),
-.saas-select:hover:not(:focus) {
-  border-color: var(--field-border-hover);
-  background-color: var(--field-bg-hover);
-}
-
-.saas-input:focus,
-.saas-input-small:focus,
-.saas-textarea:focus,
-.saas-select:focus {
-  border-color: var(--field-border-focus);
-  box-shadow: 0 0 0 3px var(--field-ring);
-  background-color: var(--bg-surface);
-}
-
-.saas-input::placeholder,
-.saas-input-small::placeholder,
-.saas-textarea::placeholder {
-  color: var(--field-placeholder);
-  font-weight: 400;
-}
-
-.saas-input:disabled,
-.saas-input-small:disabled,
-.saas-textarea:disabled,
-.saas-select:disabled {
-  opacity: 0.55;
-  cursor: not-allowed;
-}
-
-.saas-input {
-  width: 100%;
-  padding: 9px 12px;
-}
-
-.saas-textarea {
-  width: 100%;
-  padding: 9px 12px;
-  line-height: 1.5;
-  resize: vertical;
-}
-
+/* ── FORM ELEMENTS ──────────────────────────────────── */
 .saas-input-small {
   width: 68px;
   padding: 5px 8px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-sm);
+  font-family: var(--font-main);
+  font-size: 13px;
+  font-weight: 500;
+  background: var(--bg-surface);
+  color: var(--text-main);
   text-align: center;
+  outline: none;
+  transition:
+    border-color 0.13s,
+    box-shadow 0.13s;
+}
+
+.saas-input-small:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
 .saas-select {
   padding: 6px 28px 6px 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-sm);
+  background: var(--bg-surface);
+  color: var(--text-main);
+  font-family: var(--font-main);
+  font-size: 13px;
+  font-weight: 500;
+  outline: none;
   cursor: pointer;
   appearance: none;
   -webkit-appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 12 12'%3E%3Cpath fill='%23a8b3c2' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 9px center;
+  transition:
+    border-color 0.13s,
+    box-shadow 0.13s;
+}
+
+.saas-select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
 /* ── BUTTONS ───────────────────────────────────────── */
@@ -640,12 +382,12 @@ body.demo-active .demo-badge {
     box-shadow 0.15s,
     transform 0.1s;
   white-space: nowrap;
-  box-shadow: 0 1px 4px rgba(var(--primary-rgb), 0.28);
+  box-shadow: 0 1px 4px rgba(37, 99, 235, 0.28);
 }
 
 .btn-primary:hover {
   background: var(--primary-hover);
-  box-shadow: 0 4px 14px rgba(var(--primary-rgb), 0.32);
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.32);
   transform: translateY(-1px);
 }
 
@@ -667,18 +409,10 @@ body.demo-active .demo-badge {
   transition: all 0.13s;
 }
 
-.btn-secondary:hover:not(:disabled) {
+.btn-secondary:hover {
   border-color: var(--primary);
   color: var(--primary);
   background: var(--primary-soft);
-}
-
-.btn-primary:disabled,
-.btn-secondary:disabled,
-.btn-danger:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  pointer-events: none;
 }
 
 .btn-sm {
@@ -705,20 +439,16 @@ body.demo-active .demo-badge {
 }
 
 /* ── KPI ROW ── */
-/* Four metrics plus the map-controls cell. The metric columns stay equal; the
-   controls cell takes what it needs so the dropdown and the three map surfaces
-   sit on one line. */
 .kpi-row {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr)) minmax(0, auto);
+  grid-template-columns: repeat(4, 1fr);
   background: var(--bg-surface);
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
 }
 
-/* Deliberately short: every pixel saved here goes to the map below. */
 .kpi-card {
-  padding: 8px 16px 9px;
+  padding: 14px 20px;
   border-right: 1px solid var(--border);
   transition: background 0.12s;
   position: relative;
@@ -744,22 +474,22 @@ body.demo-active .demo-badge {
 }
 
 .kpi-title {
-  font-size: 9.5px;
+  font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.07em;
   color: var(--text-muted);
   font-weight: 600;
-  margin-bottom: 5px;
+  margin-bottom: 7px;
 }
 
 .kpi-value {
   font-family: var(--font-data);
-  font-size: 19px;
+  font-size: 24px;
   font-weight: 500;
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.02em;
   color: var(--text-main);
-  margin-bottom: 0;
+  margin-bottom: 3px;
   line-height: 1;
 }
 
@@ -768,7 +498,7 @@ body.demo-active .demo-badge {
 }
 
 .kpi-sub {
-  font-size: 9.5px;
+  font-size: 10.5px;
   color: var(--text-muted);
   margin-top: 2px;
 }
@@ -804,41 +534,10 @@ body.demo-active .demo-badge {
 
 .kpi-split strong {
   font-family: var(--font-data);
-  font-size: 15px;
+  font-size: 17px;
   font-weight: 500;
   font-variant-numeric: tabular-nums;
   color: var(--text-main);
-}
-
-/* ── MAP CONTROLS CELL ──────────────────────────────────
-   The fifth KPI cell. Holds the overlay dropdown and the three map surfaces
-   that used to sit in a separate bar above the map. */
-.kpi-card-tools {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  border-right: none;
-  border-left: 1px solid var(--border);
-  background: var(--bg-base);
-}
-
-.kpi-card-tools:hover {
-  background: var(--bg-base);
-}
-
-.kpi-tools-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-/* The overlay picker sits in the header next to the dataset select and wears
-   the same .saas-select chrome; it only needs a width cap so a long algorithm
-   name can't shove the fleet controls off the row. */
-.map-overlay-select {
-  max-width: 200px;
-  text-overflow: ellipsis;
 }
 
 /* ── WORKSPACE ──────────────────────────────────────── */
@@ -848,10 +547,6 @@ body.demo-active .demo-badge {
   overflow: hidden;
   display: flex;
   position: relative;
-  /* The KPI strip, the pane chrome and the Gantt are all fixed height, so on a
-     short viewport the map was the only thing left to squeeze — it collapsed to
-     a sliver. It now keeps a working height and the view scrolls instead. */
-  min-height: 380px;
 }
 
 .pane {
@@ -884,136 +579,46 @@ body.demo-active .demo-badge {
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--text-muted);
-  white-space: nowrap;
 }
 
-/* ── MAP TOOLS ──────────────────────────────────────────
-   These controls now live in the KPI strip's last cell (.kpi-card-tools); the
-   map pane itself carries no chrome row. */
-.map-header-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
+/* Map view toggle pill */
+.map-toggles {
+  display: flex;
+  gap: 2px;
   background: var(--bg-surface);
   border: 1px solid var(--border);
   border-radius: var(--r-sm);
-  padding: 5px 10px;
-  font-size: 11.5px;
-  font-weight: 600;
-  font-family: var(--font-main);
-  color: var(--text-main);
+  padding: 2px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.map-toggles label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 11px;
+  border-radius: 4px;
   cursor: pointer;
-  white-space: nowrap;
-  transition: all 0.15s;
-}
-
-.map-header-btn:hover {
-  background: var(--primary-soft);
-  border-color: var(--primary);
-  color: var(--primary);
-}
-
-.driver-app-btn.is-open {
-  background: color-mix(in srgb, var(--success) 12%, transparent);
-  border-color: var(--success);
-  color: var(--success);
-}
-
-.driver-app-notif {
-  display: none;
-  align-items: center;
-  justify-content: center;
-  min-width: 15px;
-  height: 15px;
-  padding: 0 4px;
-  border-radius: 8px;
-  background: var(--danger);
-  color: #fff;
-  font-size: 9px;
-  font-weight: 800;
-  line-height: 1;
-}
-
-.driver-app-notif.is-visible {
-  display: inline-flex;
-}
-
-/* GNN heatmap switch — a real toggle rather than a bare checkbox, so it reads
-   as a mode you flip and matches the other pill-shaped controls. */
-.gnn-toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 4px 10px 4px 8px;
-  border: 1px solid var(--border);
-  border-radius: var(--r-sm);
-  background: var(--bg-surface);
-  font-size: 11.5px;
-  font-weight: 600;
   color: var(--text-muted);
-  cursor: pointer;
+  transition: all 0.12s;
   user-select: none;
-  white-space: nowrap;
-  transition: all 0.15s;
 }
 
-.gnn-toggle:hover {
-  border-color: var(--primary);
+.map-toggles input[type='radio'] {
+  display: none;
+}
+
+.map-toggles label:has(input:checked) {
+  background: var(--bg-base);
   color: var(--primary);
-}
-
-.gnn-toggle-input {
-  position: absolute;
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.gnn-toggle-track {
-  position: relative;
-  width: 26px;
-  height: 15px;
-  border-radius: 8px;
-  background: var(--border-strong);
-  flex-shrink: 0;
-  transition: background 0.18s ease;
-}
-
-.gnn-toggle-track::after {
-  content: '';
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 11px;
-  height: 11px;
-  border-radius: 50%;
-  background: var(--bg-surface);
+  font-weight: 600;
   box-shadow: var(--shadow-xs);
-  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.gnn-toggle:has(.gnn-toggle-input:checked) {
-  border-color: var(--primary);
-  background: var(--primary-soft);
-  color: var(--primary);
-}
-
-.gnn-toggle-input:checked + .gnn-toggle-track {
-  background: var(--primary);
-}
-
-.gnn-toggle-input:checked + .gnn-toggle-track::after {
-  transform: translateX(11px);
-}
-
-.gnn-toggle-input:focus-visible + .gnn-toggle-track {
-  outline: 2px solid var(--primary);
-  outline-offset: 2px;
 }
 
 .map-view {
   flex: 1;
-  background: var(--rule-strong);
+  background: #dde4ee;
 }
 
 /* Leaflet Overrides */
@@ -1021,11 +626,22 @@ body.demo-active .demo-badge {
   font-family: var(--font-main) !important;
 }
 
-/* The +/- buttons are gone — scroll wheel, pinch and double-click still zoom.
-   Belt-and-braces with `zoomControl: false` in MapController, in case a plugin
-   adds one back. */
 .leaflet-control-zoom {
-  display: none !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--r-sm) !important;
+  box-shadow: var(--shadow-sm) !important;
+  overflow: hidden;
+}
+
+.leaflet-control-zoom a {
+  background: var(--bg-surface) !important;
+  color: var(--text-muted) !important;
+  border-bottom: 1px solid var(--border) !important;
+}
+
+.leaflet-control-zoom a:hover {
+  background: var(--primary-soft) !important;
+  color: var(--primary) !important;
 }
 
 .leaflet-popup-content-wrapper {
@@ -1048,9 +664,7 @@ body.demo-active .demo-badge {
   width: 680px;
   max-width: calc(100% - 40px);
   height: calc(100% - 20px);
-  /* Above Leaflet's own control layer (1000), which otherwise punches its zoom
-     buttons and attribution through any drawer opened over the map. */
-  z-index: 1050;
+  z-index: 900;
   background: color-mix(in srgb, var(--bg-surface) 93%, transparent);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
@@ -1109,18 +723,35 @@ body.demo-active .demo-badge {
 }
 
 .drawer-close-btn:hover {
-  background: var(--alert-wash);
+  background: #fee2e2;
   color: var(--danger);
-  border-color: var(--alert);
+  border-color: #fecaca;
 }
 
-/* The manifest trigger now lives in the app header next to the dataset
-   picker; the map pane no longer carries a second copy. */
-.manifest-btn {
-  display: inline-flex;
+.drawer-toggle-btn {
+  display: flex;
   align-items: center;
   gap: 6px;
-  white-space: nowrap;
+  padding: 5px 10px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-main);
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: var(--font-main);
+}
+
+.drawer-toggle-btn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: var(--primary-soft);
+}
+
+.drawer-toggle-icon {
+  font-size: 14px;
 }
 
 /* ── TABLE ──────────────────────────────────────────── */
@@ -1193,35 +824,22 @@ body.demo-active .demo-badge {
   width: 100%;
   box-sizing: border-box;
   padding: 4px 8px;
-  border: 1px solid var(--field-border);
+  border: 1px solid var(--border-strong);
   border-radius: var(--r-sm);
-  background-color: var(--field-bg);
-  color: var(--field-text);
+  background: var(--bg-surface);
+  color: var(--text-main);
   font-family: var(--font-main);
   font-size: 12px;
   outline: none;
   transition:
     border-color 0.12s,
-    background-color 0.12s,
     box-shadow 0.12s;
-}
-
-.table-inline-input::placeholder,
-.table-edit-input::placeholder {
-  color: var(--field-placeholder);
-  font-weight: 400;
-}
-
-.table-inline-input:hover:not(:focus),
-.table-edit-input:hover:not(:focus) {
-  border-color: var(--field-border-hover);
-  background-color: var(--field-bg-hover);
 }
 
 .table-inline-input:focus,
 .table-edit-input:focus {
-  border-color: var(--field-border-focus);
-  box-shadow: 0 0 0 2px var(--field-ring);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px var(--primary-soft);
 }
 
 .table-inline-readonly {
@@ -1231,16 +849,13 @@ body.demo-active .demo-badge {
   padding: 4px 8px;
 }
 
-/* Manifest-only column floors. Scoped to .table-container: the fleet table has
-   a different column order, where these indices are Capacity and Speed and the
-   180px floor pushed the whole grid past its container. */
-.table-container .saas-table th:nth-child(3),
-.table-container .saas-table td:nth-child(3) {
+.saas-table th:nth-child(3),
+.saas-table td:nth-child(3) {
   min-width: 120px; /* Name column min-width */
 }
 
-.table-container .saas-table th:nth-child(4),
-.table-container .saas-table td:nth-child(4) {
+.saas-table th:nth-child(4),
+.saas-table td:nth-child(4) {
   min-width: 180px; /* Address column min-width */
 }
 
@@ -1290,26 +905,13 @@ body.demo-active .demo-badge {
   color: var(--text-main);
 }
 
-/* ── MAP OVERLAY GEOMETRY ───────────────────────────────
-   Three overlays share the map: the playback bar along the bottom, the driver
-   rail down the right, and the GNN legend. They used to be positioned
-   independently and landed on top of each other, so the offsets below are
-   derived from one set of tokens instead. */
-.pane-map-full {
-  --map-gutter: 14px;
-  --map-rail-w: 268px;
-  --map-bar-h: 52px;
-}
-
 /* ── SIMULATION CONTROL BAR ────────────────────────── */
 .sim-control-bar {
   position: absolute;
-  bottom: var(--map-gutter);
-  left: var(--map-gutter);
-  /* Stops short of the driver rail rather than sliding underneath it. */
-  right: calc(var(--map-rail-w) + var(--map-gutter) * 2);
+  bottom: 16px;
+  left: 16px;
+  right: 16px;
   z-index: 800;
-  flex-wrap: nowrap;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -1335,7 +937,7 @@ body.demo-active .demo-badge {
   cursor: pointer;
   white-space: nowrap;
   font-family: var(--font-main);
-  box-shadow: 0 2px 6px rgba(var(--primary-rgb), 0.2);
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.2);
   transition:
     background 0.15s,
     transform 0.12s,
@@ -1344,7 +946,7 @@ body.demo-active .demo-badge {
 
 .btn-sim-play:hover {
   background: var(--primary-hover);
-  box-shadow: 0 4px 10px rgba(var(--primary-rgb), 0.3);
+  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
   transform: translateY(-0.5px);
 }
 
@@ -1391,8 +993,8 @@ body.demo-active .demo-badge {
   height: 16px;
   border-radius: 50%;
   background: var(--primary);
-  border: 2px solid var(--surface);
-  box-shadow: 0 2px 6px rgba(var(--primary-rgb), 0.4);
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.4);
   cursor: grab;
   transition:
     transform 0.1s,
@@ -1414,8 +1016,8 @@ body.demo-active .demo-badge {
   height: 14px;
   border-radius: 50%;
   background: var(--primary);
-  border: 2px solid var(--surface);
-  box-shadow: 0 2px 6px rgba(var(--primary-rgb), 0.4);
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.4);
   cursor: grab;
 }
 
@@ -1443,386 +1045,17 @@ body.demo-active .demo-badge {
 /* ── VEHICLE STATUS PANEL ───────────────────────────── */
 .sim-vehicle-panel {
   position: absolute;
-  /* Anchored top and bottom so it can never grow into the playback bar. */
-  top: var(--map-gutter);
-  bottom: var(--map-gutter);
-  right: var(--map-gutter);
+  top: 52px;
+  right: 8px;
   z-index: 800;
-  width: var(--map-rail-w);
+  width: 270px;
+  max-height: calc(100% - 120px);
   overflow-y: auto;
-  overscroll-behavior: contain;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding-right: 2px;
+  padding: 8px;
   scrollbar-width: thin;
-}
-
-/* ── DRIVER RAIL TABS ───────────────────────────────── */
-.sim-panel-tabs {
-  position: sticky;
-  top: 0;
-  z-index: 2;
-  display: flex;
-  gap: 3px;
-  padding: 4px;
-  border-radius: var(--r);
-  background: color-mix(in srgb, var(--bg-surface) 88%, transparent);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid color-mix(in srgb, var(--text-main) 10%, transparent);
-  box-shadow: var(--shadow-sm);
-  flex-shrink: 0;
-}
-
-.btn-sim-tab {
-  flex: 1;
-  border: none;
-  padding: 6px 8px;
-  border-radius: 3px;
-  background: transparent;
-  color: var(--text-muted);
-  font-family: var(--font-main);
-  font-size: 11px;
-  font-weight: 600;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: all 0.15s;
-}
-
-.btn-sim-tab:hover {
-  color: var(--text-main);
-  background: color-mix(in srgb, var(--text-main) 5%, transparent);
-}
-
-.btn-sim-tab.is-active {
-  background: var(--bg-surface);
-  color: var(--primary);
-  box-shadow: var(--shadow-sm);
-}
-
-/* ── DRIVER CARD CHIPS ──────────────────────────────── */
-.sim-chip-focus {
-  font-size: 9px;
-  font-weight: 600;
-  color: var(--text-muted);
-  background: color-mix(in srgb, var(--text-main) 6%, transparent);
-  padding: 2px 6px;
-  border-radius: 3px;
-  white-space: nowrap;
-}
-
-.sim-skill-gap {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  background: var(--alert-wash);
-  color: var(--danger);
-  border: 1px solid color-mix(in srgb, var(--danger) 25%, transparent);
-  font-size: 10px;
-  font-weight: 600;
-  margin-bottom: 8px;
-  padding: 4px 8px;
-  border-radius: var(--r-sm);
-}
-
-.sim-telemetry-row {
-  display: flex;
-  justify-content: space-between;
-  gap: 8px;
-  font-size: 10px;
-  color: var(--text-muted);
-  margin: 4px 0 6px;
-  padding-top: 5px;
-  border-top: 1px solid var(--border);
-}
-
-.sim-card-actions {
-  display: flex;
-  gap: 5px;
-  margin-top: 8px;
-  padding-top: 8px;
-  border-top: 1px dashed var(--border);
-}
-
-.btn-sim-incident {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 3px;
-  font-family: var(--font-main);
-  font-size: 9.5px;
-  font-weight: 700;
-  padding: 5px 6px;
-  border-radius: var(--r-sm);
-  cursor: pointer;
-  white-space: nowrap;
-  transition: all 0.15s;
-}
-
-.btn-sim-incident.incident-breakdown {
-  background: var(--alert-wash);
-  color: var(--danger);
-  border: 1px solid color-mix(in srgb, var(--danger) 25%, transparent);
-}
-
-.btn-sim-incident.incident-breakdown.is-active {
-  background: var(--danger);
-  color: #fff;
-}
-
-.btn-sim-incident.incident-traffic {
-  background: var(--warn-wash);
-  color: var(--warning);
-  border: 1px solid color-mix(in srgb, var(--warning) 25%, transparent);
-}
-
-.btn-sim-incident.incident-traffic.is-active {
-  background: var(--warning);
-  color: #fff;
-}
-
-.sim-panel-empty {
-  padding: 24px 16px;
-  font-size: 11px;
-  text-align: center;
-  color: var(--text-muted);
-  background: color-mix(in srgb, var(--bg-surface) 88%, transparent);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid var(--border);
-  border-radius: var(--r);
-}
-
-/* ── GNN LEGEND ─────────────────────────────────────── */
-.gnn-legend-overlay {
-  position: absolute;
-  top: var(--map-gutter);
-  left: var(--map-gutter);
-  /* Below the manifest drawer (900) so opening the drawer covers it. */
-  z-index: 700;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  min-width: 186px;
-  padding: 10px 13px;
-  background: color-mix(in srgb, var(--bg-surface) 90%, transparent);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid color-mix(in srgb, var(--text-main) 10%, transparent);
-  border-radius: var(--r-lg);
-  box-shadow: var(--shadow-lg);
-  font-family: var(--font-main);
-  pointer-events: none;
-}
-
-.gnn-legend-title {
-  font-size: 9.5px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--text-main);
-  border-bottom: 1px solid var(--border);
-  padding-bottom: 5px;
-}
-
-.gnn-legend-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 10.5px;
-  color: var(--text-muted);
-}
-
-.gnn-legend-swatch {
-  flex-shrink: 0;
-  width: 15px;
-  border-radius: 1px;
-}
-
-.gnn-legend-swatch.high {
-  height: 4px;
-  background: var(--warning);
-}
-
-.gnn-legend-swatch.mid {
-  height: 2.5px;
-  background: var(--blue);
-}
-
-.gnn-legend-swatch.low {
-  height: 0;
-  border-top: 2px dashed var(--purple);
-}
-
-/* Leaflet's own controls sit bottom-right by default, straight on top of the
-   driver rail. Push them clear only while the simulation overlays are up. */
-.map-view.sim-active .leaflet-bottom.leaflet-right {
-  margin-right: calc(var(--map-rail-w) + var(--map-gutter));
-  margin-bottom: calc(var(--map-bar-h) + var(--map-gutter));
-}
-
-/* ── NARROW VIEWPORTS ───────────────────────────────── */
-@media (max-width: 1180px) {
-  .pane-map-full {
-    --map-rail-w: 224px;
-  }
-
-  /* The controls cell drops its button captions before it wraps — the icons
-     stay tappable and the KPI strip stays one row tall. */
-  .kpi-card-tools .map-header-btn span:not([aria-hidden]):not(.driver-app-notif),
-  .kpi-card-tools .playground-toggle-btn span:not([aria-hidden]),
-  .kpi-card-tools .gnn-toggle-text {
-    display: none;
-  }
-
-  .map-overlay-select {
-    max-width: 150px;
-  }
-}
-
-@media (max-width: 900px) {
-  .pane-map-full {
-    --map-rail-w: 0px;
-    --map-gutter: 10px;
-  }
-
-  /* Metrics stack two-up and the controls cell takes the full width below
-     them, rather than squeezing five columns into a phone. */
-  .kpi-row {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .kpi-card-tools {
-    grid-column: 1 / -1;
-    border-left: none;
-    border-top: 1px solid var(--border);
-  }
-
-  /* No room for a side rail: the driver list drops below the playback bar and
-     the bar reclaims the full width. */
-  .sim-control-bar {
-    right: var(--map-gutter);
-  }
-
-  .sim-vehicle-panel {
-    top: auto;
-    bottom: calc(var(--map-bar-h) + var(--map-gutter) * 2);
-    left: var(--map-gutter);
-    right: var(--map-gutter);
-    width: auto;
-    max-height: 42%;
-  }
-
-  .map-view.sim-active .leaflet-bottom.leaflet-right {
-    margin-right: 0;
-  }
-}
-
-.mobile-hamburger {
-  display: none;
-  align-items: center;
-  justify-content: center;
-  background: none;
-  border: 1px solid var(--border);
-  border-radius: var(--r-sm, 6px);
-  color: var(--text-main);
-  font-size: 18px;
-  width: 36px;
-  height: 36px;
-  cursor: pointer;
-  flex-shrink: 0;
-}
-
-.mobile-sidebar-backdrop {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.45);
-  z-index: 9998;
-  opacity: 0;
-  transition: opacity 0.3s;
-}
-.mobile-sidebar-backdrop.visible {
-  display: block;
-  opacity: 1;
-}
-
-.customer-table-wrapper {
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  flex: 1;
-  min-height: 0;
-}
-
-@media (max-width: 600px) {
-  .saas-layout {
-    grid-template-columns: 1fr;
-  }
-  .saas-sidebar {
-    position: fixed;
-    left: -100%;
-    top: 0;
-    bottom: 0;
-    width: 280px;
-    z-index: 9999;
-    transition: left 0.3s;
-    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.3);
-  }
-  .saas-sidebar.mobile-open {
-    left: 0;
-  }
-  .mobile-hamburger {
-    display: flex !important;
-  }
-  .saas-header {
-    padding: 8px 12px;
-    min-height: 48px;
-    gap: 8px;
-  }
-  .page-title {
-    font-size: 13px;
-  }
-  .kpi-row {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 4px;
-  }
-  .kpi-card-tools {
-    grid-column: 1 / -1;
-  }
-  .pane-map-full {
-    min-height: 280px;
-  }
-  .customer-table-wrapper table {
-    min-width: 580px;
-  }
-  .header-right {
-    gap: 6px;
-  }
-  .header-right .btn-secondary {
-    padding: 5px 8px;
-    font-size: 10px;
-  }
-  .gantt-container {
-    max-height: 150px;
-  }
-}
-
-@media (max-width: 380px) {
-  .saas-header {
-    padding: 6px 8px;
-    min-height: 42px;
-  }
-  .kpi-card {
-    padding: 6px 8px;
-  }
-  .kpi-value {
-    font-size: 16px;
-  }
-  .kpi-row {
-    grid-template-columns: 1fr;
-  }
 }
 
 .sim-vehicle-card {
@@ -1873,28 +1106,28 @@ body.demo-active .demo-badge {
 }
 
 .sim-status-traveling {
-  background: var(--pine-wash);
-  color: var(--pine);
+  background: #dbeafe;
+  color: #1d4ed8;
 }
 
 .sim-status-waiting {
-  background: var(--warn-wash);
-  color: var(--warn);
+  background: #fef3c7;
+  color: #b45309;
 }
 
 .sim-status-servicing {
-  background: var(--ok-wash);
-  color: var(--ok);
+  background: #d1fae5;
+  color: #047857;
 }
 
 .sim-status-returning {
-  background: var(--pine-wash);
-  color: var(--pine);
+  background: #e0e7ff;
+  color: #4338ca;
 }
 
 .sim-status-parked {
-  background: var(--surface-sunk);
-  color: var(--ink-muted);
+  background: #f1f5f9;
+  color: #64748b;
 }
 
 .sim-card-body {
@@ -1939,12 +1172,535 @@ body.demo-active .demo-badge {
   transition: transform 0.35s linear !important;
 }
 
+.violation-tag {
+  background: rgba(239, 68, 68, 0.08);
+  color: var(--danger);
+  border: 1px solid rgba(239, 68, 68, 0.15);
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ── MOBILE RESPONSIVENESS AND DRAWERS ──────────────── */
+.mobile-sidebar-toggle {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  /* ── iOS momentum scrolling ── */
+  .view-panel,
+  .settings-view-container,
+  .fleet-view-container,
+  .analytics-view-container,
+  .table-container,
+  .modal-body,
+  .manifest-drawer,
+  .playground-drawer,
+  .loading-console {
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  .mobile-sidebar-toggle {
+    display: block !important;
+  }
+
+  /* ─────────────────────────────────────────────────────────
+     CORE LAYOUT — keep 100dvh box, scroll INSIDE view-panel
+     ───────────────────────────────────────────────────────── */
+  .saas-layout {
+    grid-template-columns: 1fr !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    overflow: hidden !important;
+  }
+
+  .saas-main {
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+    min-height: 0 !important;
+  }
+
+  /* The view panel becomes the single scroll root */
+  .view-panel {
+    flex: 1 !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    min-height: 0 !important;
+  }
+
+  /* ── Sidebar: off-canvas drawer ── */
+  .saas-sidebar {
+    position: fixed !important;
+    top: 0;
+    left: -240px;
+    width: 240px;
+    height: 100vh;
+    height: 100dvh;
+    z-index: 10000;
+    transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.5);
+    padding-top: max(20px, env(safe-area-inset-top)) !important;
+    padding-bottom: max(20px, env(safe-area-inset-bottom)) !important;
+    padding-left: max(16px, env(safe-area-inset-left)) !important;
+    padding-right: 16px !important;
+    overflow-y: auto !important; /* Enable scrolling in landscape mobile */
+  }
+  .saas-sidebar.mobile-open {
+    left: 0 !important;
+  }
+
+  /* ── Grid layouts → single column ── */
+  .settings-grid,
+  .dashboard-grid,
+  .analytics-grid,
+  .feedback-grid {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+  .analytics-grid > * {
+    grid-column: span 12 !important;
+  }
+
+  /* ── KPI row → 2x2 grid ── */
+  .kpi-row {
+    grid-template-columns: repeat(2, 1fr) !important;
+    flex-shrink: 0 !important;
+  }
+  .kpi-card {
+    border-right: 1px solid var(--border) !important;
+    border-bottom: 1px solid var(--border) !important;
+    padding: 10px 12px !important;
+  }
+  .kpi-card:nth-child(2n) {
+    border-right: none !important;
+  }
+  .kpi-card:nth-child(n + 3) {
+    border-bottom: none !important;
+  }
+
+  /* ── Header: safe-area aware ── */
+  .saas-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 8px !important;
+    height: auto !important;
+    flex-shrink: 0 !important;
+    padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) 10px
+      max(12px, env(safe-area-inset-left)) !important;
+  }
+  .header-right {
+    flex-wrap: wrap;
+    width: 100%;
+    gap: 6px;
+  }
+
+  /* ── Workspace + Map pane ── */
+  .workspace-full {
+    flex-direction: column !important;
+    flex: none !important;
+    padding: 0 8px 12px !important;
+    overflow: visible !important;
+  }
+
+  .pane-map-full {
+    height: 50vh !important;
+    min-height: 280px !important;
+    flex: none !important;
+    margin-bottom: 12px !important;
+  }
+
+  .pane-header {
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+    padding: 8px 10px !important;
+  }
+
+  /* ── Slide-over sheets (Manifest, AI Playground) ── */
+  .manifest-drawer,
+  .playground-drawer {
+    position: fixed !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 100% !important;
+    transform: translateY(100%) !important;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    border-radius: 0 !important;
+    z-index: 11000 !important;
+  }
+  .manifest-drawer.open,
+  .playground-drawer.open {
+    transform: translateY(0) !important;
+  }
+
+  /* ── Driver App Companion → full-screen sheet ── */
+  .driver-app-mockup {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    border-radius: 0 !important;
+    border: none !important;
+    padding: 0 !important;
+    z-index: 11000 !important;
+    background: #f4f4f5 !important;
+    box-shadow: none !important;
+  }
+  .driver-app-mockup .driver-app-screen {
+    border-radius: 0 !important;
+    border: none !important;
+  }
+  #btn-toggle-driver-app {
+    bottom: max(90px, calc(80px + env(safe-area-inset-bottom))) !important;
+    right: max(12px, env(safe-area-inset-right)) !important;
+    padding: 8px 14px !important;
+    font-size: 10px !important;
+  }
+
+  /* ── Loading overlay → centered modal ── */
+  .loading-overlay {
+    position: fixed !important;
+    inset: 0 !important;
+    background: rgba(15, 23, 42, 0.85) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    pointer-events: auto !important;
+  }
+  .loading-card {
+    max-width: 92vw !important;
+    width: 360px !important;
+    padding: 16px !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5) !important;
+  }
+  .loading-launcher {
+    bottom: max(16px, env(safe-area-inset-bottom)) !important;
+    right: max(16px, env(safe-area-inset-right)) !important;
+  }
+
+  /* ── Sub-view containers ── */
+  .settings-view-container,
+  .fleet-view-container,
+  .analytics-view-container {
+    padding: 16px !important;
+    overflow-y: auto !important;
+  }
+
+  /* Fleet config table → horizontal scroll */
+  .fleet-config-table {
+    display: block !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  /* ── Solver Toolbar: Header right grid ── */
+  .header-right {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+    width: 100% !important;
+    flex-wrap: nowrap !important;
+  }
+  .header-right > .saas-select,
+  .header-right > #dataset-select {
+    grid-column: span 1 !important;
+    width: 100% !important;
+    margin: 0 !important;
+  }
+  .header-right > #custom-import-btn {
+    grid-column: span 1 !important;
+    width: 100% !important;
+    justify-content: center !important;
+    margin: 0 !important;
+  }
+  .header-right > .fleet-toggles {
+    grid-column: span 2 !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    width: 100% !important;
+    gap: 8px !important;
+    background: var(--bg-surface) !important;
+    border: 1px solid var(--border) !important;
+    padding: 8px 12px !important;
+    border-radius: var(--r-sm) !important;
+    margin: 0 !important;
+  }
+  .header-right > .fleet-toggles label {
+    flex: 1 !important;
+    justify-content: center !important;
+  }
+  .header-right > #run-model {
+    grid-column: span 2 !important;
+    width: 100% !important;
+    margin: 0 !important;
+  }
+
+  /* ── Map Overlays: Simulation Controller ── */
+  .sim-control-bar {
+    bottom: 8px !important;
+    left: 8px !important;
+    right: 8px !important;
+    padding: 8px 12px !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+  }
+  .sim-slider-container {
+    width: 100% !important;
+    flex: none !important;
+    order: -1 !important;
+  }
+  .sim-time-text {
+    font-size: 11px !important;
+    min-width: unset !important;
+  }
+  .btn-sim-play {
+    padding: 5px 12px !important;
+    font-size: 11px !important;
+  }
+  .sim-speed-select {
+    padding: 3px 6px !important;
+    font-size: 11px !important;
+  }
+
+  /* ── Map Overlays: Vehicle Status Panel (Horizontal Carousel) ── */
+  .sim-vehicle-panel {
+    top: auto !important;
+    bottom: 80px !important;
+    left: 8px !important;
+    right: 8px !important;
+    width: auto !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+    max-height: 190px !important;
+    padding: 8px 10px !important;
+    background: color-mix(in srgb, var(--bg-surface) 85%, transparent) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: var(--r-lg) !important;
+    pointer-events: auto !important;
+    box-shadow: var(--shadow-lg) !important;
+    gap: 0 !important;
+  }
+  .sim-panel-list-wrapper {
+    display: flex !important;
+    flex-direction: row !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    width: 100% !important;
+    gap: 8px !important;
+    -webkit-overflow-scrolling: touch !important;
+    padding-bottom: 4px !important;
+  }
+  .sim-vehicle-card {
+    min-width: 210px !important;
+    max-width: 210px !important;
+    padding: 8px 10px !important;
+    flex-shrink: 0 !important;
+    margin: 0 !important;
+    background: var(--bg-surface) !important; /* solid card on top of overlay bg */
+  }
+
+  /* ── Map Overlays: GNN Legend Overlay ── */
+  .gnn-legend-overlay {
+    top: 52px !important;
+    bottom: auto !important;
+    left: 8px !important;
+    right: auto !important;
+    padding: 6px 10px !important;
+    font-size: 10px !important;
+    max-width: 180px !important;
+  }
+
+  /* ── Model Analytics View Headers ── */
+  .analytics-view-header {
+    flex-direction: column !important;
+    gap: 12px !important;
+    align-items: stretch !important;
+  }
+  .analytics-actions-row {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+    width: 100% !important;
+  }
+  .analytics-actions-row select {
+    width: 100% !important;
+    margin: 0 !important;
+  }
+  .analytics-actions-row button {
+    grid-column: span 2 !important;
+    width: 100% !important;
+    margin: 0 !important;
+  }
+  .analysis-heatmap-box {
+    display: block !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    width: 100% !important;
+  }
+
+  /* ── Fleet Config Headers ── */
+  .fleet-view-header {
+    flex-direction: column !important;
+    gap: 12px !important;
+    align-items: stretch !important;
+  }
+  .fleet-actions-row {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+    width: 100% !important;
+  }
+  .fleet-actions-row button {
+    width: 100% !important;
+    margin: 0 !important;
+  }
+
+  /* ── Modal Split Charts ── */
+  .modal-split-charts {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  /* ── Map Overlays Focus Mode ── */
+  .map-view-parent.overlays-hidden .sim-control-bar,
+  .map-view-parent.overlays-hidden .sim-vehicle-panel,
+  .map-view-parent.overlays-hidden .gnn-legend-overlay,
+  .map-view-parent.overlays-hidden #btn-toggle-driver-app {
+    display: none !important;
+  }
+
+  /* ── Bottom safe-area padding ── */
+  .view-panel::after {
+    content: '';
+    display: block;
+    height: env(safe-area-inset-bottom, 0px);
+    flex-shrink: 0;
+  }
+}
+
+/* ── Landscape mobile optimizations ── */
+@media (max-width: 926px) and (orientation: landscape) {
+  .saas-header {
+    flex-direction: row !important;
+    gap: 8px !important;
+    height: 44px !important;
+    padding: 0 max(12px, env(safe-area-inset-left)) !important;
+    align-items: center !important;
+  }
+
+  .pane-map-full {
+    height: calc(100vh - 50px) !important;
+    min-height: unset !important;
+  }
+
+  .workspace-full {
+    padding: 0 4px 4px !important;
+  }
+
+  /* Auto-hide sidebar toggle label in landscape to save space */
+  .mobile-sidebar-toggle span {
+    display: none;
+  }
+
+  /* Loading overlay goes compact in landscape */
+  .loading-card {
+    max-width: 60vw !important;
+    max-height: 90vh !important;
+    overflow-y: auto !important;
+  }
+
+  .loading-rotate-hint {
+    display: none !important;
+  }
+
+  /* Hide overlays on landscape focus mode */
+  .map-view-parent.overlays-hidden .sim-control-bar,
+  .map-view-parent.overlays-hidden .sim-vehicle-panel,
+  .map-view-parent.overlays-hidden .gnn-legend-overlay,
+  .map-view-parent.overlays-hidden #btn-toggle-driver-app {
+    display: none !important;
+  }
+
+  /* Compact panels for landscape mode */
+  .sim-vehicle-panel {
+    max-height: 140px !important;
+    bottom: 54px !important;
+  }
+  .sim-vehicle-card {
+    padding: 4px 8px !important;
+  }
+}
+
+/* ── Loading Rotate Hint Styling ── */
+.loading-rotate-hint {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 14px;
+  margin: 4px 0 8px;
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-radius: var(--r, 8px);
+  font-size: 12px;
+  font-weight: 600;
+  color: #d97706;
+  animation: hint-pulse 2.5s ease-in-out infinite;
+}
+
+.loading-rotate-hint .rotate-icon {
+  display: inline-block;
+  animation: rotate-wobble 2s ease-in-out infinite;
+  font-size: 16px;
+}
+
+@keyframes hint-pulse {
+  0%,
+  100% {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes rotate-wobble {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(90deg);
+  }
+  50% {
+    transform: rotate(90deg);
+  }
+  75% {
+    transform: rotate(0deg);
+  }
+}
+
 .map-icon-3d {
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  background: var(--icon-main, var(--pine));
+  background: var(--icon-main, #10b981);
   box-shadow:
     0 6px 16px var(--icon-shadow, rgba(0, 0, 0, 0.25)),
     inset 0 2px 4px rgba(255, 255, 255, 0.25);
@@ -1963,14 +1719,14 @@ body.demo-active .demo-badge {
 .map-icon-3d.depot {
   width: 48px;
   height: 48px;
-  border: 2.5px solid var(--surface);
-  outline: 2.5px solid var(--icon-dark, var(--pine-deep));
+  border: 2.5px solid #ffffff;
+  outline: 2.5px solid var(--icon-dark, #0c4a6e);
 }
 
 .map-icon-3d.vehicle {
   width: 40px;
   height: 40px;
-  border: 2px solid var(--surface);
+  border: 2px solid #ffffff;
   outline: 2px solid var(--icon-dark, #0f3d33);
   animation: vehicle-bob 2s ease-in-out infinite;
 }
@@ -1988,7 +1744,7 @@ body.demo-active .demo-badge {
 .map-icon-3d.customer {
   width: 24px;
   height: 24px;
-  border: 1.5px solid var(--surface);
+  border: 1.5px solid #ffffff;
   box-shadow: 0 4px 10px var(--icon-shadow, rgba(0, 0, 0, 0.22));
 }
 
@@ -2013,12 +1769,12 @@ body.demo-active .demo-badge {
 }
 
 .avatar-shirt {
-  fill: var(--surface);
+  fill: #ffffff;
   opacity: 0.9;
 }
 
 .avatar-eye {
-  fill: var(--ink);
+  fill: #1e293b;
 }
 
 .avatar-mouth {
@@ -2044,23 +1800,23 @@ body.demo-active .demo-badge {
 }
 
 .route-load-pill.safe {
-  background: var(--ok-wash);
-  color: var(--ok);
+  background: #d1fae5;
+  color: #047857;
 }
 
 .route-load-pill.near {
-  background: var(--warn-wash);
-  color: var(--warn);
+  background: #fef3c7;
+  color: #b45309;
 }
 
 .route-load-pill.critical {
-  background: var(--alert-wash);
-  color: var(--alert);
+  background: #fee2e2;
+  color: #b91c1c;
 }
 
 .route-load-pill.neutral {
-  background: var(--surface-sunk);
-  color: var(--ink-muted);
+  background: #f1f5f9;
+  color: #64748b;
 }
 
 /* ── LOADING OVERLAY ────────────────────────────────── */
@@ -2150,7 +1906,7 @@ body.demo-active .demo-badge {
   left: -100%;
   right: 0;
   height: 3px;
-  background: linear-gradient(90deg, transparent, var(--pine), transparent);
+  background: linear-gradient(90deg, transparent, var(--primary), #06b6d4, transparent);
   animation: loading-sweep 1.8s linear infinite;
 }
 
@@ -2241,9 +1997,9 @@ body.demo-active .demo-badge {
 }
 
 .loading-cancel-btn:hover {
-  background: var(--alert-wash);
+  background: #fee2e2;
   color: var(--danger);
-  border-color: var(--alert);
+  border-color: #fecaca;
 }
 
 .loading-subtitle {
@@ -2264,7 +2020,7 @@ body.demo-active .demo-badge {
 .loading-track {
   position: relative;
   height: 12px;
-  background: var(--ink); /* asphalt */
+  background: #0f172a; /* Slate 900 background for asphalt */
   border: 1.5px solid var(--border);
   border-radius: 6px;
   overflow: visible;
@@ -2299,7 +2055,7 @@ body.demo-active .demo-badge {
 .loading-track-fill {
   height: 100%;
   width: var(--loading-progress, 0%);
-  background: linear-gradient(90deg, var(--pine), var(--pine-deep));
+  background: linear-gradient(90deg, var(--primary), #06b6d4, #10b981);
   background-size: 200% 100%;
   border-radius: 4px;
   transition: width 0.22s cubic-bezier(0.1, 0.8, 0.2, 1);
@@ -2423,18 +2179,14 @@ body.demo-active .demo-badge {
 }
 
 /* Monospace Live Console Feed */
-/* A recessed log panel on the card's own palette. It used to be a black
-   terminal with neon-green text: the only inverted surface in the product, and
-   because it painted `var(--ink)` on `var(--ok)` it turned white-on-mint —
-   effectively invisible — under the dark theme. */
 .loading-console-wrapper {
   margin-top: 4px;
   margin-bottom: 20px;
   border-radius: var(--r-md, 8px);
-  border: 1px solid var(--border);
-  background: var(--surface-sunk);
+  border: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
+  background: #090d16; /* Dark terminal */
   padding: 10px 14px;
-  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.03);
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.4);
   font-family: var(--font-data), Monaco, Consolas, monospace;
 }
 
@@ -2444,7 +2196,7 @@ body.demo-active .demo-badge {
   align-items: center;
   margin-bottom: 6px;
   padding-bottom: 4px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -2455,14 +2207,14 @@ body.demo-active .demo-badge {
 .loading-console-dot {
   width: 6px;
   height: 6px;
-  background: var(--ok); /* active dot */
+  background: #10b981; /* Emerald active dot */
   border-radius: 50%;
-  box-shadow: 0 0 6px var(--ok);
+  box-shadow: 0 0 6px #10b981;
   animation: console-blink 1.2s infinite ease-in-out;
 }
 
 .loading-card[data-phase='done'] .loading-console-dot {
-  background: var(--ink-muted);
+  background: #64748b;
   box-shadow: none;
   animation: none;
 }
@@ -2478,16 +2230,13 @@ body.demo-active .demo-badge {
 }
 
 .loading-console {
-  max-height: 96px;
+  max-height: 80px;
   overflow-y: auto;
-  overflow-x: hidden;
   display: flex;
   flex-direction: column;
-  align-items: stretch;
   gap: 4px;
-  overscroll-behavior: contain;
   scrollbar-width: thin;
-  scrollbar-color: var(--border-strong) transparent;
+  scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
 }
 
 .loading-console::-webkit-scrollbar {
@@ -2495,49 +2244,23 @@ body.demo-active .demo-badge {
 }
 
 .loading-console::-webkit-scrollbar-thumb {
-  background: var(--border-strong);
+  background: rgba(255, 255, 255, 0.15);
   border-radius: 2px;
 }
 
 .loading-console-line {
-  /* Never let the flex container squeeze a line below its line box, otherwise
-     `overflow: hidden` clips the glyphs vertically once logs overflow. */
-  flex: 0 0 auto;
-  min-height: 1.4em;
   font-size: 11px;
   line-height: 1.4;
-  color: var(--text-muted);
+  color: #a7f3d0; /* Soft neon green/teal text */
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   animation: console-fade-in 0.22s ease-out forwards;
 }
 
-/* Log lines read as a list, so each carries a marker and the newest one is
-   promoted — that is the step actually running. */
-.loading-console-line::before {
-  content: '›';
-  margin-right: 8px;
-  color: var(--primary);
-  opacity: 0.65;
-}
-
-.loading-console-line:last-child {
-  color: var(--text-main);
-  font-weight: 500;
-}
-
-.loading-console-line:last-child::before {
-  opacity: 1;
-}
-
 .loading-console-line.placeholder {
   color: var(--text-muted);
   font-style: italic;
-}
-
-.loading-console-line.placeholder::before {
-  content: none;
 }
 
 @keyframes console-fade-in {
@@ -2594,27 +2317,24 @@ body.demo-active .demo-badge {
   font-weight: 600;
   font-family: var(--font-main);
   cursor: pointer;
-  box-shadow: 0 6px 20px rgba(var(--primary-rgb), 0.3);
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.3);
   animation: launcher-pulse 2s ease infinite;
 }
 
 @keyframes launcher-pulse {
   0%,
   100% {
-    box-shadow: 0 6px 20px rgba(var(--primary-rgb), 0.3);
+    box-shadow: 0 6px 20px rgba(37, 99, 235, 0.3);
   }
   50% {
-    box-shadow: 0 6px 30px rgba(var(--primary-rgb), 0.5);
+    box-shadow: 0 6px 30px rgba(37, 99, 235, 0.5);
   }
 }
 
 /* ── TOAST NOTIFICATIONS ───────────────────────────── */
-/* Anchored bottom-right: the top-right corner belongs to the header controls,
-   and toasts landing there covered the dataset and overlay pickers. Newest
-   toast sits closest to the corner and pushes older ones upward. */
 .toast-root {
   position: fixed;
-  bottom: 16px;
+  top: 16px;
   right: 16px;
   z-index: 10000;
   display: flex;
@@ -2628,7 +2348,7 @@ body.demo-active .demo-badge {
   background: var(--bg-surface);
   border: 1px solid var(--border);
   border-radius: var(--r);
-  padding: 12px 16px 16px 16px;
+  padding: 12px 16px;
   min-width: 280px;
   max-width: 380px;
   box-shadow: var(--shadow);
@@ -2636,8 +2356,6 @@ body.demo-active .demo-badge {
   display: flex;
   gap: 10px;
   align-items: flex-start;
-  position: relative;
-  overflow: hidden;
 }
 
 .toast.toast-exit {
@@ -2663,13 +2381,8 @@ body.demo-active .demo-badge {
 }
 
 .toast-icon {
-  font-size: 16px;
+  font-size: 17px;
   flex-shrink: 0;
-  margin-top: 2px;
-}
-
-.toast-content {
-  flex: 1;
 }
 
 .toast-title {
@@ -2678,86 +2391,22 @@ body.demo-active .demo-badge {
   color: var(--text-main);
 }
 
-.toast-message {
-  font-size: 12px;
-  color: var(--text-muted);
-  margin-top: 2px;
-}
-
 .toast-body {
   font-size: 12px;
   color: var(--text-muted);
   margin-top: 2px;
 }
 
-.toast.ok {
+.toast[data-type='ok'] {
   border-left: 3px solid var(--success);
 }
-.toast.ok .toast-icon {
-  color: var(--success);
-}
-.toast.error {
+
+.toast[data-type='error'] {
   border-left: 3px solid var(--danger);
 }
-.toast.error .toast-icon {
-  color: var(--danger);
-}
-.toast.warn {
-  border-left: 3px solid var(--orange);
-}
-.toast.warn .toast-icon {
-  color: var(--orange);
-}
 
-.toast-close {
-  background: none;
-  border: none;
-  color: var(--text-muted);
-  font-size: 18px;
-  cursor: pointer;
-  padding: 0;
-  line-height: 1;
-  margin-left: 8px;
-  transition: color 0.15s;
-}
-
-.toast-close:hover {
-  color: var(--text-main);
-}
-
-.toast-progress {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  height: 3px;
-  width: 100%;
-  animation: toast-progress-anim linear forwards;
-}
-
-.toast-progress-ok {
-  background: var(--success);
-  animation-duration: 4.2s;
-}
-.toast-progress-error {
-  background: var(--danger);
-  animation-duration: 6.5s;
-}
-.toast-progress-warn {
-  background: var(--orange);
-  animation-duration: 4.2s;
-}
-.toast-progress- {
-  background: var(--primary);
-  animation-duration: 4.2s;
-}
-
-@keyframes toast-progress-anim {
-  from {
-    width: 100%;
-  }
-  to {
-    width: 0%;
-  }
+.toast[data-type='warn'] {
+  border-left: 3px solid var(--warning);
 }
 
 /* ── CONNECTION PILL ────────────────────────────────── */
@@ -2771,9 +2420,9 @@ body.demo-active .demo-badge {
   font-size: 12px;
   font-weight: 600;
   font-family: var(--font-main);
-  background: var(--alert-wash);
+  background: #fee2e2;
   color: var(--danger);
-  border: 1px solid var(--alert);
+  border: 1px solid #fecaca;
   box-shadow: var(--shadow-sm);
 }
 
@@ -2785,14 +2434,8 @@ body.demo-active .demo-badge {
   overflow: hidden;
   position: relative;
 }
-
-/* Dispatch is the one view whose blocks have hard minimums; let it scroll
-   rather than crush the map. */
-#view-dispatch {
-  overflow-y: auto;
-  overflow-x: hidden;
-}
-.view-panel.hidden {
+.view-panel.hidden,
+.hidden {
   display: none !important;
 }
 
@@ -2829,72 +2472,28 @@ body.demo-active .demo-badge {
   display: flex;
   gap: 12px;
 }
-/* ── Fleet table: sticky header ──────────────────────────
-   The header row docks while the body scrolls, so it must be fully opaque and
-   sit in front of the rows. Two things previously let data show through it:
-   the scroll box had 16px of padding (rows scrolled into the strip the header
-   docks over) and the table used `border-collapse: collapse`, where the cell
-   border belongs to the table grid and stays behind with the rows instead of
-   travelling with the header. Hence separate borders + an inset shadow rule. */
-.fleet-table-scroll {
-  flex: 1;
-  min-height: 0;
-  margin-top: 16px;
-  overflow: auto;
-  background: var(--bg-surface);
-  border: 1px solid var(--border);
-  border-radius: var(--r);
-  box-shadow: var(--shadow);
-}
-
-.fleet-config-table {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-}
-
 .fleet-config-table th {
-  position: sticky;
-  top: 0;
-  z-index: 3;
   font-weight: 600;
-  background: var(--bg-surface);
-  border-bottom: none;
-  box-shadow:
-    inset 0 -1px 0 var(--border-strong),
-    0 1px 0 var(--border-strong);
-}
-
-.fleet-config-table td {
-  border-bottom: 1px solid var(--border);
-  background: transparent;
-}
-
-.fleet-config-table tbody tr:last-child td {
-  border-bottom: none;
 }
 .table-inline-input {
   width: 100%;
   border: 1px solid transparent;
-  background-color: transparent;
+  background: transparent;
   padding: 4px 8px;
   border-radius: var(--r-sm);
-  color: var(--field-text);
+  color: var(--text-main);
   font-family: var(--font-main);
   font-size: 13px;
-  transition:
-    border-color 0.12s ease,
-    background-color 0.12s ease,
-    box-shadow 0.12s ease;
+  transition: all 0.1s;
 }
-.table-inline-input:hover:not(:focus) {
-  background-color: var(--field-bg-hover);
-  border-color: var(--field-border);
+.table-inline-input:hover {
+  background: var(--bg-base);
+  border-color: var(--border);
 }
 .table-inline-input:focus {
-  background-color: var(--bg-surface);
-  border-color: var(--field-border-focus);
-  box-shadow: 0 0 0 2px var(--field-ring);
+  background: var(--bg-surface);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px var(--primary-soft);
   outline: none;
 }
 .table-inline-input.num {
@@ -3065,7 +2664,7 @@ body.demo-active .demo-badge {
 .analysis-chart-box {
   flex: 1;
   min-height: 200px;
-  background: var(--surface);
+  background: #ffffff;
   border: 1px solid var(--border);
   border-radius: var(--r);
   display: flex;
@@ -3078,7 +2677,7 @@ body.demo-active .demo-badge {
 .analysis-heatmap-box {
   flex: 1;
   min-height: 240px;
-  background: var(--surface);
+  background: #ffffff;
   border: 1px solid var(--border);
   border-radius: var(--r);
   display: flex;
@@ -3342,18 +2941,18 @@ body.demo-active .demo-badge {
 }
 
 .sim-alert-item.info {
-  border-left: 3px solid var(--pine);
+  border-left: 3px solid #3b82f6;
 }
 .sim-alert-item.warn {
-  border-left: 3px solid var(--warn);
+  border-left: 3px solid #f59e0b;
   background: rgba(254, 243, 199, 0.15);
 }
 .sim-alert-item.error {
-  border-left: 3px solid var(--alert);
+  border-left: 3px solid #ef4444;
   background: rgba(254, 226, 226, 0.15);
 }
 .sim-alert-item.success {
-  border-left: 3px solid var(--ok);
+  border-left: 3px solid #10b981;
   background: rgba(209, 250, 229, 0.15);
 }
 
@@ -3366,19 +2965,17 @@ body.demo-active .demo-badge {
 
 /* ── PHONE EMULATOR STYLING ──────────────────────────── */
 .driver-app-mockup {
-  /* Fixed, not absolute: the map pane clips its overflow, which used to cut
-     the bottom half of the handset off entirely. */
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
+  position: absolute;
+  bottom: 135px;
+  right: 20px;
   width: 310px;
-  height: min(490px, calc(100vh - 120px));
-  background: var(--ink);
+  height: 490px;
+  background: #1e1e24;
   border-radius: 38px;
   padding: 10px;
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
-  z-index: 1100;
-  border: 4px solid var(--ink-soft);
+  z-index: 1001;
+  border: 4px solid #3f3f46;
   display: flex;
   flex-direction: column;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -3387,17 +2984,17 @@ body.demo-active .demo-badge {
 
 .driver-app-screen {
   flex: 1;
-  background: var(--surface-sunk);
+  background: #f4f4f5;
   border-radius: 28px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  border: 1px solid var(--ink-soft);
+  border: 1px solid #27272a;
   position: relative;
 }
 
 .driver-app-card {
-  background: var(--surface);
+  background: #ffffff;
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 12px;
@@ -3417,11 +3014,11 @@ body.demo-active .demo-badge {
   border: 1px solid var(--border);
   border-radius: var(--r);
   padding: 10px;
-  background: var(--surface-sunk);
+  background: #fafafa;
 }
 
 .signature-pad-box {
-  background: var(--surface);
+  background: #ffffff;
   border: 1px dashed var(--border);
   border-radius: 4px;
   padding: 4px;
@@ -3436,8 +3033,7 @@ body.demo-active .demo-badge {
   width: 420px;
   max-width: calc(100% - 40px);
   height: calc(100% - 20px);
-  /* See `.manifest-drawer` — must clear Leaflet's control layer. */
-  z-index: 1050;
+  z-index: 900;
   background: color-mix(in srgb, var(--bg-surface) 93%, transparent);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
@@ -3458,35 +3054,25 @@ body.demo-active .demo-badge {
 }
 
 .playground-toggle-btn {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   gap: 6px;
   background: var(--bg-surface);
   border: 1px solid var(--border);
   border-radius: var(--r-sm);
-  padding: 5px 10px;
+  padding: 6px 12px;
   font-size: 11.5px;
   font-weight: 600;
-  font-family: var(--font-main);
   color: var(--text-main);
   cursor: pointer;
-  white-space: nowrap;
-  transition: all 0.15s;
+  transition: all 0.2s;
 }
 
-.playground-toggle-btn:hover {
+.playground-toggle-btn:hover,
+.playground-toggle-btn.active {
   background: var(--primary-soft);
   color: var(--primary);
   border-color: var(--primary);
-}
-
-/* Active reads as "this drawer is open", so it inverts rather than tinting —
-   otherwise it is indistinguishable from its own hover state. */
-.playground-toggle-btn.active {
-  background: var(--primary);
-  border-color: var(--primary);
-  color: #fff;
-  box-shadow: 0 2px 6px rgba(var(--primary-rgb), 0.25);
 }
 
 .violation-tag {
@@ -3502,436 +3088,64 @@ body.demo-active .demo-badge {
   gap: 6px;
 }
 
-/* ═══════════════════════════════════════════════════════
-   ONBOARDING TOUR
-   A guided first-run walkthrough. The scrim is a single box carrying a
-   viewport-sized spread shadow, which punches a genuinely transparent hole
-   over the step target instead of tinting it, and the card docks to whichever
-   side of that target has room.
-   ═══════════════════════════════════════════════════════ */
-.tour-root {
-  position: fixed;
-  inset: 0;
-  z-index: 10000;
-  overflow: hidden;
-  opacity: 0;
-  transition: opacity 0.28s ease;
-  --tour-scrim: rgba(8, 13, 24, 0.62);
+/* ── COLLAPSED STATE FOR SIMULATION OVERLAY PANEL ── */
+#sim-vehicle-panel.panel-collapsed {
+  position: absolute !important;
+  width: 44px !important;
+  height: 44px !important;
+  top: 52px !important;
+  bottom: auto !important;
+  left: auto !important;
+  right: 8px !important;
+  border-radius: 50% !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  background: var(--primary) !important;
+  border: 2.5px solid #ffffff !important;
+  outline: 2.5px solid var(--primary-hover) !important;
+  cursor: pointer !important;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  z-index: 1000 !important;
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
 }
 
-.tour-root.is-in {
-  opacity: 1;
+#sim-vehicle-panel.panel-collapsed:hover {
+  transform: scale(1.15) !important;
+  background: var(--primary-hover) !important;
 }
 
-.tour-scrim {
-  position: absolute;
-  border-radius: 10px;
-  pointer-events: none;
-  box-shadow: 0 0 0 9999px var(--tour-scrim);
-  transition:
-    top 0.4s cubic-bezier(0.22, 1, 0.36, 1),
-    left 0.4s cubic-bezier(0.22, 1, 0.36, 1),
-    width 0.4s cubic-bezier(0.22, 1, 0.36, 1),
-    height 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+#sim-vehicle-panel.panel-collapsed * {
+  display: none !important;
 }
 
-.tour-scrim.is-full {
-  top: 50%;
-  left: 50%;
-  width: 0;
-  height: 0;
+#sim-vehicle-panel.panel-collapsed::before {
+  content: '📊' !important;
+  font-size: 18px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  height: 100% !important;
+  line-height: 1 !important;
 }
 
-/* Breathing ring drawn on top of the hole edge. */
-.tour-halo {
-  position: absolute;
-  border-radius: 10px;
-  pointer-events: none;
-  border: 2px solid var(--primary);
-  box-shadow:
-    0 0 0 4px rgba(var(--primary-rgb), 0.24),
-    0 0 26px 4px rgba(var(--primary-rgb), 0.4);
-  animation: tour-breathe 2.1s ease-in-out infinite;
-  transition:
-    top 0.4s cubic-bezier(0.22, 1, 0.36, 1),
-    left 0.4s cubic-bezier(0.22, 1, 0.36, 1),
-    width 0.4s cubic-bezier(0.22, 1, 0.36, 1),
-    height 0.4s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-@keyframes tour-breathe {
-  0%,
-  100% {
-    box-shadow:
-      0 0 0 3px rgba(var(--primary-rgb), 0.2),
-      0 0 20px 2px rgba(var(--primary-rgb), 0.32);
+/* Mobile override for collapsed panel position */
+@media (max-width: 768px) {
+  #sim-vehicle-panel.panel-collapsed {
+    top: auto !important;
+    bottom: 145px !important;
   }
-  50% {
-    box-shadow:
-      0 0 0 8px rgba(var(--primary-rgb), 0.1),
-      0 0 34px 8px rgba(var(--primary-rgb), 0.46);
+}
+@media (max-width: 926px) and (orientation: landscape) {
+  #sim-vehicle-panel.panel-collapsed {
+    top: auto !important;
+    bottom: 105px !important;
   }
 }
 
-/* ── Card ─────────────────────────────────────────────── */
-.tour-card {
-  position: absolute;
-  background: var(--bg-surface);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 18px 18px 14px;
-  box-shadow:
-    0 1px 2px rgba(8, 13, 24, 0.1),
-    0 24px 60px -18px rgba(8, 13, 24, 0.45);
-  transition:
-    top 0.4s cubic-bezier(0.22, 1, 0.36, 1),
-    left 0.4s cubic-bezier(0.22, 1, 0.36, 1);
-  animation: tour-card-in 0.34s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
-/* A thin gradient cap ties the card to the accent used on the halo. */
-.tour-card::before {
-  content: '';
-  position: absolute;
-  inset: 0 0 auto 0;
-  height: 3px;
-  border-radius: 14px 14px 0 0;
-  background: linear-gradient(90deg, var(--primary) 0%, var(--orange) 100%);
-}
-
-.tour-card.is-hero {
-  padding-top: 22px;
-}
-
-@keyframes tour-card-in {
-  from {
-    opacity: 0;
-    transform: translateY(10px) scale(0.98);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-
-.tour-arrow {
-  position: absolute;
-  width: 12px;
-  height: 12px;
-  background: var(--bg-surface);
-  border: 1px solid var(--border);
-  transform: rotate(45deg);
-}
-
-.tour-arrow--top {
-  top: -7px;
-  left: 34px;
-  border-right: none;
-  border-bottom: none;
-}
-
-.tour-arrow--bottom {
-  bottom: -7px;
-  left: 34px;
-  border-left: none;
-  border-top: none;
-}
-
-.tour-arrow--left {
-  left: -7px;
-  top: 42px;
-  border-right: none;
-  border-top: none;
-}
-
-.tour-arrow--right {
-  right: -7px;
-  top: 42px;
-  border-left: none;
-  border-bottom: none;
-}
-
-.tour-card-head {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-}
-
-.tour-badge {
-  width: 38px;
-  height: 38px;
-  flex-shrink: 0;
-  border-radius: 11px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  background: linear-gradient(140deg, var(--primary) 0%, var(--primary-hover) 100%);
-  box-shadow: 0 6px 16px -6px rgba(var(--primary-rgb), 0.8);
-}
-
-.tour-badge svg {
-  width: 19px;
-  height: 19px;
-}
-
-.tour-card-heading {
-  flex: 1;
-  min-width: 0;
-}
-
-.tour-eyebrow {
-  display: block;
-  font-family: var(--font-data);
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--primary);
-  margin-bottom: 3px;
-}
-
-.tour-card h3 {
-  margin: 0;
-  font-size: 16px;
-  line-height: 1.3;
-  font-weight: 700;
-  color: var(--text-main);
-}
-
-.tour-close {
-  background: none;
-  border: none;
-  color: var(--text-muted);
-  cursor: pointer;
-  font-size: 13px;
-  line-height: 1;
-  padding: 4px;
-  border-radius: 50%;
-  transition:
-    background 0.15s,
-    color 0.15s;
-}
-
-.tour-close:hover {
-  background: var(--bg-base);
-  color: var(--text-main);
-}
-
-.tour-body {
-  margin: 12px 0 14px;
-  font-size: 13px;
-  line-height: 1.6;
-  color: var(--text-muted);
-}
-
-.tour-progress {
-  height: 3px;
-  border-radius: 3px;
-  background: var(--border);
-  overflow: hidden;
-}
-
-.tour-progress-fill {
-  display: block;
-  height: 100%;
-  border-radius: 3px;
-  background: linear-gradient(90deg, var(--primary) 0%, var(--orange) 100%);
-  transition: width 0.4s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.tour-foot {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-top: 12px;
-}
-
-.tour-dots {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-
-.tour-dot {
-  width: 6px;
-  height: 6px;
-  padding: 0;
-  border: none;
-  border-radius: 50%;
-  background: var(--border-strong);
-  cursor: pointer;
-  transition:
-    width 0.25s ease,
-    background 0.25s ease;
-}
-
-.tour-dot.is-done {
-  background: rgba(var(--primary-rgb), 0.45);
-}
-
-.tour-dot.is-active {
-  width: 18px;
-  border-radius: 3px;
-  background: var(--primary);
-}
-
-.tour-actions {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.tour-btn {
-  font-family: var(--font-main);
-  font-size: 12.5px;
-  font-weight: 600;
-  padding: 7px 13px;
-  border-radius: 7px;
-  cursor: pointer;
-  border: 1px solid transparent;
-  transition: all 0.15s ease;
-  white-space: nowrap;
-}
-
-.tour-btn-ghost {
-  background: none;
-  color: var(--text-muted);
-}
-
-.tour-btn-ghost:hover {
-  background: var(--bg-base);
-  color: var(--text-main);
-}
-
-.tour-btn-primary {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  background: var(--primary);
-  color: #fff;
-  box-shadow: 0 4px 12px -4px rgba(var(--primary-rgb), 0.8);
-}
-
-.tour-btn-primary:hover {
-  background: var(--primary-hover);
-  transform: translateY(-1px);
-}
-
-.tour-btn-chev {
-  font-size: 15px;
-  line-height: 1;
-  transition: transform 0.15s ease;
-}
-
-.tour-btn-primary:hover .tour-btn-chev {
-  transform: translateX(2px);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .tour-root,
-  .tour-scrim,
-  .tour-halo,
-  .tour-card,
-  .tour-progress-fill {
-    transition: none;
-    animation: none;
-  }
-}
-
-/* ── KEYBOARD SHORTCUTS ─────────────────────────────────
-   Shared by the Settings card and the Shift+? overlay. */
-.shortcuts-list {
-  list-style: none;
-  margin: 12px 0 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-.shortcuts-list li {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 8px 0;
-  border-bottom: 1px solid var(--border);
-}
-
-.shortcuts-list li:last-child {
-  border-bottom: none;
-}
-
-.shortcut-desc {
-  font-size: 12.5px;
-  color: var(--text-muted);
-}
-
-.shortcut-keys {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  flex-shrink: 0;
-}
-
-.shortcut-keys kbd {
-  font-family: var(--font-data);
-  font-size: 10.5px;
-  font-weight: 600;
-  line-height: 1;
-  color: var(--text-main);
-  background: var(--bg-base);
-  border: 1px solid var(--border-strong);
-  border-bottom-width: 2px;
-  border-radius: 4px;
-  padding: 4px 6px;
-  white-space: nowrap;
-}
-
-.shortcuts-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 9500;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-  background: rgba(8, 13, 24, 0.5);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  animation: tour-card-in 0.2s ease both;
-}
-
-.shortcuts-panel {
-  width: 100%;
-  max-width: 420px;
-  background: var(--bg-surface);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 20px;
-  box-shadow: 0 24px 60px -18px rgba(8, 13, 24, 0.45);
-}
-
-.shortcuts-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.shortcuts-head h3 {
-  margin: 0;
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--text-main);
-}
-
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
+.map-view-parent.overlays-hidden #driver-app-emulator {
+  display: none !important;
 }

@@ -2,8 +2,6 @@
    GANTT CHART — Driver Schedule Timeline Controller
    =================================================================== */
 
-import { algoLabel, overlayKeysFor, PREFERRED_ALGO } from './algoMeta.js';
-
 const ROW_HEIGHT = 38;
 const LABEL_WIDTH = 140;
 const HEADER_HEIGHT = 28;
@@ -18,7 +16,7 @@ export class GanttController {
     this.tooltip = null;
 
     this.isCollapsed = false;
-    this.activeAlgo = PREFERRED_ALGO;
+    this.activeAlgo = 'ddqn';
     this.result = null;
     this.simTime = 0;
     this.maxTime = 240;
@@ -97,13 +95,14 @@ export class GanttController {
       this.toggleCollapse();
     });
 
-    // Picking an algorithm here moves the whole dashboard, so it goes through
-    // app state. Poking the header <select> and firing a synthetic change event
-    // skipped React entirely, leaving the map on one solver and the KPI strip
-    // on another.
     const select = this.panel.querySelector('#gantt-select-algo');
     select.addEventListener('change', (e) => {
-      this.app.setActiveOverlay?.(e.target.value);
+      const selectedAlgo = e.target.value;
+      const radio = document.querySelector(`input[name="map_view"][value="${selectedAlgo}"]`);
+      if (radio) {
+        radio.checked = true;
+        radio.dispatchEvent(new Event('change'));
+      }
     });
 
     this.canvas.addEventListener('mousemove', (e) => this.handleMouseMove(e));
@@ -115,60 +114,17 @@ export class GanttController {
       }
     });
 
-    // Redraw on theme flips — the canvas bakes in its colours, so unlike the
-    // CSS chrome around it, it cannot follow a token change on its own.
-    this.themeObserver = new MutationObserver(() => {
-      if (this.result && !this.panel.classList.contains('hidden')) {
-        this.draw();
-      }
-    });
-    this.themeObserver.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['data-theme'],
-    });
-
     // Create offscreen patterns for Travel and Wait fills
     this.createFillPatterns();
   }
 
-  /**
-   * Canvas2D rejects `var(--token)` outright — assigning one leaves the
-   * previous fillStyle in place, which is how driver names and axis ticks
-   * ended up painted in the same colour as their own background. Resolve the
-   * tokens to real values up front instead.
-   */
-  resolveTheme() {
-    const cs = getComputedStyle(document.documentElement);
-    const read = (name, fallback) => cs.getPropertyValue(name).trim() || fallback;
-
-    return {
-      textMain: read('--text-main', '#0f172a'),
-      textMuted: read('--text-muted', '#475569'),
-      border: read('--border', '#e2e8f0'),
-      laneBg: read('--surface-sunk', '#f1f5f9'),
-      surface: read('--bg-surface', '#ffffff'),
-      danger: read('--danger', '#dc2626'),
-      warning: read('--warning', '#d97706'),
-      hatch: read('--ink-faint', '#64748b'),
-    };
-  }
-
-  createFillPatterns(theme) {
-    const hatch = theme?.hatch || '#64748b';
-    const wait = theme?.warning || '#d97706';
-
-    // Regenerating on every frame would be wasteful during playback, so the
-    // patterns are rebuilt only when the palette behind them actually moves.
-    if (this._patternKey === `${hatch}|${wait}`) return;
-    this._patternKey = `${hatch}|${wait}`;
-
+  createFillPatterns() {
     // 1. Travel stripe pattern (45deg lines)
     this.travelPatternCanvas = document.createElement('canvas');
     this.travelPatternCanvas.width = 10;
     this.travelPatternCanvas.height = 10;
     const tCtx = this.travelPatternCanvas.getContext('2d');
-    tCtx.strokeStyle = hatch;
-    tCtx.globalAlpha = 0.5;
+    tCtx.strokeStyle = 'rgba(100, 116, 139, 0.4)';
     tCtx.lineWidth = 1.8;
     tCtx.beginPath();
     tCtx.moveTo(0, 10);
@@ -180,20 +136,10 @@ export class GanttController {
     this.waitPatternCanvas.width = 6;
     this.waitPatternCanvas.height = 6;
     const wCtx = this.waitPatternCanvas.getContext('2d');
-    wCtx.fillStyle = wait;
+    wCtx.fillStyle = '#f59e0b';
     wCtx.beginPath();
     wCtx.arc(3, 3, 1.2, 0, 2 * Math.PI);
     wCtx.fill();
-  }
-
-  /** Clips a lane label to the fixed-width label gutter. */
-  truncate(text, maxWidth) {
-    if (this.ctx.measureText(text).width <= maxWidth) return text;
-    let out = text;
-    while (out.length > 1 && this.ctx.measureText(`${out}…`).width > maxWidth) {
-      out = out.slice(0, -1);
-    }
-    return `${out}…`;
   }
 
   toggleCollapse() {
@@ -207,19 +153,9 @@ export class GanttController {
     }
   }
 
-  /** Redraw for a different overlay without re-supplying the result set. */
-  setActiveAlgo(algo) {
-    if (!algo || algo === this.activeAlgo) return;
-    if (!this.result) {
-      this.activeAlgo = algo;
-      return;
-    }
-    this.render(this.result, algo);
-  }
-
   render(result, activeAlgo) {
     this.result = result;
-    this.activeAlgo = activeAlgo || PREFERRED_ALGO;
+    this.activeAlgo = activeAlgo || 'ddqn';
 
     if (!result || Object.keys(result).length === 0) {
       this.panel.classList.add('hidden');
@@ -237,14 +173,27 @@ export class GanttController {
       return;
     }
 
-    // Update Dropdown Options — same key order as the header overlay picker.
+    // Update Dropdown Options
     const select = this.panel.querySelector('#gantt-select-algo');
-    select.innerHTML = overlayKeysFor(result)
-      .map((key) => `<option value="${key}" ${key === this.activeAlgo ? 'selected' : ''}>${algoLabel(key)}</option>`)
+    const labels = {
+      ddqn: 'Hybrid DDQN (Transfer)',
+      alns: 'ALNS Base',
+      ortools: 'OR-Tools',
+      hybrid_fixed: 'Hybrid Fixed',
+      hybrid_ddqn: 'Hybrid DDQN (Random)',
+      hybrid_ddqn_transfer_rc1: 'Hybrid DDQN (RC1)',
+      hybrid_ddqn_transfer_dr: 'Hybrid DDQN (DR)',
+      hybrid: 'Hybrid DDQN',
+    };
+
+    select.innerHTML = Object.keys(result)
+      .map(
+        (key) => `<option value="${key}" ${key === this.activeAlgo ? 'selected' : ''}>${labels[key] || key}</option>`
+      )
       .join('');
 
     const badge = this.panel.querySelector('#gantt-badge');
-    badge.textContent = algoLabel(this.activeAlgo).toUpperCase();
+    badge.textContent = (labels[this.activeAlgo] || this.activeAlgo).toUpperCase();
 
     // Calculate max time duration for scheduling
     let maxTime = 120;
@@ -291,19 +240,17 @@ export class GanttController {
     const algoResult = this.result?.[this.activeAlgo];
     if (!algoResult || !algoResult.routes) return;
 
-    const theme = this.resolveTheme();
-    this.createFillPatterns(theme);
     const width = this.canvas.width / (window.devicePixelRatio || 1);
     const height = this.canvas.height / (window.devicePixelRatio || 1);
 
     this.ctx.clearRect(0, 0, width, height);
 
     // 1. Draw Grid lines & X-axis Header
-    this.ctx.fillStyle = theme.laneBg;
+    this.ctx.fillStyle = '#f8fafc'; // light grid header
     this.ctx.fillRect(LABEL_WIDTH, 0, width - LABEL_WIDTH, HEADER_HEIGHT);
 
     // Bottom border of axis header
-    this.ctx.strokeStyle = theme.border;
+    this.ctx.strokeStyle = 'var(--border)';
     this.ctx.lineWidth = 1;
     this.ctx.beginPath();
     this.ctx.moveTo(0, HEADER_HEIGHT);
@@ -314,18 +261,16 @@ export class GanttController {
       const x = LABEL_WIDTH + t * this.scaleX;
 
       // Vertical line
-      this.ctx.strokeStyle = theme.border;
-      this.ctx.globalAlpha = 0.7;
+      this.ctx.strokeStyle = 'rgba(228, 232, 240, 0.7)';
       this.ctx.lineWidth = 1;
       this.ctx.beginPath();
       this.ctx.moveTo(x, HEADER_HEIGHT);
       this.ctx.lineTo(x, height);
       this.ctx.stroke();
-      this.ctx.globalAlpha = 1;
 
       // Tick labels
-      this.ctx.fillStyle = theme.textMuted;
-      this.ctx.font = '600 9.5px Archivo, ui-sans-serif, system-ui, sans-serif';
+      this.ctx.fillStyle = 'var(--text-muted)';
+      this.ctx.font = '600 9.5px var(--font-main, sans-serif)';
       this.ctx.textAlign = 'center';
       this.ctx.textBaseline = 'middle';
       this.ctx.fillText(this.formatTime(t), x, HEADER_HEIGHT / 2);
@@ -339,7 +284,7 @@ export class GanttController {
       const barY = y + (ROW_HEIGHT - ROW_BAR_HEIGHT) / 2;
 
       // Row separator
-      this.ctx.strokeStyle = theme.border;
+      this.ctx.strokeStyle = 'var(--border)';
       this.ctx.lineWidth = 1;
       this.ctx.beginPath();
       this.ctx.moveTo(0, y + ROW_HEIGHT);
@@ -351,26 +296,22 @@ export class GanttController {
         this.app.state.fleet?.[route.vehicle_id] || this.app.state.fleet?.find((v) => v.id === route.vehicle_id);
       const driverName = fleetVehicle ? fleetVehicle.driver : `Driver #${route.vehicle_id + 1}`;
 
-      this.ctx.fillStyle = theme.laneBg; // label block background
+      this.ctx.fillStyle = '#f8fafc'; // label block background
       this.ctx.fillRect(0, y, LABEL_WIDTH, ROW_HEIGHT);
 
-      // Colour key tying the lane back to its route on the map
-      this.ctx.fillStyle = this.colorForRoute(idx);
-      this.ctx.fillRect(0, y + 7, 3, ROW_HEIGHT - 14);
-
       // Vertical border separating labels and timeline
-      this.ctx.strokeStyle = theme.border;
+      this.ctx.strokeStyle = 'var(--border)';
       this.ctx.lineWidth = 1;
       this.ctx.beginPath();
       this.ctx.moveTo(LABEL_WIDTH, y);
       this.ctx.lineTo(LABEL_WIDTH, y + ROW_HEIGHT);
       this.ctx.stroke();
 
-      this.ctx.fillStyle = theme.textMain;
-      this.ctx.font = 'bold 11px Archivo, ui-sans-serif, system-ui, sans-serif';
+      this.ctx.fillStyle = 'var(--text-main)';
+      this.ctx.font = 'bold 11px var(--font-main, sans-serif)';
       this.ctx.textAlign = 'left';
       this.ctx.textBaseline = 'middle';
-      this.ctx.fillText(this.truncate(driverName, LABEL_WIDTH - 26), 14, y + ROW_HEIGHT / 2);
+      this.ctx.fillText(driverName, 12, y + ROW_HEIGHT / 2);
 
       // Render Schedule Segments
       if (!route.schedule || route.schedule.length === 0) return;
@@ -421,7 +362,7 @@ export class GanttController {
           const w = waitDur * this.scaleX;
 
           // Light amber background
-          this.ctx.fillStyle = theme.warning;
+          this.ctx.fillStyle = '#f59e0b';
           this.ctx.globalAlpha = 0.12;
           this.ctx.fillRect(x, barY, w, ROW_BAR_HEIGHT);
 
@@ -466,7 +407,7 @@ export class GanttController {
           // Draw stop label inside if space fits
           const stopLabel = `#${step.customer_id}`;
           this.ctx.fillStyle = '#ffffff';
-          this.ctx.font = "bold 9px 'IBM Plex Mono', ui-monospace, monospace";
+          this.ctx.font = 'bold 8.5px var(--font-data, monospace)';
           this.ctx.textAlign = 'center';
           this.ctx.textBaseline = 'middle';
           const textWidth = this.ctx.measureText(stopLabel).width;
@@ -499,7 +440,7 @@ export class GanttController {
     if (this.simTime > 0) {
       const cursorX = LABEL_WIDTH + this.simTime * this.scaleX;
 
-      this.ctx.strokeStyle = theme.danger;
+      this.ctx.strokeStyle = '#dc2626'; // var(--danger)
       this.ctx.lineWidth = 1.5;
       this.ctx.setLineDash([3, 3]);
       this.ctx.beginPath();
@@ -509,7 +450,7 @@ export class GanttController {
       this.ctx.setLineDash([]); // reset
 
       // Cursor circle anchor
-      this.ctx.fillStyle = theme.danger;
+      this.ctx.fillStyle = '#dc2626';
       this.ctx.beginPath();
       this.ctx.arc(cursorX, HEADER_HEIGHT, 4.5, 0, 2 * Math.PI);
       this.ctx.fill();
@@ -540,7 +481,7 @@ export class GanttController {
 
       if (hovered.type === 'travel') {
         html += `
-          <div class="gantt-tooltip-row"><span class="gantt-tooltip-label">Activity:</span><span class="gantt-tooltip-value is-travel">🚚 Traveling</span></div>
+          <div class="gantt-tooltip-row"><span class="gantt-tooltip-label">Activity:</span><span class="gantt-tooltip-value">🚚 Traveling</span></div>
           <div class="gantt-tooltip-row"><span class="gantt-tooltip-label">Heading:</span><span class="gantt-tooltip-value">${hovered.data.destination}</span></div>
           <div class="gantt-tooltip-row"><span class="gantt-tooltip-label">Depart:</span><span class="gantt-tooltip-value">${this.formatClockTime(hovered.data.from)}</span></div>
           <div class="gantt-tooltip-row"><span class="gantt-tooltip-label">Arrive:</span><span class="gantt-tooltip-value">${this.formatClockTime(hovered.data.to)}</span></div>
@@ -548,7 +489,7 @@ export class GanttController {
         `;
       } else if (hovered.type === 'wait') {
         html += `
-          <div class="gantt-tooltip-row"><span class="gantt-tooltip-label">Activity:</span><span class="gantt-tooltip-value is-wait">⏳ Waiting</span></div>
+          <div class="gantt-tooltip-row"><span class="gantt-tooltip-label">Activity:</span><span class="gantt-tooltip-value" style="color:#f59e0b">⏳ Waiting</span></div>
           <div class="gantt-tooltip-row"><span class="gantt-tooltip-label">Location:</span><span class="gantt-tooltip-value">${hovered.data.stopName}</span></div>
           <div class="gantt-tooltip-row"><span class="gantt-tooltip-label">Arrived:</span><span class="gantt-tooltip-value">${this.formatClockTime(hovered.data.from)}</span></div>
           <div class="gantt-tooltip-row"><span class="gantt-tooltip-label">Start Work:</span><span class="gantt-tooltip-value">${this.formatClockTime(hovered.data.to)}</span></div>
@@ -556,7 +497,7 @@ export class GanttController {
         `;
       } else if (hovered.type === 'service') {
         html += `
-          <div class="gantt-tooltip-row"><span class="gantt-tooltip-label">Activity:</span><span class="gantt-tooltip-value is-service">🔧 Dropoff/Service</span></div>
+          <div class="gantt-tooltip-row"><span class="gantt-tooltip-label">Activity:</span><span class="gantt-tooltip-value" style="color:var(--success)">🔧 Dropoff/Service</span></div>
           <div class="gantt-tooltip-row"><span class="gantt-tooltip-label">Customer:</span><span class="gantt-tooltip-value">#${hovered.data.customerId} - ${hovered.data.stopName}</span></div>
           <div class="gantt-tooltip-row"><span class="gantt-tooltip-label">Start:</span><span class="gantt-tooltip-value">${this.formatClockTime(hovered.data.from)}</span></div>
           <div class="gantt-tooltip-row"><span class="gantt-tooltip-label">Complete:</span><span class="gantt-tooltip-value">${this.formatClockTime(hovered.data.to)}</span></div>
@@ -617,7 +558,6 @@ export class GanttController {
   }
 
   destroy() {
-    if (this.themeObserver) this.themeObserver.disconnect();
     if (this.tooltip) this.tooltip.remove();
     if (this.panel) this.panel.remove();
   }

@@ -1,6 +1,5 @@
-import React, { createContext, useContext, useState, useEffect, useRef, useMemo } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { createInitialState } from '../createInitialState.js';
-import { overlayKeysFor, resolveActiveOverlay } from '../algoMeta.js';
 import { firebaseService, auth, db } from '../firebaseService.js';
 import { API_BASE } from '../constants.js';
 import { APP_COPY } from './translations.js';
@@ -42,8 +41,6 @@ export function AppContextProvider({ children }) {
     logs: [],
   });
 
-  const [backendAvailable, setBackendAvailable] = useState(null); // null = unknown, true/false = checked
-
   // Track run session state for cancelling active backend jobs
   const runSession = useRef({
     token: 0,
@@ -67,32 +64,15 @@ export function AppContextProvider({ children }) {
     });
   };
 
-  // Overlays the current result set can actually render. Derived rather than
-  // stored so a result and its dropdown can never disagree.
-  const availableOverlays = useMemo(() => overlayKeysFor(state.lastResult), [state.lastResult]);
-
-  const setActiveOverlay = (key) => {
-    if (!key) return;
-    updateState({ activeOverlay: key });
-  };
-
-  // A re-solve can drop an algorithm (solve_all_algorithms logs and skips a
-  // solver that raised), so the selected overlay may no longer exist. Snap it
-  // back to something renderable instead of leaving the map blank.
-  useEffect(() => {
-    if (!state.lastResult) return;
-    const next = resolveActiveOverlay(state.lastResult, state.activeOverlay);
-    if (next !== state.activeOverlay) {
-      updateState({ activeOverlay: next });
-    }
-  }, [state.lastResult]);
-
   const toast = (title, message = '', tone = '') => {
     const id = Math.random().toString(36).substring(2, 9);
     setToasts((prev) => [...prev, { id, title, message, tone }]);
-    setTimeout(() => {
-      setToasts((prev) => prev.filter((t) => t.id !== id));
-    }, tone === 'error' ? 6500 : 4200);
+    setTimeout(
+      () => {
+        setToasts((prev) => prev.filter((t) => t.id !== id));
+      },
+      tone === 'error' ? 6500 : 4200
+    );
   };
 
   const setStatus = (message, tone = '') => {
@@ -176,7 +156,6 @@ export function AppContextProvider({ children }) {
     }
     try {
       const response = await fetch(`${API_BASE}${path}`, { ...options, headers });
-      updateState({ backendAvailable: true });
       if (!response.ok) {
         const contentType = response.headers.get('content-type') || '';
         if (contentType.includes('application/json')) {
@@ -190,8 +169,6 @@ export function AppContextProvider({ children }) {
     } catch (error) {
       const message = String(error?.message || error || '');
       if (error instanceof TypeError || /failed to fetch|networkerror|load failed/i.test(message)) {
-        updateState({ backendAvailable: false });
-        toast('Backend Unavailable', 'The solver backend is not running. Start it with `make dev` or use Guest Demo mode.', 'error');
         throw new Error(`Cannot reach backend API at ${API_BASE}. Start the backend server on port 8000.`);
       }
       throw error;
@@ -226,11 +203,6 @@ export function AppContextProvider({ children }) {
 
       const payload = {
         mode: state.mode,
-        // Names the bundled instance so the backend can solve it in its native
-        // Solomon frame and attach the matching best-known solution. Custom
-        // imports send '', which turns the BKS comparison off rather than
-        // scoring against an unrelated instance.
-        dataset: state.mode === 'sample' ? (state.selectedDataset || '') : '',
         fleet: { vehicles: state.vehicles, capacity: state.capacity },
         customers: state.customers,
       };
@@ -272,12 +244,7 @@ export function AppContextProvider({ children }) {
         try {
           setStatus('Backend unavailable — running client-side solver...', 'warn');
           toast('Local Solver', 'Backend is offline. Running in-browser ALNS solver.', 'ok');
-          const demoResult = solveDemo(
-            state.customers,
-            state.vehicles,
-            state.capacity,
-            state.fleet
-          );
+          const demoResult = solveDemo(state.customers, state.vehicles, state.capacity, state.fleet);
 
           updateState({ lastResult: demoResult });
           setLoadingState((prev) => ({ ...prev, active: false }));
@@ -344,14 +311,6 @@ export function AppContextProvider({ children }) {
         setLoadingState((prev) => ({ ...prev, active: false }));
         setStatus('Received optimization results from backend.', 'ok');
         toast('Model Completed', 'Results have been rendered on the dashboard.', 'ok');
-
-        // A solver that raised is dropped from the result map server-side. It
-        // used to just vanish from the overlay dropdown, so a run with three
-        // dead algorithms looked identical to a run that only scheduled four.
-        const failed = Array.isArray(data.result?._failed_algos) ? data.result._failed_algos : [];
-        if (failed.length) {
-          toast('Some Solvers Failed', `No result from: ${failed.join(', ')}.`, 'error');
-        }
         return;
       }
       if (data.status === 'failed') {
@@ -377,7 +336,7 @@ export function AppContextProvider({ children }) {
       updateState({ solomonDatasets: list });
       return list;
     } catch (error) {
-
+      setStatus('Could not load Solomon list. Keeping demo dataset only.', 'error');
       toast('Solomon List Failed', error.message || 'Error loading Solomon datasets', 'error');
       return [];
     }
@@ -390,38 +349,38 @@ export function AppContextProvider({ children }) {
       if (incoming.length < 2) throw new Error('Solomon dataset is empty or invalid.');
 
       const getRealisticHCMName = (idx, isDepot) => {
-        if (isDepot) return "NAMI Logistics Hub (Quận 7, TP.HCM)";
+        if (isDepot) return 'NAMI Logistics Hub (Quận 7, TP.HCM)';
         const hcmNames = [
-          "Bách Hóa Xanh - Lâm Văn Bền",
-          "Bưu cục Giao Hàng Tiết Kiệm - Trần Xuân Soạn",
-          "WinMart+ - Phú Mỹ Hưng",
-          "Co.op Food - Huỳnh Tấn Phát",
-          "Cửa hàng GS25 - Nguyễn Lương Bằng",
-          "Pharmacity - Nguyễn Hữu Thọ",
-          "Giao Hàng Nhanh (GHN) - Quận 7 Hub",
-          "Siêu thị Lotte Mart - Nguyễn Thị Thập",
-          "Circle K - Tôn Dật Tiên",
-          "7-Eleven - Tân Trào",
-          "Điện Máy Xanh - Huỳnh Tấn Phát",
-          "FPT Shop - Nguyễn Thị Thập",
-          "Bách Hóa Xanh - Lê Văn Lương",
-          "WinMart - Him Lam",
-          "Co.op Smile - Trần Trọng Cung",
-          "Pharmacity - Huỳnh Tấn Phát",
-          "Bưu điện Quận 7 - Hoàng Quốc Việt",
-          "Cửa hàng Ministop - Nguyễn Thị Thập",
-          "Circle K - Nguyễn Hữu Thọ",
-          "Bách Hóa Xanh - Mai Văn Vĩnh",
-          "Viettel Post - Huỳnh Tấn Phát",
-          "An Khang Pharmacy - Lâm Văn Bền",
-          "Co.opmart - Huỳnh Tấn Phát",
-          "WinMart+ - Trần Xuân Soạn",
-          "J&T Express - Nguyễn Hữu Thọ",
-          "Cửa hàng 7-Eleven - Hoàng Anh Gia Lai",
-          "Circle K - Lê Văn Lương",
-          "Pharmacity - Lâm Văn Bền",
-          "Bách Hóa Xanh - Bùi Văn Ba",
-          "WinMart+ - Đường số 15"
+          'Bách Hóa Xanh - Lâm Văn Bền',
+          'Bưu cục Giao Hàng Tiết Kiệm - Trần Xuân Soạn',
+          'WinMart+ - Phú Mỹ Hưng',
+          'Co.op Food - Huỳnh Tấn Phát',
+          'Cửa hàng GS25 - Nguyễn Lương Bằng',
+          'Pharmacity - Nguyễn Hữu Thọ',
+          'Giao Hàng Nhanh (GHN) - Quận 7 Hub',
+          'Siêu thị Lotte Mart - Nguyễn Thị Thập',
+          'Circle K - Tôn Dật Tiên',
+          '7-Eleven - Tân Trào',
+          'Điện Máy Xanh - Huỳnh Tấn Phát',
+          'FPT Shop - Nguyễn Thị Thập',
+          'Bách Hóa Xanh - Lê Văn Lương',
+          'WinMart - Him Lam',
+          'Co.op Smile - Trần Trọng Cung',
+          'Pharmacity - Huỳnh Tấn Phát',
+          'Bưu điện Quận 7 - Hoàng Quốc Việt',
+          'Cửa hàng Ministop - Nguyễn Thị Thập',
+          'Circle K - Nguyễn Hữu Thọ',
+          'Bách Hóa Xanh - Mai Văn Vĩnh',
+          'Viettel Post - Huỳnh Tấn Phát',
+          'An Khang Pharmacy - Lâm Văn Bền',
+          'Co.opmart - Huỳnh Tấn Phát',
+          'WinMart+ - Trần Xuân Soạn',
+          'J&T Express - Nguyễn Hữu Thọ',
+          'Cửa hàng 7-Eleven - Hoàng Anh Gia Lai',
+          'Circle K - Lê Văn Lương',
+          'Pharmacity - Lâm Văn Bền',
+          'Bách Hóa Xanh - Bùi Văn Ba',
+          'WinMart+ - Đường số 15',
         ];
         return hcmNames[(idx - 1) % hcmNames.length];
       };
@@ -431,8 +390,10 @@ export function AppContextProvider({ children }) {
         return {
           ...c,
           id: idx,
-          name: isDepot ? "NAMI Logistics Hub (Quận 7, TP.HCM)" : getRealisticHCMName(idx, false),
-          address: isDepot ? "12 Hoàng Quốc Việt, Phú Mỹ, Quận 7, Hồ Chí Minh" : `Số ${idx * 4 + 12} Đường Tương Ứng, Quận 7, TP.HCM`,
+          name: isDepot ? 'NAMI Logistics Hub (Quận 7, TP.HCM)' : getRealisticHCMName(idx, false),
+          address: isDepot
+            ? '12 Hoàng Quốc Việt, Phú Mỹ, Quận 7, Hồ Chí Minh'
+            : `Số ${idx * 4 + 12} Đường Tương Ứng, Quận 7, TP.HCM`,
           demand: Number(c.demand) || 0,
           ready: Number.isFinite(Number(c.ready)) ? Number(c.ready) : 0,
           due: Number.isFinite(Number(c.due)) ? Number(c.due) : 1000,
@@ -461,29 +422,13 @@ export function AppContextProvider({ children }) {
 
   // Auto-load Solomon dataset on initial dashboard render when unlocked
   useEffect(() => {
-    if (state.unlocked) {
-      loadAvailableDatasets();
-      if (state.mode === 'sample' && state.customers.length === 0) {
-        loadSolomonDataset(state.selectedDataset || 'demo');
-      }
+    if (state.unlocked && state.mode === 'sample' && state.customers.length === 0) {
+      loadAvailableDatasets().then(async (list) => {
+        const defaultDs = list.some((d) => d.name === 'demo') ? 'demo' : list[0]?.name || 'demo';
+        await loadSolomonDataset(defaultDs);
+      });
     }
   }, [state.unlocked, state.mode]);
-
-  // Probe backend health on initial load
-  useEffect(() => {
-    const checkBackend = async () => {
-      try {
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 4000);
-        const res = await fetch(`${API_BASE}/health`, { signal: controller.signal });
-        clearTimeout(timeout);
-        setBackendAvailable(res.ok);
-      } catch {
-        setBackendAvailable(false);
-      }
-    };
-    checkBackend();
-  }, []);
 
   const t = (key) => {
     const lang = state.lang === 'vn' ? 'vn' : 'en';
@@ -505,9 +450,6 @@ export function AppContextProvider({ children }) {
         toast,
         setStatus,
         request,
-        backendAvailable,
-        availableOverlays,
-        setActiveOverlay,
         submitJob,
         cancelJob,
         loginAsGuest,
