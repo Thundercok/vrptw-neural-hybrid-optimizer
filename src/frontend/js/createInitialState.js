@@ -1,5 +1,3 @@
-import { PREFERRED_ALGO } from './algoMeta.js';
-
 export function createInitialState() {
   const savedEmail = localStorage.getItem('vrptw_email') || '';
   const unlocked = Boolean(localStorage.getItem('vrptw_token'));
@@ -120,11 +118,7 @@ export function createInitialState() {
     vehicles: fleet.length || 7,
     capacity: 120,
     customers: [],
-    solomonDatasets: [
-      { name: 'demo', label: 'Demo RC (12 customers, HCMC)', builtin: true },
-      { name: 'c1_demo', label: 'Demo C1 (12 customers, HCMC)', builtin: true },
-      { name: 'r1_demo', label: 'Demo R1 (12 customers, HCMC)', builtin: true },
-    ],
+    solomonDatasets: [],
     selectedDataset: 'demo',
     suggest: [],
     selectedSuggest: null,
@@ -135,10 +129,6 @@ export function createInitialState() {
     analysisActivity: null,
     adminFeedback: [],
     lastResult: null,
-    // Which solver overlay the map, Gantt and KPI strip are describing. React
-    // owns this now; the controllers read it off state instead of scraping the
-    // `#map-view-select` DOM node.
-    activeOverlay: PREFERRED_ALGO,
     activeTab: 'dispatch',
     unlocked,
     showLoginModal: !unlocked,

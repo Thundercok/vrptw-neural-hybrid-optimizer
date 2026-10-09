@@ -1,7 +1,6 @@
 # ruff: noqa: E402
 from __future__ import annotations
 
-import asyncio
 import json
 import multiprocessing as mp
 import os
@@ -14,12 +13,11 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 from fastapi import APIRouter, Depends, File, HTTPException, Query, Request, UploadFile
-from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
 # Ensure src is in sys.path for importing the vrptw package.
-_ROOT_PATH = Path(__file__).resolve().parents[4]
-_SRC_PATH = _ROOT_PATH / "src"
+_SRC_PATH = Path(__file__).resolve().parents[3]
+_ROOT_PATH = _SRC_PATH.parent
 if str(_SRC_PATH) not in sys.path:
     sys.path.insert(0, str(_SRC_PATH))
 
@@ -31,19 +29,15 @@ from core.config import demo_auth_bypass_enabled
 from core.firebase import is_firebase_enabled
 from core.rate_limit import GEOCODE_LIMIT, JOBS_LIMIT, limiter
 from models.schemas import JobRequest, MatrixRequest, ReoptimizeRequest
-from services.compute_gateway import call_remote, remote_enabled, remote_health
-from services.geocode_service import bulk_geocode_addresses, geocode_address, reverse_geocode_address
+from services.geocode_service import geocode_address, reverse_geocode_address
 from services.job_service import job_service
-from services.matrix_service import calculate_matrix, fetch_route_geometry
+from services.matrix_service import calculate_matrix
 from services.solomon_service import list_solomon_datasets, load_solomon_dataset
 from services.solver_service import device_summary, transfer_weights_summary
-from services.text_block_parser import is_vietnamese_text_block, parse_vietnamese_text_block
 
 router = APIRouter(tags=["ops"])
 
-_LOGS_PATH = _ROOT_PATH / "docs" / "logs"
-if not _LOGS_PATH.exists() and (_ROOT_PATH / "docs" / "legacy_archive" / "logs").exists():
-    _LOGS_PATH = _ROOT_PATH / "docs" / "legacy_archive" / "logs"
+_LOGS_PATH = _ROOT_PATH / "logs"
 
 
 def _parse_result_version(folder_name: str) -> str | None:
@@ -72,7 +66,7 @@ def _version_key(version: str) -> tuple[int, ...]:
 async def health() -> dict[str, object]:
     fb = is_firebase_enabled()
     bypass = demo_auth_bypass_enabled()
-    payload: dict[str, object] = {
+    return {
         "status": "ok",
         "firebase_enabled": fb,
         "demo_auth_bypass": bypass,
@@ -80,11 +74,28 @@ async def health() -> dict[str, object]:
         "torch": device_summary(),
         "model": transfer_weights_summary(),
     }
-    if remote_enabled():
-        # In the Render deployment the local torch/model fields are both empty
-        # by design; the Space is what actually answers a solve.
-        payload["remote_solver"] = await remote_health()
-    return payload
+
+
+@router.get("/osrm-health")
+async def osrm_health() -> dict[str, object]:
+    """Check which OSRM routing hosts are reachable from this server (for debugging Render deployments)."""
+    import httpx
+    from services.matrix_service import OSRM_HOSTS
+
+    # Test a minimal route: HCMC center
+    test_coords = "106.6930,10.7769;106.7000,10.7800"
+    results = {}
+    for host in OSRM_HOSTS:
+        url = f"{host}/route/v1/driving/{test_coords}?overview=false"
+        try:
+            async with httpx.AsyncClient(timeout=8.0, headers={"User-Agent": "NAMI-VRPTW-Solver/1.0"}) as client:
+                resp = await client.get(url)
+                results[host] = {"status": resp.status_code, "ok": resp.status_code == 200}
+        except Exception as e:
+            results[host] = {"status": "error", "ok": False, "error": str(e)}
+
+    any_ok = any(v["ok"] for v in results.values())
+    return {"osrm_reachable": any_ok, "hosts": results}
 
 
 @router.get("/geocode")
@@ -175,10 +186,6 @@ async def import_csv_file(
     if not rows:
         raise HTTPException(status_code=400, detail="Empty CSV file.")
 
-    # ── Auto-detect Vietnamese text-block format ─────────────────────
-    if is_vietnamese_text_block(text):
-        return await _geocode_text_block(text)
-
     headers = [str(cell).strip() for cell in rows[0]]
 
     name_idx = find_col_index(headers, ["name", "customer name", "customer", "client", "store", "shop"])
@@ -222,6 +229,18 @@ async def import_csv_file(
         except ValueError:
             lat, lng = None, None
 
+        if (lat is None or lng is None) and address:
+            try:
+                geo = await geocode_address(address, limit=1)
+                if geo.get("items"):
+                    lat = float(geo["items"][0]["lat"])
+                    lng = float(geo["items"][0]["lng"])
+            except Exception:
+                pass
+
+        if lat is None or lng is None:
+            continue
+
         try:
             demand = int(float(demand_str))
         except ValueError:
@@ -260,68 +279,7 @@ async def import_csv_file(
             }
         )
 
-    # Bulk geocode missing coords
-    to_geocode = [c for c in customers if c["lat"] is None and c["address"]]
-    if to_geocode:
-        addresses = [c["address"] for c in to_geocode]
-        results = await bulk_geocode_addresses(addresses)
-        for cust, geo in zip(to_geocode, results):
-            if geo.get("items"):
-                cust["lat"] = float(geo["items"][0]["lat"])
-                cust["lng"] = float(geo["items"][0]["lng"])
-
-    # Filter out any that still don't have coords
-    customers = [c for c in customers if c["lat"] is not None and c["lng"] is not None]
-
     return {"customers": customers}
-
-
-async def _geocode_text_block(text: str) -> dict[str, Any]:
-    """Shared helper: parse Vietnamese text-block, geocode, return customers."""
-    customers = parse_vietnamese_text_block(text)
-    total = len(customers)
-    geocoded = 0
-
-    to_geocode = []
-    for cust in customers:
-        if cust["lat"] is None and cust.get("address"):
-            to_geocode.append(cust)
-
-    if to_geocode:
-        addresses = [c["address"] for c in to_geocode]
-        results = await bulk_geocode_addresses(addresses)
-        for cust, geo in zip(to_geocode, results):
-            if geo.get("items"):
-                cust["lat"] = float(geo["items"][0]["lat"])
-                cust["lng"] = float(geo["items"][0]["lng"])
-                geocoded += 1
-
-    customers = [c for c in customers if c["lat"] is not None and c["lng"] is not None]
-    return {"customers": customers, "geocoded_count": geocoded, "total_count": total}
-
-
-@router.post("/solomon/import-text")
-async def import_text_file(
-    file: UploadFile = File(...),
-    _: dict[str, str] = Depends(require_user),
-) -> dict[str, Any]:
-    """Parse a Vietnamese text-block file and auto-geocode addresses."""
-    content = await file.read()
-    try:
-        text = content.decode("utf-8")
-    except UnicodeDecodeError:
-        try:
-            text = content.decode("latin1")
-        except Exception as exc:
-            raise HTTPException(status_code=400, detail="Invalid file encoding.") from exc
-
-    if not is_vietnamese_text_block(text):
-        raise HTTPException(
-            status_code=400,
-            detail="File does not appear to be in Vietnamese text-block format. Use /solomon/import-csv for CSV files.",
-        )
-
-    return await _geocode_text_block(text)
 
 
 @router.get("/analysis/versions")
@@ -421,22 +379,11 @@ async def matrix(body: MatrixRequest, _: dict[str, str] = Depends(require_user))
     return await calculate_matrix(body.points)
 
 
-@router.get("/route-geometry")
-async def route_geometry(coords: str = Query(..., description="Semicolon-separated lng,lat points")) -> dict[str, Any]:
-    try:
-        return await fetch_route_geometry(coords)
-    except Exception as exc:
-        raise HTTPException(status_code=502, detail=f"OSRM geometry fetch failed: {exc}") from exc
-
-
 @router.post("/reoptimize")
 async def reoptimize(
     body: ReoptimizeRequest,
     _: dict[str, str] = Depends(require_user),
 ) -> dict[str, Any]:
-    if remote_enabled():
-        return await call_remote("/reoptimize", body.model_dump())
-
     try:
         from services.research_adapter import build_inst, plan_to_payload
 
@@ -449,7 +396,7 @@ async def reoptimize(
         ) from exc
 
     try:
-        inst = build_inst(body.customers, capacity=body.fleet.capacity, name="Reoptimize", dataset=body.dataset)
+        inst = build_inst(body.customers, capacity=body.fleet.capacity, name="Reoptimize")
     except ValueError as val_err:
         raise HTTPException(status_code=400, detail=str(val_err)) from val_err
 
@@ -855,30 +802,11 @@ def run_smoke_test_thread():
             task_manager.smoke_test_state["error"] = str(e)
 
 
-def _reject_if_research_offloaded(operation: str) -> None:
-    """Block the long-running research jobs when the solver lives off-box.
-
-    Benchmarks and training runs take hours and write into ``docs/logs``. They
-    are local research operations, not something the slim API container or a
-    request-scoped Space call can carry, so fail loudly instead of starting a
-    thread that dies on ``import vrptw``.
-    """
-    if remote_enabled():
-        raise HTTPException(
-            status_code=503,
-            detail=(
-                f"{operation} is disabled in this deployment: the solver runs on a remote "
-                "compute service and this operation must be run locally against the research stack."
-            ),
-        )
-
-
 @router.post("/benchmark")
 async def start_benchmark(
     body: BenchmarkSubmitRequest,
     _: dict[str, str] = Depends(require_user),
 ):
-    _reject_if_research_offloaded("Benchmarking")
     global task_manager
     with task_manager.lock:
         if task_manager.benchmark_state["status"] == "running":
@@ -905,7 +833,6 @@ async def start_train_dr(
     body: DRTrainSubmitRequest,
     _: dict[str, str] = Depends(require_user),
 ):
-    _reject_if_research_offloaded("Domain randomization training")
     global task_manager
     with task_manager.lock:
         if task_manager.training_state["status"] == "running":
@@ -921,7 +848,6 @@ async def start_train_transfer(
     body: TransferTrainSubmitRequest,
     _: dict[str, str] = Depends(require_user),
 ):
-    _reject_if_research_offloaded("Transfer learning training")
     global task_manager
     with task_manager.lock:
         if task_manager.training_state["status"] == "running":
@@ -945,7 +871,6 @@ async def get_train_status(
 async def start_smoke_test(
     _: dict[str, str] = Depends(require_user),
 ):
-    _reject_if_research_offloaded("Smoke test")
     global task_manager
     with task_manager.lock:
         if task_manager.smoke_test_state["status"] == "running":
@@ -963,121 +888,3 @@ async def get_smoke_test_status(
     global task_manager
     with task_manager.lock:
         return task_manager.smoke_test_state
-
-
-class DynamicInsertRequest(BaseModel):
-    dataset: str = "C101"
-    customer_id: int
-    existing_routes: list[list[int]]
-
-
-@router.post("/solve/dynamic_insert")
-async def solve_dynamic_insert(
-    body: DynamicInsertRequest,
-    _: dict[str, str] = Depends(require_user),
-):
-    """
-    Real-time dynamic order insertion endpoint without full solver restart.
-    """
-    if remote_enabled():
-        return await call_remote("/dynamic_insert", body.model_dump())
-
-    from services.solomon_service import load_solomon_dataset, to_inst_payload
-
-    from vrptw.config import Config
-    from vrptw.core import Inst, Plan
-    from vrptw.solvers import HybridDDQNSolver
-
-    try:
-        inst = Inst(to_inst_payload(load_solomon_dataset(body.dataset)))
-    except (ValueError, FileNotFoundError) as exc:
-        raise HTTPException(status_code=404, detail=str(exc)) from exc
-
-    # Customers are nodes 1..inst.n (node 0 is the depot). Without this check an
-    # out-of-range id raises IndexError out of the handler as a 500, and a
-    # negative id silently wraps under numpy indexing and inserts the wrong
-    # customer while echoing the requested id back to the caller.
-    if not 1 <= body.customer_id <= inst.n:
-        raise HTTPException(
-            status_code=422,
-            detail=(f"customer_id must be between 1 and {inst.n} for dataset {body.dataset}; got {body.customer_id}."),
-        )
-    routed = {c for route in body.existing_routes for c in route}
-    out_of_range = sorted(c for c in routed if not 1 <= c <= inst.n)
-    if out_of_range:
-        raise HTTPException(
-            status_code=422,
-            detail=(
-                f"existing_routes contains ids outside 1..{inst.n} for dataset {body.dataset}: {out_of_range[:10]}."
-            ),
-        )
-    # Re-inserting an already-routed customer would serve it twice and report
-    # nv/td/pareto_metrics over that invalid plan without complaint.
-    if body.customer_id in routed:
-        raise HTTPException(
-            status_code=409,
-            detail=f"customer_id {body.customer_id} is already served by existing_routes.",
-        )
-
-    plan = Plan(body.existing_routes, inst)
-    solver = HybridDDQNSolver(inst, Config())
-
-    updated_plan = solver.insert_dynamic_customer(plan, body.customer_id)
-    return {
-        "dataset": body.dataset,
-        "inserted_customer": body.customer_id,
-        "routes": updated_plan.routes,
-        "nv": updated_plan.nv,
-        "td": updated_plan.cost,
-        "pareto_metrics": updated_plan.calculate_pareto_metrics(),
-    }
-
-
-@router.get("/solve/stream")
-async def solve_stream(
-    dataset: str = Query(default="C101"),
-    iterations: int = Query(default=100, ge=10, le=1000),
-    _: dict[str, str] = Depends(require_user),
-):
-    """
-    Server-Sent Events (SSE) transport demo for solver progress.
-
-    NOTE: this endpoint does **not** run the solver. The ``nv``/``td``/``mode``
-    values are a fixed synthetic ramp used to exercise the SSE wiring, and every
-    payload carries ``"simulated": true`` to say so. Streaming real progress
-    needs a per-iteration callback on ``HybridDDQNSolver.solve()`` (which does
-    not exist yet) plus running the solve off the event loop; until then, do not
-    present these numbers as solver output.
-    """
-
-    async def event_generator():
-        from services.solomon_service import load_solomon_dataset
-
-        # Parsing the .txt blocks for a moment on a large dataset, so keep it off
-        # the event loop. Only the customer count is needed for the synthetic
-        # ramp below, so this deliberately avoids building a vrptw ``Inst`` —
-        # that would drag the research stack into the slim Render image.
-        def _customer_count() -> int:
-            return max(0, len(load_solomon_dataset(dataset).get("customers", [])) - 1)
-
-        n_customers = await asyncio.to_thread(_customer_count)
-
-        yield f"data: {json.dumps({'event': 'start', 'dataset': dataset, 'max_iters': iterations, 'simulated': True})}\n\n"
-
-        for step in range(1, 6):
-            # await, not time.sleep: this generator runs on the ASGI event loop.
-            await asyncio.sleep(0.05)
-            payload = {
-                "event": "progress",
-                "simulated": True,
-                "progress_pct": step * 20,
-                "current_it": int(step * (iterations / 5)),
-                "nv": int(max(1, n_customers // 10)),
-                "td": float(round(1000.0 - step * 20.0, 2)),
-                "mode": "Default" if step < 3 else "Intensify",
-            }
-            yield f"data: {json.dumps(payload)}\n\n"
-
-        yield f"data: {json.dumps({'event': 'complete', 'status': 'finished', 'simulated': True})}\n\n"
-
-    return StreamingResponse(event_generator(), media_type="text/event-stream")

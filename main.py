@@ -1,23 +1,16 @@
 from __future__ import annotations
-
 import os
 import sys
 from pathlib import Path
-
 import uvicorn
 
-
 def main() -> None:
-    root = Path(__file__).resolve().parent
-    backend_dir = root / "src" / "backend"
-    if not backend_dir.exists():
-        raise SystemExit("Cannot find backend directory at src/backend")
+    src_dir = Path(__file__).resolve().parent / "src"
+    if str(src_dir) not in sys.path:
+        sys.path.insert(0, str(src_dir))
 
-    # Allow importing src/backend/main.py as module "main".
-    sys.path.insert(0, str(backend_dir))
-    os.chdir(root)
-    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True, reload_dirs=[str(root / "src")])
-
+    os.chdir(src_dir.parent)
+    uvicorn.run("backend.main:app", host="127.0.0.1", port=8000, reload=True)
 
 if __name__ == "__main__":
     main()

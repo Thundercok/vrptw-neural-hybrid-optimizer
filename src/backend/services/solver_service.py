@@ -101,61 +101,6 @@ def _get_web_config() -> Any:
     return _WEB_CONFIG
 
 
-def _get_config_for_request(payload: Any) -> Any:
-    """Construct a tailored runtime.Config based on payload presets and overrides."""
-    runtime = _load_solver_runtime()
-    is_test = (
-        os.getenv("FIREBASE_AUTH_EMULATOR_HOST") is not None
-        or os.getenv("TESTING") is not None
-        or os.getenv("PYTEST_CURRENT_TEST") is not None
-    )
-    if is_test:
-        return runtime.config(
-            alns_iterations=20,
-            hybrid_iterations=20,
-            early_stop_patience=10,
-            polish_iterations=5,
-            polish_patience=5,
-            n_runs=1,
-            ortools_time_limit=1.0,
-        )
-
-    preset = getattr(payload, "preset", "fast")
-    if not isinstance(preset, str):
-        preset = "fast"
-    preset = preset.lower()
-
-    custom_iters = getattr(payload, "iterations", None)
-
-    if preset == "deep":
-        iters = custom_iters if custom_iters else 5000
-        early_stop = 500
-        polish = 350
-    elif preset == "standard":
-        iters = custom_iters if custom_iters else 2000
-        early_stop = 250
-        polish = 200
-    else:  # "fast"
-        iters = custom_iters if custom_iters else 500
-        early_stop = 150
-        polish = 80
-
-    # Scale warmup dynamically so DDQN and LAC can act early in small iteration budgets
-    warmup = min(150, max(20, iters // 10))
-
-    return runtime.config(
-        alns_iterations=iters,
-        hybrid_iterations=iters,
-        early_stop_patience=early_stop,
-        polish_iterations=polish,
-        polish_patience=max(20, polish // 2),
-        op_warmup=warmup,
-        lac_warmup=warmup,
-        n_runs=1,
-        ortools_time_limit=10.0 if iters <= 500 else 30.0,
-    )
-
-
 class _LazyWebConfig:
     def __getattr__(self, name: str) -> Any:
         return getattr(_get_web_config(), name)
@@ -175,7 +120,14 @@ def get_process_pool() -> ProcessPoolExecutor:
         import multiprocessing as mp
 
         ctx = mp.get_context("spawn")
-        max_workers = min(7, max(1, os.cpu_count() or 4))
+        env_workers = os.getenv("MAX_WORKERS")
+        if env_workers:
+            try:
+                max_workers = max(1, int(env_workers))
+            except ValueError:
+                max_workers = 1
+        else:
+            max_workers = min(7, max(1, os.cpu_count() or 4))
         logger.info("Initializing ProcessPoolExecutor with %d workers", max_workers)
         _PROCESS_POOL = ProcessPoolExecutor(max_workers=max_workers, mp_context=ctx)
     return _PROCESS_POOL
@@ -266,17 +218,7 @@ def _log_device_once() -> None:
         )
 
 
-_DEFAULT_TRANSFER_PATH = _ROOT / "model" / "rl_alns_transfer.safetensors"
 _DR_TRANSFER_PATH = _ROOT / "rl_alns_dr_v15.safetensors"
-_DOCS_DR_TRANSFER_PATH = _ROOT / "docs" / "rl_alns_dr_v15.safetensors"
-_DOCS_TRANSFER_PATH = _ROOT / "docs" / "model" / "rl_alns_transfer.safetensors"
-_LEGACY_TRANSFER_PATH = _ROOT / "logs" / "results-v9.5" / "rl_alns_transfer.safetensors"
-_LEGACY_ARCHIVE_TRANSFER_PATH = _ROOT / "docs" / "legacy_archive" / "model" / "rl_alns_transfer.safetensors"
-_LEGACY_ARCHIVE_DR_PATH = _ROOT / "docs" / "legacy_archive" / "rl_alns_dr_v15.safetensors"
-_LEGACY_ARCHIVE_LOGS_TRANSFER = (
-    _ROOT / "docs" / "legacy_archive" / "logs" / "results-v9.8" / "rl_alns_transfer.safetensors"
-)
-_SRC_TRANSFER_PATH = _ROOT / "src" / "rl_alns_transfer_rc1_v15.safetensors"
 
 _WEIGHTS_LOADED_ONCE = False
 _WEIGHTS_PATH_USED: str | None = None
@@ -288,25 +230,13 @@ def _resolve_transfer_path() -> Path | None:
     if path_env:
         candidate = Path(path_env)
         return candidate if candidate.exists() else None
-    for candidate in (
-        _DEFAULT_TRANSFER_PATH,
-        _DR_TRANSFER_PATH,
-        _DOCS_DR_TRANSFER_PATH,
-        _DOCS_TRANSFER_PATH,
-        _LEGACY_TRANSFER_PATH,
-        _LEGACY_ARCHIVE_TRANSFER_PATH,
-        _LEGACY_ARCHIVE_DR_PATH,
-        _LEGACY_ARCHIVE_LOGS_TRANSFER,
-        _SRC_TRANSFER_PATH,
-    ):
-        if candidate.exists():
-            return candidate
+    if _DR_TRANSFER_PATH.exists():
+        return _DR_TRANSFER_PATH
     return None
 
 
-_DEFAULT_GNN_PATH = _ROOT / "docs" / "model" / "gnn_edge_predictor.pt"
-_ALTERNATIVE_GNN_PATH = _ROOT / "model" / "gnn_edge_predictor.pt"
-_LEGACY_ARCHIVE_GNN_PATH = _ROOT / "docs" / "legacy_archive" / "model" / "gnn_edge_predictor.pt"
+_DEFAULT_GNN_PATH = _ROOT / "logs" / "gnn_edge_predictor.pt"
+_ALTERNATIVE_GNN_PATH = _ROOT / "gnn_edge_predictor.pt"
 
 _GNN_LOADED_ONCE = False
 _GNN_PATH_USED: str | None = None
@@ -319,7 +249,7 @@ def _resolve_gnn_path() -> Path | None:
         candidate = Path(path_env)
         if candidate.exists():
             return candidate
-    for candidate in (_DEFAULT_GNN_PATH, _ALTERNATIVE_GNN_PATH, _LEGACY_ARCHIVE_GNN_PATH):
+    for candidate in (_DEFAULT_GNN_PATH, _ALTERNATIVE_GNN_PATH):
         if candidate.exists():
             return candidate
     return None
@@ -405,15 +335,10 @@ def _load_transfer_weights(solver: Any) -> bool:
         if not _WEIGHTS_LOADED_ONCE:
             _WEIGHTS_LOADED_ONCE = True
             logger.warning(
-                "DDQN transfer weights NOT FOUND. Searched %s, %s, %s, %s, and %s. The DDQN "
+                "DDQN transfer weights NOT FOUND at %s. The DDQN "
                 "policy will run on randomly-initialised weights (epsilon = "
-                "%.3f). Set VRPTW_TRANSFER_WEIGHTS or restore "
-                "model/rl_alns_transfer.safetensors.",
-                _DEFAULT_TRANSFER_PATH,
+                "%.3f). Set VRPTW_TRANSFER_WEIGHTS or restore the weights file.",
                 _DR_TRANSFER_PATH,
-                _DOCS_DR_TRANSFER_PATH,
-                _DOCS_TRANSFER_PATH,
-                _LEGACY_TRANSFER_PATH,
                 float(config.ctrl_eps_end),
             )
         return False
@@ -428,7 +353,6 @@ def _load_transfer_weights(solver: Any) -> bool:
                 _WEIGHTS_LOADED_ONCE = True
                 _WEIGHTS_PATH_USED = str(path)
                 logger.info("DDQN solver weights loaded from %s (%d tensors).", path, len(state))
-            solver.transfer_loaded = True
             return True
 
         aligned_q, padded_q = _align_action_head(state, solver.ctrl.q)
@@ -452,7 +376,6 @@ def _load_transfer_weights(solver: Any) -> bool:
                 )
             else:
                 logger.info("DDQN transfer weights loaded from %s (%d tensors).", path, len(state))
-        solver.transfer_loaded = True
         return True
     except Exception as exc:
         if not _WEIGHTS_LOADED_ONCE:
@@ -472,42 +395,14 @@ def transfer_weights_summary() -> dict[str, Any]:
     }
 
 
-def _attach_diagnostics(
-    res: dict[str, Any],
-    solver: Any,
-    config: Any,
-    algo: str,
-    payload: JobRequest,
-) -> None:
-    gnn_active = bool(getattr(solver, "gnn_model", None) is not None)
-    transfer_loaded = bool(getattr(solver, "transfer_loaded", False))
-    res["ai_diagnostics"] = {
-        "algorithm": algo,
-        "preset": getattr(payload, "preset", "fast"),
-        "iterations_target": int(getattr(config, "hybrid_iterations", 500)),
-        "warmup_steps": int(getattr(config, "op_warmup", 30)),
-        "gnn_active": gnn_active,
-        "gnn_weights_path": _GNN_PATH_USED if gnn_active else None,
-        "transfer_weights_loaded": transfer_loaded,
-        "transfer_weights_path": _WEIGHTS_PATH_USED if transfer_loaded else None,
-        "lac_enabled": bool(getattr(config, "lac_enabled", True)),
-        "highs_recombinations_count": int(getattr(solver, "sp_stats", {}).get("calls", 0)),
-        "macro_mode_distribution": dict(getattr(solver, "mode_trace", {})),
-    }
-
-
 def _run_ddqn_alns(payload: JobRequest) -> dict[str, Any]:
     runtime = _load_solver_runtime()
-    config = _get_config_for_request(payload)
-    inst = runtime.build_inst(
-        payload.customers, capacity=payload.fleet.capacity, name="DDQN-ALNS", dataset=payload.dataset
-    )
+    config = _get_web_config()
+    inst = runtime.build_inst(payload.customers, capacity=payload.fleet.capacity, name="DDQN-ALNS")
     solver = runtime.plateau_hybrid_solver(inst, config)
-    if payload.pretrained_transfer:
-        _load_transfer_weights(solver)
+    _load_transfer_weights(solver)
     solver.ctrl.eps = config.ctrl_eps_end
-    if payload.use_gnn:
-        _load_gnn_weights(solver)
+    _load_gnn_weights(solver)
     start = time.time()
     plan, _ = solver.solve(seed=config.seed, frozen=True)
     elapsed = time.time() - start
@@ -521,14 +416,13 @@ def _run_ddqn_alns(payload: JobRequest) -> dict[str, Any]:
     if getattr(solver, "heatmap", None) is not None:
         res["gnn_heatmap"] = solver.heatmap.tolist()
     res["solver_history"] = getattr(solver, "solver_history", [])
-    _attach_diagnostics(res, solver, config, "DDQN-ALNS", payload)
     return res
 
 
 def _run_alns(payload: JobRequest) -> dict[str, Any]:
     runtime = _load_solver_runtime()
-    config = _get_config_for_request(payload)
-    inst = runtime.build_inst(payload.customers, capacity=payload.fleet.capacity, name="ALNS", dataset=payload.dataset)
+    config = _get_web_config()
+    inst = runtime.build_inst(payload.customers, capacity=payload.fleet.capacity, name="ALNS")
     solver = runtime.alns_solver(inst, config)
     start = time.time()
     plan, _ = solver.solve(seed=config.seed)
@@ -541,7 +435,6 @@ def _run_alns(payload: JobRequest) -> dict[str, Any]:
 
     res = runtime.plan_to_payload(plan, payload.customers, elapsed)
     res["solver_history"] = getattr(solver, "solver_history", [])
-    _attach_diagnostics(res, solver, config, "ALNS", payload)
     return res
 
 
@@ -550,28 +443,10 @@ def _load_weights_for_solver(solver: Any, algo: str) -> None:
 
     from safetensors.torch import load_file
 
-    label = "rc1" if "rc1" in algo else "dr"
-    candidates = []
-    output_dir = _ROOT / "logs"
-
-    if label == "dr":
-        candidates = [
-            _DR_TRANSFER_PATH,
-            _DOCS_DR_TRANSFER_PATH,
-            _LEGACY_ARCHIVE_DR_PATH,
-            output_dir / "rl_alns_dr_v15.safetensors",
-            output_dir / "rl_alns_dr_v15.pt",
-            _ROOT / "rl_alns_dr_v15.safetensors",
-        ]
-    else:
-        candidates = [
-            _DEFAULT_TRANSFER_PATH,
-            _DOCS_TRANSFER_PATH,
-            _LEGACY_TRANSFER_PATH,
-            _LEGACY_ARCHIVE_TRANSFER_PATH,
-            _LEGACY_ARCHIVE_LOGS_TRANSFER,
-            _SRC_TRANSFER_PATH,
-        ]
+    candidates = [
+        _DR_TRANSFER_PATH,
+        _ROOT / "logs" / "rl_alns_dr_v15.safetensors",
+    ]
 
     for cand in candidates:
         path_str = str(cand)
@@ -585,7 +460,6 @@ def _load_weights_for_solver(solver: Any, algo: str) -> None:
                     aligned_qt, _ = _align_action_head(state, solver.ctrl.q_t)
                     solver.ctrl.q.load_state_dict(aligned_q, strict=True)
                     solver.ctrl.q_t.load_state_dict(aligned_qt, strict=True)
-                solver.transfer_loaded = True
                 logger.info("Loaded transfer weights for %s from %s", algo, path_str)
                 return
             except Exception as e:
@@ -594,18 +468,16 @@ def _load_weights_for_solver(solver: Any, algo: str) -> None:
 
 def _run_algo_generic(payload: JobRequest, algo: str) -> dict[str, Any]:
     runtime = _load_solver_runtime()
-    config = _get_config_for_request(payload)
+    config = _get_web_config()
     import vrptw
 
-    inst = runtime.build_inst(payload.customers, capacity=payload.fleet.capacity, name=algo, dataset=payload.dataset)
+    inst = runtime.build_inst(payload.customers, capacity=payload.fleet.capacity, name=algo)
 
     if algo == "ortools":
         plan, elapsed = vrptw.run_ortools(inst, config)
         if plan is None:
             raise ValueError("OR-Tools failed to find a feasible solution")
-        res = runtime.plan_to_payload(plan, payload.customers, elapsed)
-        _attach_diagnostics(res, None, config, algo, payload)
-        return res
+        return runtime.plan_to_payload(plan, payload.customers, elapsed)
 
     elif algo == "alns_base":
         solver = vrptw.ALNSSolver(inst, config)
@@ -614,13 +486,11 @@ def _run_algo_generic(payload: JobRequest, algo: str) -> dict[str, Any]:
         elapsed = time.time() - start
         res = runtime.plan_to_payload(plan, payload.customers, elapsed)
         res["solver_history"] = getattr(solver, "solver_history", [])
-        _attach_diagnostics(res, solver, config, algo, payload)
         return res
 
     elif algo == "hybrid_fixed":
         solver = vrptw.HybridFixedSolver(inst, config)
-        if payload.use_gnn:
-            _load_gnn_weights(solver)
+        _load_gnn_weights(solver)
         start = time.time()
         plan, _ = solver.solve(seed=config.seed)
         elapsed = time.time() - start
@@ -628,15 +498,11 @@ def _run_algo_generic(payload: JobRequest, algo: str) -> dict[str, Any]:
         if getattr(solver, "heatmap", None) is not None:
             res["gnn_heatmap"] = solver.heatmap.tolist()
         res["solver_history"] = getattr(solver, "solver_history", [])
-        _attach_diagnostics(res, solver, config, algo, payload)
         return res
 
     elif algo == "hybrid_ddqn":
         solver = vrptw.HybridDDQNSolver(inst, config)
-        if payload.use_gnn:
-            _load_gnn_weights(solver)
-        if payload.pretrained_transfer:
-            _load_transfer_weights(solver)
+        _load_gnn_weights(solver)
         start = time.time()
         plan, _ = solver.solve(seed=config.seed, frozen=True)
         elapsed = time.time() - start
@@ -644,14 +510,12 @@ def _run_algo_generic(payload: JobRequest, algo: str) -> dict[str, Any]:
         if getattr(solver, "heatmap", None) is not None:
             res["gnn_heatmap"] = solver.heatmap.tolist()
         res["solver_history"] = getattr(solver, "solver_history", [])
-        _attach_diagnostics(res, solver, config, algo, payload)
         return res
 
     elif algo == "hybrid_ddqn_transfer_rc1":
         solver = vrptw.HybridDDQNSolver(inst, config)
         _load_weights_for_solver(solver, algo)
-        if payload.use_gnn:
-            _load_gnn_weights(solver)
+        _load_gnn_weights(solver)
         start = time.time()
         plan, _ = solver.solve(seed=config.seed, frozen=True)
         elapsed = time.time() - start
@@ -659,14 +523,12 @@ def _run_algo_generic(payload: JobRequest, algo: str) -> dict[str, Any]:
         if getattr(solver, "heatmap", None) is not None:
             res["gnn_heatmap"] = solver.heatmap.tolist()
         res["solver_history"] = getattr(solver, "solver_history", [])
-        _attach_diagnostics(res, solver, config, algo, payload)
         return res
 
     elif algo == "hybrid_ddqn_transfer_dr":
         solver = vrptw.HybridDDQNSolver(inst, config)
         _load_weights_for_solver(solver, algo)
-        if payload.use_gnn:
-            _load_gnn_weights(solver)
+        _load_gnn_weights(solver)
         start = time.time()
         plan, _ = solver.solve(seed=config.seed, frozen=True)
         elapsed = time.time() - start
@@ -674,7 +536,6 @@ def _run_algo_generic(payload: JobRequest, algo: str) -> dict[str, Any]:
         if getattr(solver, "heatmap", None) is not None:
             res["gnn_heatmap"] = solver.heatmap.tolist()
         res["solver_history"] = getattr(solver, "solver_history", [])
-        _attach_diagnostics(res, solver, config, algo, payload)
         return res
 
     else:
@@ -699,14 +560,6 @@ def _validate(payload: JobRequest) -> None:
 
 
 async def solve_model(payload: JobRequest, matrix: list[list[float]] | None = None) -> dict[str, Any]:
-    from services.compute_gateway import call_remote, remote_enabled
-
-    if remote_enabled():
-        # The API process on Render cannot import torch, so validation and the
-        # solve both happen on the Space.
-        body = payload.model_dump() if hasattr(payload, "model_dump") else payload.dict()
-        return await call_remote("/solve", {"payload": body, "matrix": matrix})
-
     try:
         runtime = _load_solver_runtime()
         _get_web_config()
@@ -751,40 +604,34 @@ async def solve_model(payload: JobRequest, matrix: list[list[float]] | None = No
         tasks[algo] = loop.run_in_executor(pool, _run_solver_in_process, algo, payload_dict)
 
     results = {}
-    failed: list[str] = []
     for algo, task in tasks.items():
         try:
             results[algo] = await task
         except Exception as e:
             logger.error("Failed running algorithm pipeline %s: %s", algo, e)
-            failed.append(algo)
 
-    _attach_bks(results, payload.dataset)
-    if failed:
-        results["_failed_algos"] = failed
+    # Concurrently fetch actual road paths from OSRM for all computed routes
+    from services.matrix_service import fetch_road_path
+
+    routes_to_fetch = []
+    for _algo, res in results.items():
+        if isinstance(res, dict) and "routes" in res:
+            for route in res["routes"]:
+                # Only fetch geometries for active routes with customer stops
+                if isinstance(route, dict) and route.get("path") and len(route["path"]) > 2:
+                    routes_to_fetch.append(route)
+
+    if routes_to_fetch:
+        try:
+            # Limit concurrency to 1 to politely rate-limit ourselves against the public OSRM server
+            sem = asyncio.Semaphore(1)
+            road_paths = await asyncio.gather(
+                *(fetch_road_path(r["path"], sem) for r in routes_to_fetch), return_exceptions=True
+            )
+            for r, path_res in zip(routes_to_fetch, road_paths):
+                if isinstance(path_res, list) and len(path_res) >= 2:
+                    r["road_geometry"] = path_res
+        except Exception as err:
+            logger.error("Failed gathering OSRM road paths on backend: %s", err)
+
     return results
-
-
-def _attach_bks(results: dict[str, Any], dataset: str) -> None:
-    """Score each plan against the published best-known solution, in place.
-
-    Only meaningful for bundled Solomon instances: `build_inst` rebuilds those
-    in their native frame, so `cost` and `BKS[...]["td"]` share units. For
-    anything else the keys are simply left off and the UI falls back to a
-    baseline comparison.
-    """
-    from services.solomon_service import best_known_solution
-
-    bks = best_known_solution(dataset)
-    if bks is None:
-        return
-
-    for res in results.values():
-        if not isinstance(res, dict):
-            continue
-        cost = res.get("cost")
-        if cost is None:
-            continue
-        res["bks"] = bks
-        res["td_gap_pct"] = (float(cost) - bks["td"]) / bks["td"] * 100.0
-        res["nv_diff"] = int(res.get("vehicles_used", 0)) - bks["nv"]

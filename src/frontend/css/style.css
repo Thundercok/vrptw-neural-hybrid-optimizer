@@ -1,107 +1,68 @@
 /* ═══════════════════════════════════════════════════════
    NAMI OPS — Route Optimization Platform
-   Shared token layer: the "field report" pine/paper system.
-
-   This is the single palette for the whole site. landing.css mirrors these
-   values under its own semantic names; app.css, auth.css and gantt.css
-   consume the legacy aliases below, so restyling happens here.
+   Public Light Theme v2.0  |  Base → yours, upgraded
    ═══════════════════════════════════════════════════════ */
 
-@import url('https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
-/* ── Canonical palette (light) ─────────────────────────── */
+/* ── Tokens ───────────────────────────────────────────── */
 :root {
-  --paper: #f8fafc;
-  --surface: #ffffff;
-  --surface-sunk: #f1f5f9;
+  --bg-base: #f5f7fb;
+  --bg-surface: #ffffff;
+  --border: #e4e8f0;
+  --border-strong: #cdd3e2;
 
-  /* Inks. Every step below is >= 4.5:1 on --paper. */
-  --ink: #0f172a;
-  --ink-soft: #1e293b;
-  --ink-muted: #475569;
-  --ink-faint: #64748b;
+  --text-main: #111827;
+  --text-muted: #6b7280;
 
-  --rule: #e2e8f0;
-  --rule-strong: #cbd5e1;
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --primary-soft: #eff4ff;
+  --success: #059669;
+  --danger: #dc2626;
+  --warning: #d97706;
+  --orange: #ea6c00;
+  /* ALNS accent */
+  --orange-soft: #fff6ed;
 
-  --pine: #0284c7; /* Sky 600 */
-  --pine-deep: #0369a1; /* Sky 700 */
-  --pine-wash: #f0f9ff; /* Sky 50 */
+  --font-main: 'Outfit', system-ui, sans-serif;
+  --font-data: 'JetBrains Mono', monospace;
 
-  --rust: #ea580c;
-  --rust-wash: #fff7ed;
+  --r-sm: 5px;
+  --r: 8px;
+  --r-lg: 12px;
+  --r-xl: 16px;
 
-  /* Semantics */
-  --ok: #059669;
-  --ok-wash: #ecfdf5;
-  --alert: #dc2626;
-  --alert-wash: #fef2f2;
-  --warn: #d97706;
-  --warn-wash: #fffbeb;
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.07), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow: 0 4px 16px rgba(0, 0, 0, 0.08), 0 1px 4px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.06);
 
-  --blue: #2563eb;
-  --blue-wash: #dbeafe;
-  --purple: #7c3aed;
-  --purple-wash: #ede9fe;
-
-  --font-sans: 'Archivo', ui-sans-serif, system-ui, sans-serif;
-  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
-
-  color-scheme: light;
+  /* Dark mode overrides */
+  --bg-base-dark: #1e1e2f;
+  --bg-surface-dark: #2b2b3d;
+  --border-dark: #44475a;
+  --text-main-dark: #f8f8f2;
+  --text-muted-dark: #bfbfbf;
 }
 
-/* ── Legacy aliases ────────────────────────────────────
-   app.css / gantt.css / auth.css reference these names. Mapping them onto
-   the palette above restyles those sheets without touching every rule. */
-:root {
-  --bg-base: var(--paper);
-  --bg-surface: var(--surface);
-  --border: var(--rule);
-  --border-strong: var(--rule-strong);
-
-  --text-main: var(--ink);
-  --text-muted: var(--ink-muted);
-
-  --primary: var(--pine);
-  --primary-hover: var(--pine-deep);
-  --primary-soft: var(--pine-wash);
-  --primary-rgb: 2, 132, 199;
-
-  --success: var(--ok);
-  --danger: var(--alert);
-  --warning: var(--warn);
-  --orange: var(--rust);
-  --orange-soft: var(--rust-wash);
-
-  --font-main: var(--font-sans);
-  --font-data: var(--font-mono);
-
-  --r-sm: 3px;
-  --r: 4px;
-  --r-md: 4px;
-  --r-lg: 6px;
-  --r-xl: 8px;
-
-  --shadow-xs: 0 1px 2px rgba(21, 26, 24, 0.04);
-  --shadow-sm: 0 1px 2px rgba(21, 26, 24, 0.05), 0 1px 3px rgba(21, 26, 24, 0.04);
-  --shadow: 0 1px 2px rgba(21, 26, 24, 0.04), 0 8px 24px -12px rgba(21, 26, 24, 0.1);
-  --shadow-lg: 0 2px 4px rgba(21, 26, 24, 0.05), 0 18px 40px -16px rgba(21, 26, 24, 0.16);
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-base: var(--bg-base-dark);
+    --bg-surface: var(--bg-surface-dark);
+    --border: var(--border-dark);
+    --text-main: var(--text-main-dark);
+    --text-muted: var(--text-muted-dark);
+  }
 }
 
-/* ── Form field tokens ─────────────────────────────────
-   Text fields used to borrow --rule-strong (#cbd5e1), which reads as a heavy
-   grey box around every input. Fields get their own, lighter scale: the
-   resting border is barely there, and weight is added only on hover/focus. */
-:root {
-  --field-bg: var(--surface);
-  --field-bg-hover: var(--surface);
-  --field-border: #eef2f7;
-  --field-border-hover: #dbe3ec;
-  --field-border-focus: var(--pine);
-  --field-text: var(--ink-soft);
-  --field-placeholder: #a8b3c2;
-  --field-ring: rgba(var(--primary-rgb), 0.14);
-  --field-shadow: inset 0 1px 1px rgba(15, 23, 42, 0.02);
+:root[data-theme='dark'] {
+  --bg-base: var(--bg-base-dark);
+  --bg-surface: var(--bg-surface-dark);
+  --border: var(--border-dark);
+  --text-main: var(--text-main-dark);
+  --text-muted: var(--text-muted-dark);
 }
 
 /* ── Reset ────────────────────────────────────────────── */
@@ -236,8 +197,8 @@ body {
 
 /* GNN Heatmap Tooltip */
 .leaflet-tooltip.gnn-tooltip {
-  background: var(--ink) !important;
-  color: var(--surface) !important;
+  background: rgba(15, 23, 42, 0.95) !important;
+  color: #f8fafc !important;
   border: none !important;
   border-radius: 4px !important;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
@@ -245,130 +206,43 @@ body {
   font-family: var(--font-main) !important;
 }
 .leaflet-tooltip-left.gnn-tooltip::before {
-  border-left-color: var(--ink) !important;
+  border-left-color: rgba(15, 23, 42, 0.95) !important;
 }
 .leaflet-tooltip-right.gnn-tooltip::before {
-  border-right-color: var(--ink) !important;
+  border-right-color: rgba(15, 23, 42, 0.95) !important;
 }
 
-/* ── Glass / glow accents ─────────────────────────────── */
+/* ── Premium Additions ────────────────────────────────── */
 :root {
-  --primary-glow: rgba(14, 92, 73, 0.16);
-  --glass-bg: rgba(255, 255, 255, 0.72);
-  --glass-border: rgba(227, 228, 223, 0.7);
-}
-
-/* ═══════════════════════════════════════════════════════
-   DARK THEME
-   Only the canonical palette is redefined — the legacy aliases above point
-   at it, so they follow automatically and never need restating.
-
-   The OS preference applies only when the user has made no explicit choice.
-   An explicit data-theme must win in BOTH directions, otherwise picking
-   "light" on a dark OS leaves the app half-lit, with text the same colour
-   as its own background.
-   ═══════════════════════════════════════════════════════ */
-
-/* Dark-palette constants, theme-independent: a few components reference
-   these directly regardless of the active theme. */
-:root {
-  --bg-base-dark: #0d110f;
-  --bg-surface-dark: #151a18;
-  --border-dark: #242b28;
-  --text-main-dark: #ecefeb;
-  --text-muted-dark: #a3aea9;
+  --primary-glow: rgba(37, 99, 235, 0.15);
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(228, 232, 240, 0.6);
+  --neon-blue: #00e5ff;
+  --neon-purple: #d500f9;
 }
 
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme]) {
-    --paper: #020617;
-    --surface: #0f172a;
-    --surface-sunk: #090f1e;
-
-    --ink: #f8fafc;
-    --ink-soft: #cbd5e1;
-    --ink-muted: #94a3b8;
-    --ink-faint: #64748b;
-
-    --rule: #1e293b;
-    --rule-strong: #334155;
-
-    --pine: #38bdf8;
-    --pine-deep: #7dd3fc;
-    --pine-wash: #082f49;
-
-    --rust: #fb923c;
-    --rust-wash: #431407;
-
-    --ok: #34d399;
-    --ok-wash: #064e3b;
-    --alert: #f87171;
-    --alert-wash: #450a0a;
-    --warn: #fbbf24;
-    --warn-wash: #451a03;
-
-    --primary-rgb: 56, 189, 248;
-
-    --glass-bg: rgba(15, 23, 42, 0.72);
-    --glass-border: rgba(30, 41, 59, 0.6);
-    --primary-glow: rgba(56, 189, 248, 0.28);
-
-    --field-bg: rgba(148, 163, 184, 0.06);
-    --field-bg-hover: rgba(148, 163, 184, 0.1);
-    --field-border: rgba(148, 163, 184, 0.16);
-    --field-border-hover: rgba(148, 163, 184, 0.3);
-    --field-text: var(--ink);
-    --field-placeholder: #64748b;
-    --field-ring: rgba(56, 189, 248, 0.22);
-    --field-shadow: none;
-
-    color-scheme: dark;
+  :root {
+    --bg-base: #0b0f19;
+    --bg-surface: #161e31;
+    --border: #24304f;
+    --text-main: #f3f4f6;
+    --text-muted: #9ca3af;
+    --glass-bg: rgba(22, 30, 49, 0.7);
+    --glass-border: rgba(36, 48, 79, 0.4);
+    --primary-glow: rgba(37, 99, 235, 0.3);
   }
 }
 
 :root[data-theme='dark'] {
-  --paper: #020617;
-  --surface: #0f172a;
-  --surface-sunk: #090f1e;
-
-  --ink: #f8fafc;
-  --ink-soft: #cbd5e1;
-  --ink-muted: #94a3b8;
-  --ink-faint: #64748b;
-
-  --rule: #1e293b;
-  --rule-strong: #334155;
-
-  --pine: #38bdf8;
-  --pine-deep: #7dd3fc;
-  --pine-wash: #082f49;
-
-  --rust: #fb923c;
-  --rust-wash: #431407;
-
-  --ok: #34d399;
-  --ok-wash: #064e3b;
-  --alert: #f87171;
-  --alert-wash: #450a0a;
-  --warn: #fbbf24;
-  --warn-wash: #451a03;
-
-  --primary-rgb: 56, 189, 248;
-
-  --glass-bg: rgba(15, 23, 42, 0.72);
-  --glass-border: rgba(30, 41, 59, 0.6);
-  --primary-glow: rgba(56, 189, 248, 0.28);
-
-  --field-bg: rgba(148, 163, 184, 0.06);
-  --field-bg-hover: rgba(148, 163, 184, 0.1);
-  --field-border: rgba(148, 163, 184, 0.16);
-  --field-border-hover: rgba(148, 163, 184, 0.3);
-  --field-text: var(--ink);
-  --field-placeholder: #64748b;
-  --field-ring: rgba(56, 189, 248, 0.22);
-  --field-shadow: none;
-
-  color-scheme: dark;
+  --bg-base: #0b0f19;
+  --bg-surface: #161e31;
+  --border: #24304f;
+  --text-main: #f3f4f6;
+  --text-muted: #9ca3af;
+  --glass-bg: rgba(22, 30, 49, 0.7);
+  --glass-border: rgba(36, 48, 79, 0.4);
+  --primary-glow: rgba(37, 99, 235, 0.3);
 }
 
 /* Premium Rounded Scrollbars */
@@ -402,16 +276,16 @@ body {
 }
 
 .xai-console {
-  background: var(--surface-sunk);
+  background: #070a13;
   border: 1px solid var(--border);
   border-radius: var(--r);
   font-family: var(--font-data);
-  color: var(--pine);
+  color: #38bdf8;
   padding: 12px;
   overflow-y: auto;
   font-size: 11px;
   line-height: 1.6;
-  box-shadow: inset 0 1px 2px rgba(21, 26, 24, 0.05);
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.6);
 }
 
 .xai-console-line {
@@ -448,7 +322,7 @@ body {
   height: 100%;
   background: var(--bg-surface);
   border-left: 1px solid var(--border);
-  box-shadow: -4px 0 24px -8px rgba(21, 26, 24, 0.14);
+  box-shadow: -4px 0 16px rgba(0, 0, 0, 0.15);
   z-index: 1000;
   display: flex;
   flex-direction: column;
@@ -458,7 +332,31 @@ body {
   right: 0;
 }
 
-/* `.playground-toggle-btn` is styled once, in app.css. */
+.playground-toggle-btn {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  color: var(--text-main);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: var(--r);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s ease;
+}
+.playground-toggle-btn:hover {
+  background: var(--primary-soft);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+.playground-toggle-btn.active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #ffffff;
+  box-shadow: 0 0 12px var(--primary-glow);
+}
 
 .drawer-header {
   display: flex;
@@ -484,9 +382,9 @@ body {
 }
 
 .violation-tag {
-  background: var(--alert-wash);
-  border: 1px solid var(--alert);
-  color: var(--alert);
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.15);
+  color: #ef4444;
   font-size: 10px;
   font-weight: 500;
   border-radius: 4px;

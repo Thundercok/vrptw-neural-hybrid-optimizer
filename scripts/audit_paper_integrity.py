@@ -79,6 +79,7 @@ class PaperAuditor:
 
         with open(BKS_JSON) as f:
             bks_data = json.load(f)
+        bks_data = bks_data.get("instances", bks_data)
         self.bks: dict[str, dict[str, float]] = {
             k: {"nv": float(v["nv"]), "td": float(v["td"])} for k, v in bks_data.items()
         }

@@ -85,7 +85,9 @@ export default function FeedbackAdminView() {
 
   return (
     <>
-      <a className="back-to-landing" href="app.html" title="Back to demo">&larr; Demo</a>
+      <a className="back-to-landing" href="app.html" title="Back to demo">
+        &larr; Demo
+      </a>
       <button
         id="lang-toggle"
         className="lang-fab"
@@ -100,8 +102,12 @@ export default function FeedbackAdminView() {
       <main className="feedback-screen auth-screen">
         <section className="auth-card feedback-card">
           <div className="feedback-copy">
-            <p className="tag" id="feedback-admin-tag">{dict['feedback-admin-tag']}</p>
-            <p className="feedback-badge" id="feedback-admin-badge">{dict['feedback-admin-badge']}</p>
+            <p className="tag" id="feedback-admin-tag">
+              {dict['feedback-admin-tag']}
+            </p>
+            <p className="feedback-badge" id="feedback-admin-badge">
+              {dict['feedback-admin-badge']}
+            </p>
             <h1 id="feedback-admin-title">{dict['feedback-admin-title']}</h1>
             <p id="feedback-admin-lead" className="feedback-lead">
               {dict['feedback-admin-lead']}
@@ -109,12 +115,7 @@ export default function FeedbackAdminView() {
           </div>
 
           <div className="feedback-actions">
-            <button
-              id="feedback-admin-refresh"
-              className="btn ghost"
-              type="button"
-              onClick={handleRefresh}
-            >
+            <button id="feedback-admin-refresh" className="btn ghost" type="button" onClick={handleRefresh}>
               {dict['feedback-admin-refresh']}
             </button>
             <span id="feedback-admin-count" className="status">
@@ -142,9 +143,7 @@ export default function FeedbackAdminView() {
                   </tr>
                 ) : (
                   items.map((item, index) => {
-                    const whenStr = item?.created_at
-                      ? new Date(Number(item.created_at) * 1000).toLocaleString()
-                      : '-';
+                    const whenStr = item?.created_at ? new Date(Number(item.created_at) * 1000).toLocaleString() : '-';
                     const ratingStr = item?.rating ? String(item.rating) : '-';
                     return (
                       <tr key={item?.id || index}>
@@ -161,7 +160,9 @@ export default function FeedbackAdminView() {
             </table>
           </div>
 
-          <p id="feedback-admin-status" className="status">{statusText}</p>
+          <p id="feedback-admin-status" className="status">
+            {statusText}
+          </p>
         </section>
       </main>
     </>

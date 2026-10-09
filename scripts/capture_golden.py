@@ -45,7 +45,9 @@ def load_instance(path: str) -> Inst:
 
 def _make_cfg() -> Config:
     """Deterministic, short-budget config. Early stop is disabled so the
-    iteration count (and therefore the RNG stream) is fixed across runs."""
+    iteration count (and therefore the RNG stream) is fixed across runs.
+    Wall-clock-limited MILP recombination is excluded from exact fingerprints.
+    """
     return Config(
         alns_iterations=GOLDEN_ITERS,
         hybrid_iterations=GOLDEN_ITERS,
@@ -53,6 +55,9 @@ def _make_cfg() -> Config:
         split_enabled=False,
         time_limit=None,
         time_limit_per_customer=0.0,
+        pool_recombine_enabled=False,
+        recombine_after_main_search=False,
+        recombine_after_polish=False,
     )
 
 

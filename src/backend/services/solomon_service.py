@@ -15,9 +15,6 @@ def _data_dirs() -> list[Path]:
         if p.exists():
             dirs.append(p)
     project_root = Path(__file__).resolve().parents[3]
-    # The checked-in directory is `data/Solomon`; the lowercase spelling only
-    # resolves on case-insensitive filesystems, so both must be listed or every
-    # dataset lookup 404s once deployed on Linux.
     dirs.append(project_root / "data" / "Solomon")
     dirs.append(project_root / "data" / "solomon")
     dirs.append(project_root / "data")
@@ -34,53 +31,11 @@ def _find_solomon_file(name: str) -> Path | None:
     return None
 
 
-# Affine projection of Solomon XY into a stable local map window for
-# visualization. Kept invertible so `to_inst_payload` can recover the planar
-# coordinates the solver needs.
-_LAT_ORIGIN = 10.55
-_LNG_ORIGIN = 106.55
-_XY_SCALE = 0.004
-
-
 def _to_lat_lng(x: float, y: float) -> tuple[float, float]:
-    lat = _LAT_ORIGIN + y * _XY_SCALE
-    lng = _LNG_ORIGIN + x * _XY_SCALE
+    # Project Solomon XY coordinates into a stable local map window for visualization.
+    lat = 10.55 + y * 0.004
+    lng = 106.55 + x * 0.004
     return round(lat, 6), round(lng, 6)
-
-
-def to_inst_payload(dataset: dict[str, Any]) -> dict[str, Any]:
-    """Convert a :func:`load_solomon_dataset` payload into the ``{name, capacity,
-    data}`` shape ``vrptw.Inst`` expects.
-
-    ``load_solomon_dataset`` returns a display-oriented payload (lat/lng for the
-    map, customers as dicts); ``Inst`` wants an ``(n+1, 7)`` array of planar
-    Solomon coordinates. Passing the former straight to ``Inst`` raises
-    ``KeyError: 'name'``, so every caller must go through this adapter.
-    """
-    import numpy as np
-
-    customers = sorted(dataset["customers"], key=lambda c: int(c["id"]))
-    if len(customers) < 2:
-        raise ValueError("Dataset must contain a depot and at least one customer")
-
-    data = np.zeros((len(customers), 7), dtype=np.float64)
-    for i, cust in enumerate(customers):
-        data[i, 0] = float(cust["id"])
-        # Undo _to_lat_lng so distances match the original Solomon geometry;
-        # projecting through lat/lng instead would silently rescale every
-        # distance and make comparisons against BKS meaningless.
-        data[i, 1] = (float(cust["lng"]) - _LNG_ORIGIN) / _XY_SCALE
-        data[i, 2] = (float(cust["lat"]) - _LAT_ORIGIN) / _XY_SCALE
-        data[i, 3] = float(cust["demand"])
-        data[i, 4] = float(cust["ready"])
-        data[i, 5] = float(cust["due"])
-        data[i, 6] = float(cust["service"])
-
-    return {
-        "name": str(dataset.get("dataset", "unknown")).upper(),
-        "capacity": float(dataset["fleet"]["capacity"]),
-        "data": data,
-    }
 
 
 # --- Built-in synthetic instance ---------------------------------------------------
@@ -208,47 +163,6 @@ def _is_builtin(name: str) -> bool:
     return name.strip().lower() in {"demo", "builtin", "sample", "c1_demo", "r1_demo"}
 
 
-def solomon_frame(dataset: str) -> dict[str, Any] | None:
-    """Describe the affine that mapped ``dataset`` into map coordinates.
-
-    Returns ``None`` unless ``dataset`` names a real Solomon file. The built-in
-    HCMC demos carry genuine lat/lng and were never passed through
-    :func:`_to_lat_lng`, so inverting the affine on them would produce nonsense;
-    they also have no published BKS to compare against.
-
-    Callers use this to rebuild the instance in its original Solomon frame.
-    Re-projecting the mapped lat/lng instead (as the generic web path does)
-    scales x by ``cos(lat)`` and y by 1, squashing the geometry ~1.7% along one
-    axis — small, but enough to make a gap-to-BKS figure meaningless.
-    """
-    raw_name = (dataset or "").strip().lower()
-    if not raw_name or _is_builtin(raw_name):
-        return None
-    if not re.fullmatch(r"[a-z]+\d{3}", raw_name):
-        return None
-    if _find_solomon_file(raw_name) is None:
-        return None
-    return {
-        "instance": raw_name.upper(),
-        "lat_origin": _LAT_ORIGIN,
-        "lng_origin": _LNG_ORIGIN,
-        "scale": _XY_SCALE,
-    }
-
-
-def best_known_solution(dataset: str) -> dict[str, Any] | None:
-    """Published BKS for ``dataset``, or ``None`` when there is no entry."""
-    frame = solomon_frame(dataset)
-    if frame is None:
-        return None
-    from vrptw import BKS
-
-    entry = BKS.get(frame["instance"])
-    if entry is None:
-        return None
-    return {"instance": frame["instance"], "nv": int(entry["nv"]), "td": float(entry["td"])}
-
-
 def load_solomon_dataset(name: str = "demo") -> dict[str, Any]:
     raw_name = (name or "demo").strip().lower()
 
@@ -328,10 +242,9 @@ def list_solomon_datasets() -> list[dict[str, Any]]:
     items: list[dict[str, Any]] = []
 
     # Always include the built-in demo
-    items.append({"name": "demo", "label": "Demo RC (12 customers, HCMC)", "builtin": True})
     items.append({"name": "c1_demo", "label": "Demo C1 (12 customers, HCMC)", "builtin": True})
     items.append({"name": "r1_demo", "label": "Demo R1 (12 customers, HCMC)", "builtin": True})
-    seen.update(["demo", "c1_demo", "r1_demo"])
+    seen.update(["c1_demo", "r1_demo"])
 
     pattern = re.compile(r"^([a-z]+\d{3})\.txt$")
     for d in _data_dirs():

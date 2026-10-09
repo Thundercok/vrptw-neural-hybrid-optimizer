@@ -19,13 +19,14 @@ import mimetypes
 import os
 import shutil
 import zipfile
+from pathlib import Path
 
 from playwright.sync_api import sync_playwright
 
-REPO_ROOT = "/Users/thundercock2/Documents/Github/VRPTW-Research-Optimization"
-SRC_ROOT = os.path.join(REPO_ROOT, "VRPTW-Research-Optimization")
-OUT_DIR = "/Users/thundercock2/Desktop/Bo_Hinh_Anh_Poster_Cho_Editor"
-ZIP_PATH = "/Users/thundercock2/Desktop/Bo_Hinh_Anh_Poster_Cho_Editor.zip"
+REPO_ROOT = str(Path(__file__).resolve().parents[1])
+SRC_ROOT = REPO_ROOT
+OUT_DIR = os.path.join(REPO_ROOT, "posters", "generated", "editor")
+ZIP_PATH = os.path.join(REPO_ROOT, "posters", "generated", "editor.zip")
 
 os.makedirs(OUT_DIR, exist_ok=True)
 

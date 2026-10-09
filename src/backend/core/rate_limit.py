@@ -43,7 +43,6 @@ AUTH_FORGOT_LIMIT = _env("RATE_LIMIT_AUTH_FORGOT", "5/minute")
 JOBS_LIMIT = _env("RATE_LIMIT_JOBS", "30/minute")
 GEOCODE_LIMIT = _env("RATE_LIMIT_GEOCODE", "60/minute")
 
-
 limiter = Limiter(
     key_func=get_remote_address,
     enabled=RATE_LIMIT_ENABLED,

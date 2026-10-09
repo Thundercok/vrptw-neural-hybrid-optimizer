@@ -45,7 +45,7 @@ dev = [
 [tool.ruff]
 line-length = 120
 target-version = "py312"
-extend-exclude = ["docs", "logs", "model", "data", "posters/archive", "scratch", "*.md"]
+extend-exclude = ["docs", "logs", "model", "data", "posters/archive", "archive", "scratch", "*.md"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "UP"]

@@ -5,7 +5,6 @@ from typing import Any
 import httpx
 
 REVERSE_GEOCODE_CACHE: dict[tuple[float, float], dict[str, Any]] = {}
-GEOCODE_CACHE: dict[str, dict[str, Any]] = {}
 
 
 def _extract_short_address(data: dict[str, Any]) -> str:
@@ -28,19 +27,14 @@ def _extract_short_address(data: dict[str, Any]) -> str:
 
 
 async def geocode_address(q: str, limit: int) -> dict[str, Any]:
-    cache_key = q.strip().lower()
-    if limit == 1 and cache_key in GEOCODE_CACHE:
-        return GEOCODE_CACHE[cache_key]
-
     headers = {"User-Agent": "vrptw-dashboard/1.0"}
 
-    async with httpx.AsyncClient(timeout=8.0) as client:
-        data = []
+    async def fetch_nominatim(client: httpx.AsyncClient, query_str: str) -> list[dict[str, Any]]:
         try:
-            nominatim_resp = await client.get(
+            resp = await client.get(
                 "https://nominatim.openstreetmap.org/search",
                 params={
-                    "q": q,
+                    "q": query_str,
                     "format": "json",
                     "limit": str(limit),
                     "accept-language": "vi,en",
@@ -48,31 +42,58 @@ async def geocode_address(q: str, limit: int) -> dict[str, Any]:
                 },
                 headers=headers,
             )
-            nominatim_resp.raise_for_status()
-            data = nominatim_resp.json()
-        except httpx.HTTPError:
-            try:
-                mapsco_resp = await client.get(
-                    "https://photon.komoot.io/api/",
-                    params={"q": f"{q}, Vietnam", "limit": str(limit)},
-                    headers=headers,
-                )
-                mapsco_resp.raise_for_status()
-                photon_data = mapsco_resp.json().get("features", [])
+            if resp.status_code == 200:
+                return resp.json() or []
+        except Exception:
+            pass
+        return []
 
-                # Convert photon format to the expected format
-                data = []
-                for feat in photon_data:
-                    coords = feat.get("geometry", {}).get("coordinates", [0, 0])
-                    props = feat.get("properties", {})
-                    name = props.get("name", "")
-                    street = props.get("street", "")
-                    city = props.get("city", "")
-                    display = ", ".join(filter(bool, [name, street, city]))
-                    data.append({"display_name": display, "lat": coords[1], "lon": coords[0]})
-                data = data[: max(1, int(limit))]
-            except httpx.HTTPError:
-                data = []
+    async def fetch_mapsco(client: httpx.AsyncClient, query_str: str) -> list[dict[str, Any]]:
+        try:
+            resp = await client.get(
+                "https://geocode.maps.co/search",
+                params={"q": f"{query_str}, Vietnam"},
+                headers=headers,
+            )
+            if resp.status_code == 200:
+                return resp.json() or []
+        except Exception:
+            pass
+        return []
+
+    async with httpx.AsyncClient(timeout=8.0) as client:
+        import logging
+        import re
+
+        logger = logging.getLogger("vrptw.geocoder")
+
+        # Generate progressive search candidate variations
+        candidates = [q]
+
+        # Candidate 2: Strip house number prefix (e.g. "12 Nguyễn Huệ, Quận 1" -> "Nguyễn Huệ, Quận 1")
+        cleaned_no_house = re.sub(r"^(?:số\s+)?\d+(?:\s*[\/\-]\s*\d+)?\s+", "", q, flags=re.IGNORECASE).strip()
+        if cleaned_no_house and cleaned_no_house not in candidates:
+            candidates.append(cleaned_no_house)
+
+        # Candidate 3: Strip district sub-clauses (e.g. "12 Nguyễn Huệ, Quận 1" -> "12 Nguyễn Huệ")
+        cleaned_no_district = re.sub(r"[,]?\s*(?:quận|q\.)\s*\d+\b", "", q, flags=re.IGNORECASE).strip()
+        if cleaned_no_district and cleaned_no_district not in candidates:
+            candidates.append(cleaned_no_district)
+
+        # Candidate 4: Strip both house number and district (e.g. "12 Nguyễn Huệ, Quận 1" -> "Nguyễn Huệ")
+        cleaned_both = re.sub(r"[,]?\s*(?:quận|q\.)\s*\d+\b", "", cleaned_no_house, flags=re.IGNORECASE).strip()
+        if cleaned_both and cleaned_both not in candidates:
+            candidates.append(cleaned_both)
+
+        # Evaluate candidates sequentially
+        data = []
+        for cand in candidates:
+            data = await fetch_nominatim(client, cand)
+            if not data:
+                data = await fetch_mapsco(client, cand)
+            if data:
+                logger.info("Geocoding success for [%s] using rewrite [%s]", q, cand)
+                break
 
     items = [
         {
@@ -82,41 +103,7 @@ async def geocode_address(q: str, limit: int) -> dict[str, Any]:
         }
         for it in data
     ]
-    result = {"items": items}
-    if limit == 1 and items:
-        GEOCODE_CACHE[cache_key] = result
-    return result
-
-
-async def bulk_geocode_addresses(addresses: list[str]) -> list[dict[str, Any]]:
-    import asyncio
-
-    sem = asyncio.Semaphore(15)
-    headers = {"User-Agent": "vrptw-dashboard/1.0"}
-
-    async def fetch_one(addr: str, client: httpx.AsyncClient) -> dict[str, Any]:
-        cache_key = addr.strip().lower()
-        if cache_key in GEOCODE_CACHE:
-            return GEOCODE_CACHE[cache_key]
-        async with sem:
-            try:
-                resp = await client.get(
-                    "https://photon.komoot.io/api/", params={"q": f"{addr}, Vietnam", "limit": "1"}, headers=headers
-                )
-                resp.raise_for_status()
-                photon_data = resp.json().get("features", [])
-                if photon_data:
-                    coords = photon_data[0].get("geometry", {}).get("coordinates", [0, 0])
-                    res = {"items": [{"lat": coords[1], "lng": coords[0]}]}
-                    GEOCODE_CACHE[cache_key] = res
-                    return res
-            except Exception:
-                pass
-            return {"items": []}
-
-    async with httpx.AsyncClient(timeout=8.0) as client:
-        tasks = [fetch_one(addr, client) for addr in addresses]
-        return await asyncio.gather(*tasks)
+    return {"items": items}
 
 
 async def reverse_geocode_address(lat: float, lng: float) -> dict[str, Any]:
@@ -140,23 +127,15 @@ async def reverse_geocode_address(lat: float, lng: float) -> dict[str, Any]:
         response.raise_for_status()
         return response.json()
 
-    async def fetch_photon(client: httpx.AsyncClient) -> dict[str, Any]:
-        url = "https://photon.komoot.io/reverse"
+    async def fetch_mapsco(client: httpx.AsyncClient) -> dict[str, Any]:
+        url = "https://geocode.maps.co/reverse"
         params = {
             "lat": str(lat),
             "lon": str(lng),
         }
         response = await client.get(url, params=params, headers=headers)
         response.raise_for_status()
-        photon_data = response.json().get("features", [])
-        if photon_data:
-            props = photon_data[0].get("properties", {})
-            name = props.get("name", "")
-            street = props.get("street", "")
-            city = props.get("city", "")
-            display = ", ".join(filter(bool, [name, street, city]))
-            return {"display_name": display, "address": props}
-        return {}
+        return response.json()
 
     async def fetch_bigdatacloud(client: httpx.AsyncClient) -> dict[str, Any]:
         url = "https://api.bigdatacloud.net/data/reverse-geocode-client"
@@ -191,7 +170,7 @@ async def reverse_geocode_address(lat: float, lng: float) -> dict[str, Any]:
             data = await fetch_nominatim(client)
         except httpx.HTTPError:
             try:
-                data = await fetch_photon(client)
+                data = await fetch_mapsco(client)
             except httpx.HTTPError:
                 try:
                     data = await fetch_bigdatacloud(client)

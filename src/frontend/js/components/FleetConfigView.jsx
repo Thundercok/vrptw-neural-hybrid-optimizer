@@ -1,9 +1,8 @@
 import React from 'react';
 import { useAppContext } from '../context/AppContext.jsx';
-import { createSkillBadge } from '../skillUtils.js';
 
 export default function FleetConfigView() {
-  const { state, updateState, toast, t } = useAppContext();
+  const { state, updateState, toast } = useAppContext();
 
   const fleet = state.fleet || [];
   const activeVehicles = fleet.filter((v) => v.status === 'Active');
@@ -127,15 +126,18 @@ export default function FleetConfigView() {
     <div className="fleet-view-container">
       <div className="fleet-view-header">
         <div>
-          <h2>{t('fleetMainTitle')}</h2>
-          <p className="section-desc">{t('fleetMainDesc')}</p>
+          <h2>Fleet Operations & Shift Schedules</h2>
+          <p className="section-desc">
+            Define individual vehicle capacities, operating speeds, driver names, and shift constraint rules. These
+            parameters govern route eligibility, travel times, and vehicle capacity checks.
+          </p>
         </div>
         <div className="fleet-actions-row">
           <button className="btn-primary" onClick={handleAddVehicle}>
-            {t('btnAddVehicle')}
+            + Add Vehicle
           </button>
           <button className="btn-secondary" onClick={handleResetDefaults}>
-            {t('btnResetDefaults')}
+            Reset to Defaults
           </button>
         </div>
       </div>
@@ -152,54 +154,60 @@ export default function FleetConfigView() {
         }}
       >
         <div className="kpi-card" style={{ borderRight: '1px solid var(--border)' }}>
-          <div className="kpi-title">{t('fleetKpiSize')}</div>
+          <div className="kpi-title">Active Fleet Size</div>
           <div className="kpi-value">
             {activeVehicles.length} / {fleet.length}
           </div>
-          <div className="kpi-sub">{t('fleetKpiSizeSub')}</div>
+          <div className="kpi-sub">Vehicles ready for dispatch</div>
         </div>
         <div className="kpi-card" style={{ borderRight: '1px solid var(--border)' }}>
-          <div className="kpi-title">{t('fleetKpiCap')}</div>
+          <div className="kpi-title">Total Active Capacity</div>
           <div className="kpi-value">{totalCapacity}</div>
-          <div className="kpi-sub">{t('fleetKpiCapSub')}</div>
+          <div className="kpi-sub">Sum of active vehicle loads</div>
         </div>
         <div className="kpi-card" style={{ borderRight: '1px solid var(--border)' }}>
-          <div className="kpi-title">{t('fleetKpiSpeed')}</div>
+          <div className="kpi-title">Average Speed Multiplier</div>
           <div className="kpi-value">{avgSpeed}x</div>
-          <div className="kpi-sub">{t('fleetKpiSpeedSub')}</div>
+          <div className="kpi-sub">Efficiency across active drivers</div>
         </div>
         <div className="kpi-card">
-          <div className="kpi-title">{t('fleetKpiStatus')}</div>
+          <div className="kpi-title">Fleet Status Check</div>
           <div
             className={`kpi-value ${activeVehicles.length > 0 ? 'highlight-emerald' : 'text-danger'}`}
             style={{ fontWeight: 700 }}
           >
-            {activeVehicles.length > 0 ? t('fleetReady') : t('fleetNoVehicles')}
+            {activeVehicles.length > 0 ? 'READY' : 'NO VEHICLES'}
           </div>
           <div className="kpi-sub">
-            {maintenanceCount} {t('fleetInMaintenance')}
+            {maintenanceCount} vehicle{maintenanceCount !== 1 ? 's' : ''} in maintenance
           </div>
         </div>
       </section>
 
-      {/* The scroll container carries no padding and no hover transform: the
-          sticky header docks to the top of *this* box, so anything between it
-          and the table edge would show through as the rows scroll past. */}
-      <div className="fleet-table-scroll">
-        <table className="saas-table fleet-config-table">
+      <div
+        className="saas-card"
+        style={{
+          marginTop: '16px',
+          overflow: 'auto',
+          flex: 1,
+          border: '1px solid var(--border)',
+          borderRadius: 'var(--r)',
+        }}
+      >
+        <table className="saas-table fleet-config-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
             <tr>
               <th style={{ width: '60px' }}>ID</th>
-              <th>{t('thDriverName')}</th>
-              <th style={{ width: '110px' }}>{t('thCapacity')}</th>
-              <th style={{ width: '90px' }}>{t('thSpeed')}</th>
-              <th style={{ width: '110px' }}>{t('thShiftStart')}</th>
-              <th style={{ width: '110px' }}>{t('thShiftEnd')}</th>
-              <th style={{ width: '110px' }}>{t('thBreakStart')}</th>
-              <th style={{ width: '90px' }}>{t('thBreak')}</th>
-              <th style={{ width: '130px' }}>{t('thDriverSkills')}</th>
-              <th style={{ width: '120px' }}>{t('thStatus')}</th>
-              <th style={{ width: '70px', textAlign: 'center' }}>{t('thActions')}</th>
+              <th>Driver Name</th>
+              <th style={{ width: '110px' }}>Capacity</th>
+              <th style={{ width: '90px' }}>Speed</th>
+              <th style={{ width: '110px' }}>Shift Start</th>
+              <th style={{ width: '110px' }}>Shift End</th>
+              <th style={{ width: '110px' }}>Break Start</th>
+              <th style={{ width: '90px' }}>Break</th>
+              <th style={{ width: '130px' }}>Driver Skills</th>
+              <th style={{ width: '120px' }}>Status</th>
+              <th style={{ width: '70px', textAlign: 'center' }}>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -279,20 +287,16 @@ export default function FleetConfigView() {
                     />
                   </td>
                   <td>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <select
-                        className="table-inline-input fleet-input"
-                        value={veh.skills}
-                        onChange={(e) => handleFieldChange(index, 'skills', e.target.value)}
-                        style={{ fontWeight: 500, width: '120px' }}
-                      >
-                        <option value="None">None (Standard)</option>
-                        <option value="Refrigerated">Refrigerated</option>
-                        <option value="Hazmat">Hazmat</option>
-                        <option value="Express">Express</option>
-                      </select>
-                      <div dangerouslySetInnerHTML={{ __html: createSkillBadge(veh.skills) }} />
-                    </div>
+                    <select
+                      className="table-inline-input fleet-input"
+                      value={veh.skills}
+                      onChange={(e) => handleFieldChange(index, 'skills', e.target.value)}
+                      style={{ fontWeight: 500 }}
+                    >
+                      <option value="None">None (Standard)</option>
+                      <option value="Refrigerated">Refrigerated</option>
+                      <option value="Hazmat">Hazmat</option>
+                    </select>
                   </td>
                   <td>
                     <select
@@ -327,7 +331,7 @@ export default function FleetConfigView() {
             {fleet.length === 0 && (
               <tr>
                 <td colSpan="11" className="text-center text-muted" style={{ padding: '32px' }}>
-                  {t('fleetEmptyMsg')}
+                  No vehicles in fleet. Click "+ Add Vehicle" to register a driver.
                 </td>
               </tr>
             )}

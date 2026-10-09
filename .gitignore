@@ -115,3 +115,11 @@ prompt_ai.md
 extracted_rId*
 test_keynote_export*
 audit_bib_results.json
+
+# Historical material is preserved at tag research-history-before-cleanup.
+/docs/legacy_archive/
+/docs/overleaf_bundle/
+/posters/archive/
+/archive/local-manifest.json
+/logs/
+/posters/generated/

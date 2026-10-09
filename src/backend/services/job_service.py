@@ -120,6 +120,11 @@ class JobService:
         if len(body.customers) < 2:
             raise HTTPException(status_code=400, detail="Need depot and customer")
 
+        from services.solver_service import device_summary
+
+        dev_info = device_summary()
+        device_name = f"GPU ({dev_info.get('device_name')})" if dev_info.get("device") == "cuda" else "CPU"
+
         job_id = str(uuid4())
         now = self._now()
         state = JobState(
@@ -129,6 +134,7 @@ class JobService:
                 "phase": "queued",
                 "created_at": now,
                 "queued_at": now,
+                "device": device_name,
                 "queue_size_on_submit": job_repo.queue.qsize(),
                 "events": [{"ts": now, "stage": "queued", "message": "Job submitted"}],
             },
@@ -167,29 +173,6 @@ class JobService:
         window = max(1, min(int(hours), 168))
         now = int(self._now())
         start = now - window * 3600
-
-        if not job_repo.jobs:
-            import random
-
-            random.seed(42)
-            for i in range(40):
-                created_offset = random.randint(0, window * 3600)
-                created_at = start + created_offset
-                status = "done" if random.random() < 0.92 else "failed"
-                wait_sec = random.uniform(0.2, 2.5)
-                solver_sec = random.uniform(0.8, 8.5)
-                job_id = f"seed-job-{i}"
-                job_repo.jobs[job_id] = JobState(
-                    status=status,
-                    payload=None,
-                    result=None,
-                    error="Optimization timeout" if status == "failed" else None,
-                    debug={
-                        "created_at": created_at,
-                        "queue_wait_sec": wait_sec,
-                        "solver_duration_sec": solver_sec,
-                    },
-                )
 
         buckets: list[dict[str, Any]] = []
 

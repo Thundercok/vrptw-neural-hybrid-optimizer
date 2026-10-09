@@ -9,7 +9,6 @@ import { solveDemo } from './DemoEngine.js';
 import { FleetController } from './FleetController.js';
 import { SettingsController } from './SettingsController.js';
 import { GanttController } from './GanttController.js';
-import { createSkillBadge, SKILL_CONFIG } from './skillUtils.js';
 
 const APP_COPY = {
   en: {
@@ -1404,6 +1403,7 @@ export class App {
       const hasCurrentValue = datasets.some((ds) => ds.name === currentValue);
       this.el.datasetSelect.value = hasCurrentValue ? currentValue : 'demo';
     } catch (error) {
+      this.setStatus('Could not load Solomon list. Keeping demo dataset only.', 'error');
       this.toast('Solomon List Failed', this.parseApiError(error), 'error');
     }
   }
@@ -2354,7 +2354,7 @@ export class App {
     }
 
     if (field === 'skill') {
-      const allowed = Object.keys(SKILL_CONFIG);
+      const allowed = ['None', 'Refrigerated', 'Hazmat'];
       const matched = allowed.find((a) => a.toLowerCase() === nextValue.toLowerCase()) || 'None';
       customer.skill = matched;
       this.renderCustomers();
@@ -3765,7 +3765,16 @@ export class App {
           }
           td.appendChild(badge);
         } else if (field === 'skill' && !c.isDepot) {
-          td.innerHTML = createSkillBadge(value);
+          td.textContent = '';
+          const badge = document.createElement('span');
+          badge.textContent = value;
+          if (value !== 'None') {
+            badge.style =
+              'background: rgba(16, 185, 129, 0.1); color: var(--success); border: 1px solid rgba(16,185,129,0.2); font-weight: 600; padding: 2px 6px; border-radius: 4px; font-size: 10px; display: inline-block;';
+          } else {
+            badge.style = 'color: var(--text-muted); font-size: 10px;';
+          }
+          td.appendChild(badge);
         } else {
           td.textContent = value;
         }
@@ -3813,10 +3822,6 @@ export class App {
 
       const payload = {
         mode: this.state.mode,
-        dataset: this.state.mode === 'sample' ? this.el.datasetSelect?.value || 'demo' : '',
-        preset: this.state.preset || 'fast',
-        pretrained_transfer: Boolean(this.state.pretrainedTransfer),
-        use_gnn: Boolean(this.state.useGnn !== false),
         fleet: { vehicles: this.state.vehicles, capacity: this.state.capacity },
         customers: this.state.customers,
       };
@@ -3991,9 +3996,9 @@ export class App {
 
     this.mapController.initSimulation(result);
 
-    // Dynamic map view options in the KPI strip's overlay dropdown
-    const overlaySelect = document.getElementById('map-view-select');
-    if (overlaySelect) {
+    // Dynamic map view radios in the DOM
+    const toggleContainer = document.querySelector('.map-toggles');
+    if (toggleContainer) {
       const labels = {
         ddqn: 'Hybrid DDQN (Transfer)',
         alns: 'ALNS Base',
@@ -4005,22 +4010,23 @@ export class App {
       };
 
       let html = '';
-      const algoNames = Object.keys(result);
-      const current = this.mapController.currentView;
-      const currentSelected = algoNames.includes(current) ? current : algoNames[0];
+      const currentSelected = this.mapController.currentView || 'ddqn';
 
-      algoNames.forEach((algoName) => {
+      Object.keys(result).forEach((algoName) => {
+        const isChecked = algoName === currentSelected ? 'checked' : '';
         const label = labels[algoName] || algoName;
-        html += `<option value="${algoName}">${label}</option>`;
+        html += `<label style="margin-right: 12px; display: inline-flex; align-items: center; gap: 4px; font-weight: 500; cursor: pointer; color: var(--text-main); font-size: 11px;">
+          <input type="radio" name="map_view" value="${algoName}" ${isChecked} /> ${label}
+        </label>`;
       });
-      overlaySelect.innerHTML = html;
-      overlaySelect.value = currentSelected;
+      toggleContainer.innerHTML = html;
 
-      // Assigned rather than added: the select survives re-renders, so stacking
-      // listeners here would fire switchView once per past solve.
-      overlaySelect.onchange = (e) => {
-        this.mapController.switchView(e.target.value);
-      };
+      const radios = toggleContainer.querySelectorAll('input[name="map_view"]');
+      radios.forEach((radio) => {
+        radio.addEventListener('change', (e) => {
+          this.mapController.switchView(e.target.value);
+        });
+      });
     }
 
     const initialView = result.ddqn ? 'ddqn' : Object.keys(result)[0];
