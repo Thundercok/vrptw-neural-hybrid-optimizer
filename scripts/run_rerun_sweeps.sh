@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# V2 re-run sweeps, two protocols (see plan.md):
+# Re-run sweeps with iteration-bounded and time-bounded protocols:
 #   S5  iteration-bounded (--no-time-limit)  -> results/rerun_iters/   Solomon + H200 + H400
 #   S6  time-bounded (anytime default)       -> results/rerun_time/    H600 + H800 + H1000
 # Per-shard parameters mirror run_full_production.sh. Continues past a failed

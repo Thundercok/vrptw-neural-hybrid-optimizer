@@ -1,74 +1,68 @@
 # VRPTW Neural Hybrid Solver
 
-Research repository for a VRPTW NCKH report, reproducible experiments, and an
-optional dispatch demo. All development is consolidated on `main`.
+ALNS and DDQN-based solvers for the vehicle routing problem with time windows.
 
-**Start here:** [Paper (PDF)](docs/manuscript.pdf) |
-[Paper source](docs/manuscript.tex) |
-[Overleaf bundle](docs/overleaf_ieee_access.zip) |
-[Research workflow](docs/RESEARCH_PIPELINE.md) |
+[Paper](docs/manuscript.pdf) | [LaTeX source](docs/manuscript.tex) |
+[Overleaf sources](docs/overleaf_ieee_access.zip) |
 [Poster](posters/Poster_VRPTW_NCKHSV_2026.pdf)
 
-## Project Map
+## Files
 
-| Location | Contents |
+| Path | Contents |
 | --- | --- |
-| `src/vrptw/` | Solver, configuration, training, and feasibility checks |
-| `data/` | Solomon/Homberger instances and reference BKS data |
-| `scripts/` | Experiment runners, statistics, figure/table generation, and audits |
-| `results/` | Publication evidence and new, ignored experiment outputs |
-| `docs/` | Manuscript, bibliography, figures, and paper build tools |
-| `posters/` | Current poster and its generators |
-| `tests/` | Solver regression tests and optional browser tests |
-| `src/backend/`, `src/frontend/` | FastAPI/Vite demonstration app |
-| `archive/` | History index, restoration instructions, and local experiment archive |
+| `src/vrptw/` | Solvers, configuration, and model training |
+| `data/` | Benchmark instances and [reference values](data/reference/sintef_official_bks.json) |
+| `scripts/` | Experiments, statistics, figures, tables, and audits |
+| `results/` | Recorded publication CSVs; new runs are ignored by Git |
+| `docs/`, `posters/` | Paper and poster sources and outputs |
+| `tests/` | Solver tests and optional browser tests |
+| `src/backend/`, `src/frontend/` | Dispatch demo |
+| `archive/` | Historical file index and local experiment outputs |
 
 ## Research
 
-Requires Python 3.11 or 3.12 and `uv`. Paper compilation also requires
-`pdflatex` on PATH; the supplied PDF and Overleaf ZIP can be read without it.
+Requires Python 3.11 or 3.12 and `uv`; PDF compilation requires `pdflatex`.
 
 ```sh
 uv sync --all-extras --all-groups
-make research-plan       # List available stages
-make research-smoke      # Regression tests and a small synthetic solve
-make research-quick      # New exploratory experiment; not publication evidence
-make research-tables     # Tables from the recorded publication CSV
-make research-audit      # Check manuscript claims against recorded data
-make research-paper      # Compile PDF and package Overleaf sources
+make test
+make research-quick      # Exploratory runs in results/research_pipeline/quick/
+make research-tables    # Snippets from the recorded publication CSV
+make research-figures
+make research-audit
+make research-paper     # PDF and Overleaf ZIP
 ```
 
-Use independent cold starts, equal experiment budgets, and matched fleet sizes
-for distance comparisons. See [the workflow](docs/RESEARCH_PIPELINE.md) for inputs
-and output locations. Benchmark caches are archived so they cannot silently
-warm-start new runs.
-
-## Optional Demo
-
-Requires Node.js 20+. Run the API and frontend in separate terminals:
+Tables and figures use `results/ultimate-publication-suite/combined_clean.csv`.
+To generate tables from another sweep:
 
 ```sh
-make dev                 # API: http://127.0.0.1:8000
-npm ci
-npm run dev -- --port 5050 --host 127.0.0.1
+uv run python scripts/research_pipeline.py --stage tables --sweep-csv path/to/combined.csv
 ```
 
-Open http://127.0.0.1:5050/app.html. The merged demo supports anonymous local
-use; set `DEMO_AUTH_BYPASS=false` and configure Firebase for authenticated use.
-Deployment configuration remains at the root for Docker/Vercel compatibility.
+Integrate generated table snippets into the manuscript before rebuilding it.
+Use independent cold starts and equal budgets; compare distance at matched
+fleet sizes. The last paper audit reported 39 table-format and text-claim
+discrepancies. `research-all` stops at that failed audit.
 
-## History
+## Demo
 
-Old experiments and duplicate publication bundles are preserved at Git tag
-`research-history-before-cleanup`, indexed by original path and SHA-256 checksum
-in `archive/history-manifest.json`. Previously local-only outputs are preserved
-in `archive/local-experiments.zip`. [Archive instructions](archive/README.md) explain restoration.
-The solver's GNN training tools may need the archived elite plans restored.
+Requires Node.js 20+. `npm ci && make dev-all` starts the API on port 8000 and
+the frontend at http://127.0.0.1:5050/app.html. Anonymous demo access is enabled
+by default; set `DEMO_AUTH_BYPASS=false` and configure Firebase for authentication.
 
-CI on `main` runs solver regression tests and builds the demo. Large benchmark
-sweeps, browser/emulator tests, and deployment remain explicit commands.
-See [validation notes](docs/VALIDATION.md) for the outstanding publication-audit
-discrepancies; the manuscript has not been certified by that audit.
+## Historical Files
 
-License: [MIT](LICENSE). Cite the authors and title from the manuscript when
-using this research.
+Tag `research-history-before-cleanup` preserves old tracked outputs.
+`archive/history-manifest.json` records their paths and SHA-256 checksums.
+Export a folder with `git archive`; extract the local-only archive separately:
+
+```sh
+git archive --format=zip --output=/tmp/vrptw-history.zip research-history-before-cleanup results
+python -m zipfile -e archive/local-experiments.zip /tmp/vrptw-local-history
+```
+
+GNN retraining may need historical elite plans. Keep restored caches out of
+cold-start benchmarks.
+
+[MIT license](LICENSE). Use the manuscript's author list and title for citations.

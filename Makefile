@@ -31,7 +31,7 @@ dev-all:
 test:
 	PYTHONPATH=./src uv run pytest tests/ -v
 
-# ── Firebase Emulator Suite ──────────────────────────────────────────
+# Firebase emulators
 # Auth (9099) + Firestore (8080) + Hosting/SPA (5050) + Emulator UI (4000)
 
 dist:
@@ -59,7 +59,7 @@ emulators: dist
 	@echo "Emulators running. Press Ctrl+C to stop."
 	@wait
 
-# ── E2E Testing (Playwright + Emulators) ─────────────────────────────
+# Browser tests
 
 test-e2e: dist
 	@echo "Flushing old background process configurations..."
@@ -103,7 +103,7 @@ test-e2e: dist
 	pkill -f "[u]vicorn.*main:app" 2>/dev/null || true; \
 	exit $$EXIT_CODE
 
-# ── Docker Compose Stack Automation ────────────────────────────────
+# Docker
 docker-up:
 	docker compose up --build
 
@@ -113,7 +113,7 @@ docker-down:
 docker-logs:
 	docker compose logs -f
 
-# ── Neural Hybrid Solver & GNN Targets ──────────────────────────────
+# Solver commands
 train-gnn:
 	PYTHONPATH=./src python3 -m vrptw.train_gnn
 
