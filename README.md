@@ -3,7 +3,6 @@
 ALNS and DDQN-based solvers for the vehicle routing problem with time windows.
 
 [Paper](docs/manuscript.pdf) | [LaTeX source](docs/manuscript.tex) |
-[Overleaf sources](docs/overleaf_ieee_access.zip) |
 [Poster](posters/Poster_VRPTW_NCKHSV_2026.pdf)
 
 ## Files
@@ -14,10 +13,14 @@ ALNS and DDQN-based solvers for the vehicle routing problem with time windows.
 | `data/` | Benchmark instances and [reference values](data/reference/sintef_official_bks.json) |
 | `scripts/` | Experiments, statistics, figures, tables, and audits |
 | `results/` | Recorded publication CSVs; new runs are ignored by Git |
-| `docs/`, `posters/` | Paper and poster sources and outputs |
+| `docs/`, `posters/` | Paper and poster sources, required assets, and final PDFs |
 | `tests/` | Solver tests and optional browser tests |
 | `src/backend/`, `src/frontend/` | Dispatch demo |
-| `archive/` | Historical file index and local experiment outputs |
+| `archive/` | Historical file index; experiment archives stay outside Git |
+
+Start with `src/vrptw/__main__.py` for the solver CLI and
+`scripts/research_pipeline.py` for the supported research workflow.
+The dispatch demo is optional, not part of solver benchmarking.
 
 ## Research
 
@@ -32,6 +35,16 @@ make research-figures
 make research-audit
 make research-paper     # PDF and Overleaf ZIP
 ```
+
+The pipeline uses `run_paper_benchmarks.py`, `make_paper_tables.py`,
+`generate_paper_figures.py`, `audit_paper_integrity.py`, and `docs/build_paper.py`.
+Other scripts provide specific ablations, extended benchmarks, or deployment
+tools; they are not additional required setup steps.
+
+`make research-paper` generates `docs/overleaf_ieee_access.zip` locally.
+`make poster` regenerates the poster HTML, PNG, and PPTX exports and copies the
+deliverables to `../workspace-artifacts/`. Generated ZIP/HTML/PNG/PPTX exports
+are ignored; only the final paper and poster PDFs are versioned.
 
 Tables and figures use `results/ultimate-publication-suite/combined_clean.csv`.
 To generate tables from another sweep:
@@ -55,12 +68,24 @@ by default; set `DEMO_AUTH_BYPASS=false` and configure Firebase for authenticati
 
 Tag `research-history-before-cleanup` preserves old tracked outputs.
 `archive/history-manifest.json` records their paths and SHA-256 checksums.
-Export a folder with `git archive`; extract the local-only archive separately:
+Export a folder with `git archive`:
 
 ```sh
 git archive --format=zip --output=/tmp/vrptw-history.zip research-history-before-cleanup results
-python -m zipfile -e archive/local-experiments.zip /tmp/vrptw-local-history
 ```
+
+Local material removed in the workspace cleanup is preserved under
+`../workspace-artifacts/repo-cleanup/`, with original relative paths and a
+SHA-256 inventory in `manifest.json`. It includes visual experiments, redundant
+dataset/model copies, poster exports, one-off diagnostic/manuscript scripts,
+and `archive/local-experiments.zip`. Restore a script to its original path
+before running it, since these scripts resolve inputs relative to the repo.
+`config-manifest.json` inventories the retired editor/MCP configuration,
+Firebase Dockerfile, and duplicate development launcher in the same archive.
+
+The main model checkpoint is `rl_alns_dr_v15.safetensors` at the repository root.
+Canonical benchmark instances live in `data/Solomon/` and
+`data/Gehring_Homberger/`; do not maintain separate sweep copies.
 
 GNN retraining may need historical elite plans. Keep restored caches out of
 cold-start benchmarks.
