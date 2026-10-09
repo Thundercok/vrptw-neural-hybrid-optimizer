@@ -45,6 +45,8 @@ def test_dynamic_insertion_single_customer_feasible(r101_inst: Inst) -> None:
     assert initial_plan.feasible
 
     inserter = DynamicCustomerInserter(r101_inst)
+    # Warm up Numba JIT compilation before latency SLA check
+    _ = inserter.insert(initial_plan, removed_node)
     result = inserter.insert(initial_plan, removed_node)
 
     assert result.success is True

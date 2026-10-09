@@ -9,7 +9,7 @@ from vrptw.rl import EliteArchive
 
 
 def load_inst_rc202() -> Inst:
-    file_path = "data/Solomon/RC202.txt"
+    file_path = "data/Solomon/rc202.txt"
     assert os.path.exists(file_path), f"Solomon file not found at {file_path}"
     with open(file_path, encoding="utf-8") as fh:
         lines = fh.readlines()

@@ -16,7 +16,7 @@ from vrptw.solvers import ALNSSolver
 def test_cpsat_exact_refinement_rc101():
     from vrptw.local_search import refine_plan_cpsat
 
-    inst = load_solomon_instance("data/Solomon/RC101.txt")
+    inst = load_solomon_instance("data/Solomon/rc101.txt")
     cfg = Config(alns_iterations=200, hybrid_iterations=200)
     solver = ALNSSolver(inst, cfg)
     plan, _ = solver.solve(seed=42)
