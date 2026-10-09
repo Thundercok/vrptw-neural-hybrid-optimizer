@@ -5,16 +5,6 @@ description = "Neural Hybrid DDQN-ALNS with GNN Edge-Heatmap Guidance for VRPTW"
 readme = "README.md"
 requires-python = ">=3.11,<3.13"
 dependencies = [
-    "fastapi>=0.116",
-    "uvicorn[standard]>=0.35",
-    "httpx>=0.28",
-    "pydantic>=2.11",
-    "firebase-admin>=7.0",
-    "python-dotenv>=1.0",
-    "passlib[argon2]>=1.7.4",
-    "argon2-cffi>=23.1",
-    "slowapi>=0.1.9",
-    "sentry-sdk[fastapi]>=2.0",
     "numpy>=1.26,<2.4",  # numba ceiling; V2 validated under numpy 2.3.5
     "pandas>=2.2",
     "scipy>=1.13",
@@ -22,7 +12,6 @@ dependencies = [
     "torch>=2.4",
     "safetensors>=0.4",
     "matplotlib>=3.8",
-    "python-multipart>=0.0.7",
     "ortools>=9.15.6755",
 ]
 
@@ -34,6 +23,19 @@ build-backend = "setuptools.build_meta"
 where = ["src"]
 
 [project.optional-dependencies]
+demo = [
+    "fastapi>=0.116",
+    "uvicorn[standard]>=0.35",
+    "httpx>=0.28",
+    "pydantic>=2.11",
+    "firebase-admin>=7.0",
+    "python-dotenv>=1.0",
+    "passlib[argon2]>=1.7.4",
+    "argon2-cffi>=23.1",
+    "slowapi>=0.1.9",
+    "sentry-sdk[fastapi]>=2.0",
+    "python-multipart>=0.0.7",
+]
 dev = [
     "ruff>=0.7",
     "pytest>=8.0",

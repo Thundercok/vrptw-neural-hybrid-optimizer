@@ -1,4 +1,6 @@
 .DEFAULT_GOAL := help
+BENCHMARK_MODE ?= quick
+BENCHMARK_ARGS ?=
 RESEARCH_TARGETS := $(addprefix research-,plan smoke quick tables figures paper audit all)
 .PHONY: help dev dev-emulator test dist emulators test-e2e dev-all paper poster $(RESEARCH_TARGETS)
 
@@ -7,29 +9,29 @@ help:
 	@echo "Artifacts: make paper | poster    Demo: make dev-all    Tests: make test"
 
 poster:
-	uv run python posters/build_official_school_poster.py
+	uv run --extra dev python posters/build_official_school_poster.py
 
 paper:
-	@python3 docs/build_paper.py
+	@uv run python docs/build_paper.py
 
 $(RESEARCH_TARGETS): research-%:
-	PYTHONPATH=./src python3 scripts/research_pipeline.py --stage $*
+	PYTHONPATH=./src uv run python scripts/research_pipeline.py --stage $*
 
 dev:
-	PYTHONPATH=./src/backend uv run uvicorn main:app --host 127.0.0.1 --port 8000 --reload --app-dir src/backend
+	PYTHONPATH=./src/backend uv run --extra demo uvicorn main:app --host 127.0.0.1 --port 8000 --reload --app-dir src/backend
 
 dev-emulator:
-	FIREBASE_AUTH_EMULATOR_HOST=127.0.0.1:9099 PYTHONPATH=./src/backend uv run uvicorn main:app --host 127.0.0.1 --port 8000 --reload --app-dir src/backend
+	FIREBASE_AUTH_EMULATOR_HOST=127.0.0.1:9099 PYTHONPATH=./src/backend uv run --extra demo uvicorn main:app --host 127.0.0.1 --port 8000 --reload --app-dir src/backend
 
 dev-all:
 	@if [ ! -d "node_modules" ]; then \
 		echo "node_modules not found. Installing frontend dependencies..."; \
-		npm install; \
+		npm ci; \
 	fi
 	@npm run dev:all
 
 test:
-	PYTHONPATH=./src uv run pytest tests/ -v
+	PYTHONPATH=./src uv run --extra dev pytest tests/ -v
 
 # Firebase emulators
 # Auth (9099) + Firestore (8080) + Hosting/SPA (5050) + Emulator UI (4000)
@@ -88,7 +90,7 @@ test-e2e: dist
 		> /dev/null 2>&1 || true
 	@echo "Starting backend with emulator auth..."
 	@TESTING=true FIREBASE_AUTH_EMULATOR_HOST=127.0.0.1:9099 PYTHONPATH=./src/backend \
-		uv run uvicorn src.backend.main:app --host 127.0.0.1 --port 8000 &
+		uv run --extra demo --extra dev uvicorn src.backend.main:app --host 127.0.0.1 --port 8000 &
 	@for i in $$(seq 1 15); do \
 		nc -z 127.0.0.1 8000 2>/dev/null && echo "  Backend ready." && break; \
 		echo "  Waiting for backend... ($$i/15)"; \
@@ -96,7 +98,7 @@ test-e2e: dist
 	done
 	@echo "Running Playwright E2E tests..."
 	FIREBASE_AUTH_EMULATOR_HOST=127.0.0.1:9099 PYTHONPATH=./src/backend \
-		uv run pytest tests/e2e/ -v -s; \
+		uv run --extra demo --extra dev pytest tests/e2e/ -v -s; \
 	EXIT_CODE=$$?; \
 	echo "Killing emulators and backend..."; \
 	pkill -f "[f]irebase.*emulators" 2>/dev/null || true; \
@@ -115,19 +117,13 @@ docker-logs:
 
 # Solver commands
 train-gnn:
-	PYTHONPATH=./src python3 -m vrptw.train_gnn
+	PYTHONPATH=./src uv run python -m vrptw.train_gnn
 
 smoke-test:
-	PYTHONPATH=./src python3 -m vrptw smoke-test --nodes 25 --dist RC
+	PYTHONPATH=./src uv run python -m vrptw smoke-test --nodes 25 --dist RC
 
 solve-c101:
-	PYTHONPATH=./src python3 -m vrptw solve data/Solomon/C101.txt --algo GNN-Hybrid-DDQN --iters 150 --early-stop 50
+	PYTHONPATH=./src uv run python -m vrptw solve data/Solomon/c101.txt --algo Hybrid-DDQN --iters 150 --early-stop 50
 
 benchmark:
-	PYTHONPATH=./src python3 scripts/benchmark.py run
-
-benchmark-status:
-	PYTHONPATH=./src python3 scripts/benchmark.py status
-
-benchmark-analyze:
-	PYTHONPATH=./src python3 scripts/benchmark.py analyze
+	PYTHONPATH=./src uv run python scripts/run_paper_benchmarks.py --mode $(BENCHMARK_MODE) $(BENCHMARK_ARGS)

@@ -55,7 +55,7 @@ def _commands(args: argparse.Namespace) -> dict[str, list[PipelineCommand]]:
             PipelineCommand(
                 "pytest",
                 "Run the solver regression suite, excluding slower e2e tests.",
-                ["uv", "run", "pytest", "tests/", "-v"],
+                ["uv", "run", "--extra", "dev", "pytest", "tests/", "-v"],
             ),
             PipelineCommand(
                 "cli-smoke",

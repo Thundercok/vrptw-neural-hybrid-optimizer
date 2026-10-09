@@ -1971,28 +1971,30 @@ name = "vrptw-neural-hybrid-optimizer"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
-    { name = "argon2-cffi" },
-    { name = "fastapi" },
-    { name = "firebase-admin" },
-    { name = "httpx" },
     { name = "matplotlib" },
     { name = "numba" },
     { name = "numpy" },
     { name = "ortools" },
     { name = "pandas" },
+    { name = "safetensors" },
+    { name = "scipy" },
+    { name = "torch" },
+]
+
+[package.optional-dependencies]
+demo = [
+    { name = "argon2-cffi" },
+    { name = "fastapi" },
+    { name = "firebase-admin" },
+    { name = "httpx" },
     { name = "passlib", extra = ["argon2"] },
     { name = "pydantic" },
     { name = "python-dotenv" },
     { name = "python-multipart" },
-    { name = "safetensors" },
-    { name = "scipy" },
     { name = "sentry-sdk", extra = ["fastapi"] },
     { name = "slowapi" },
-    { name = "torch" },
     { name = "uvicorn", extra = ["standard"] },
 ]
-
-[package.optional-dependencies]
 dev = [
     { name = "playwright" },
     { name = "pytest" },
@@ -2008,32 +2010,32 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "argon2-cffi", specifier = ">=23.1" },
-    { name = "fastapi", specifier = ">=0.116" },
-    { name = "firebase-admin", specifier = ">=7.0" },
-    { name = "httpx", specifier = ">=0.28" },
+    { name = "argon2-cffi", marker = "extra == 'demo'", specifier = ">=23.1" },
+    { name = "fastapi", marker = "extra == 'demo'", specifier = ">=0.116" },
+    { name = "firebase-admin", marker = "extra == 'demo'", specifier = ">=7.0" },
+    { name = "httpx", marker = "extra == 'demo'", specifier = ">=0.28" },
     { name = "matplotlib", specifier = ">=3.8" },
     { name = "numba", specifier = ">=0.60" },
     { name = "numpy", specifier = ">=1.26,<2.4" },
     { name = "ortools", specifier = ">=9.15.6755" },
     { name = "pandas", specifier = ">=2.2" },
-    { name = "passlib", extras = ["argon2"], specifier = ">=1.7.4" },
+    { name = "passlib", extras = ["argon2"], marker = "extra == 'demo'", specifier = ">=1.7.4" },
     { name = "playwright", marker = "extra == 'dev'", specifier = ">=1.41" },
-    { name = "pydantic", specifier = ">=2.11" },
+    { name = "pydantic", marker = "extra == 'demo'", specifier = ">=2.11" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0" },
     { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=0.23" },
     { name = "pytest-playwright", marker = "extra == 'dev'", specifier = ">=0.4" },
-    { name = "python-dotenv", specifier = ">=1.0" },
-    { name = "python-multipart", specifier = ">=0.0.7" },
+    { name = "python-dotenv", marker = "extra == 'demo'", specifier = ">=1.0" },
+    { name = "python-multipart", marker = "extra == 'demo'", specifier = ">=0.0.7" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.7" },
     { name = "safetensors", specifier = ">=0.4" },
     { name = "scipy", specifier = ">=1.13" },
-    { name = "sentry-sdk", extras = ["fastapi"], specifier = ">=2.0" },
-    { name = "slowapi", specifier = ">=0.1.9" },
+    { name = "sentry-sdk", extras = ["fastapi"], marker = "extra == 'demo'", specifier = ">=2.0" },
+    { name = "slowapi", marker = "extra == 'demo'", specifier = ">=0.1.9" },
     { name = "torch", specifier = ">=2.4" },
-    { name = "uvicorn", extras = ["standard"], specifier = ">=0.35" },
+    { name = "uvicorn", extras = ["standard"], marker = "extra == 'demo'", specifier = ">=0.35" },
 ]
-provides-extras = ["dev"]
+provides-extras = ["demo", "dev"]
 
 [package.metadata.requires-dev]
 dev = [{ name = "python-pptx", specifier = ">=1.0.2" }]

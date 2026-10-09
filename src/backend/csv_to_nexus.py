@@ -9,7 +9,7 @@ Usage:
         --out   logs/results-v17/nexus_demo.json \
         --version v17
 
-Frontend contract (App.js buildSummaryPairMap):
+Legacy summary-pair contract:
     row.algo === 'ALNS'      → pair.alns
     row.algo === 'DDQN-ALNS' → pair.ddqn
 
