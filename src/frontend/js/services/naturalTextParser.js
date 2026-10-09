@@ -55,7 +55,7 @@ export function parseNaturalText(text) {
     }
 
     // Check for numbered customer start (e.g. "1.", "1/", "[1]", etc.)
-    const numStartMatch = line.match(/^\[?\d+\]?[\.\/\-]?$/);
+    const numStartMatch = line.match(/^\[?\d+\]?[./-]?$/);
     if (numStartMatch) {
       if (currentCustomer) {
         customers.push(currentCustomer);
@@ -67,7 +67,7 @@ export function parseNaturalText(text) {
 
     if (parsingMode === 'depot') {
       // Append line to depot address unless we hit another marker
-      if (/^(khách hàng|customers)$/i.test(line) || /^\[?\d+\]?[\.\/\-]?$/.test(line)) {
+      if (/^(khách hàng|customers)$/i.test(line) || /^\[?\d+\]?[./-]?$/.test(line)) {
         parsingMode = 'none';
         i--; // re-evaluate line
       } else {

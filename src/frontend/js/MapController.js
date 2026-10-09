@@ -72,8 +72,7 @@ export class MapController {
     this.ddqnVehicleLayer = L.layerGroup();
     this.alnsVehicleLayer = L.layerGroup();
 
-    // Switch listeners are dynamically updated in App.js when solver runs,
-    // but we setup standard ones here as a fallback.
+    // The dispatch view updates switch listeners when solver results arrive.
     this.currentView = 'ddqn';
   }
 

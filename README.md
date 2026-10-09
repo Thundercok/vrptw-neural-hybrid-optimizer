@@ -27,7 +27,7 @@ The dispatch demo is optional, not part of solver benchmarking.
 Requires Python 3.11 or 3.12 and `uv`; PDF compilation requires `pdflatex`.
 
 ```sh
-uv sync --all-extras --all-groups
+uv sync --extra dev
 make test
 make research-quick      # Exploratory runs in results/research_pipeline/quick/
 make research-tables    # Snippets from the recorded publication CSV
@@ -40,6 +40,16 @@ The pipeline uses `run_paper_benchmarks.py`, `make_paper_tables.py`,
 `generate_paper_figures.py`, `audit_paper_integrity.py`, and `docs/build_paper.py`.
 Other scripts provide specific ablations, extended benchmarks, or deployment
 tools; they are not additional required setup steps.
+
+`make benchmark` uses the same paper runner. For a larger suite:
+
+```sh
+make benchmark BENCHMARK_MODE=all BENCHMARK_ARGS="--workers 4 --iterations 2000"
+```
+
+Use `grand_master_benchmarker.py --help` for the extended 600-1000-customer
+catalog and checkpoint/resume support. Ablation and anytime experiments remain
+separate because they measure different quantities.
 
 `make research-paper` generates `docs/overleaf_ieee_access.zip` locally.
 `make poster` regenerates the poster HTML, PNG, and PPTX exports and copies the
@@ -63,6 +73,11 @@ discrepancies. `research-all` stops at that failed audit.
 Requires Node.js 20+. `npm ci && make dev-all` starts the API on port 8000 and
 the frontend at http://127.0.0.1:5050/app.html. Anonymous demo access is enabled
 by default; set `DEMO_AUTH_BYPASS=false` and configure Firebase for authentication.
+`make dev` enables the Python `demo` extra automatically; research-only installs
+do not need the API/authentication dependencies. For a manual demo installation,
+run `uv sync --extra demo --extra dev`. Frontend lint/format configuration lives
+in `package.json`. Dashboard, authentication, and feedback pages use React;
+the landing page retains its own script. There is no second legacy dashboard.
 
 ## Historical Files
 
@@ -82,6 +97,8 @@ and `archive/local-experiments.zip`. Restore a script to its original path
 before running it, since these scripts resolve inputs relative to the repo.
 `config-manifest.json` inventories the retired editor/MCP configuration,
 Firebase Dockerfile, and duplicate development launcher in the same archive.
+`deep-manifest.json` inventories the unused frontend stack, legacy benchmark
+wrappers, alternative poster asset generators, and consolidated tool configs.
 
 The main model checkpoint is `rl_alns_dr_v15.safetensors` at the repository root.
 Canonical benchmark instances live in `data/Solomon/` and

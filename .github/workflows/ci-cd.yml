@@ -24,8 +24,8 @@ jobs:
       - uses: astral-sh/setup-uv@v5
         with:
           enable-cache: true
-      - run: uv sync --frozen --all-extras --all-groups --python 3.12
-      - run: uv run pytest tests --ignore=tests/e2e -q
+      - run: uv sync --frozen --extra dev --all-groups --python 3.12
+      - run: uv run --extra dev pytest tests --ignore=tests/e2e -q
 
   demo:
     name: Demo Build
