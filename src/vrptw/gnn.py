@@ -243,10 +243,10 @@ def load_edge_predictor(model_path: str, device) -> "GNNEdgePredictor | None":
 
         state_dict = load_file(model_path)
     else:
-        state_dict = torch.load(model_path, map_location=device)
+        state_dict = torch.load(model_path, map_location=device, weights_only=True)
 
     try:
-        model.load_state_dict(state_dict, strict=False)
+        model.load_state_dict(state_dict, strict=True)
     except RuntimeError as e:
         if any(k.startswith("edge_predictor.") for k in state_dict):
             raise RuntimeError(
@@ -254,7 +254,7 @@ def load_edge_predictor(model_path: str, device) -> "GNNEdgePredictor | None":
                 "incompatible with the sparse-kNN edge predictor. Retrain it with "
                 "`python -m vrptw.train_gnn`."
             ) from e
-        raise
+        raise RuntimeError(f"{model_path} is incompatible with the current GNN architecture: {e}") from e
     return model
 
 

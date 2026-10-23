@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import copy
 import hashlib
+import time
 from dataclasses import dataclass
 
 import numpy as np
@@ -288,8 +289,9 @@ def _milp_recombine(
     alpha: float = 0.15,
     _stats: dict | None = None,
     _cache: dict | None = None,
+    deadline: float | None = None,
 ) -> Plan | None:
-    if not MILP_OK or not route_records:
+    if not MILP_OK or not route_records or (deadline is not None and time.perf_counter() >= deadline):
         return None
     _MILP_MAX_COLS = getattr(cfg, "milp_max_cols", 800)
     pool_size_before = len(route_records)
@@ -327,7 +329,10 @@ def _milp_recombine(
             if hit == ():  # cached "no solution"
                 return None
             plan = Plan([list(nodes) for nodes in hit], inst, "SP-RECOMBINE")
-            return plan if plan.feasible and _is_exact_cover(plan) else None
+            valid = plan.feasible and _is_exact_cover(plan)
+            if deadline is not None and time.perf_counter() >= deadline:
+                return None
+            return plan if valid else None
     from scipy.sparse import csc_matrix
 
     rows = []
@@ -364,45 +369,58 @@ def _milp_recombine(
         costs.append(penalty + r_cost)
     costs = np.array(costs)
 
-    result = milp(
-        c=costs,
-        constraints=constraints_sp,
-        integrality=np.ones(n_routes, dtype=int),
-        bounds=Bounds(np.zeros(n_routes), np.ones(n_routes)),
-        options={"time_limit": float(cfg.sp_time_limit), "disp": False},
-    )
+    def solve_milp(constraints):
+        remaining = deadline - time.perf_counter() if deadline is not None else float(cfg.sp_time_limit)
+        if remaining <= 0.0:
+            return None
+        result = milp(
+            c=costs,
+            constraints=constraints,
+            integrality=np.ones(n_routes, dtype=int),
+            bounds=Bounds(np.zeros(n_routes), np.ones(n_routes)),
+            options={"time_limit": min(float(cfg.sp_time_limit), remaining), "disp": False},
+        )
+        if _stats is not None:
+            _stats["calls"] = _stats.get("calls", 0) + 1
+            if result is not None and getattr(result, "status", None) == 1:
+                _stats["timeouts"] = _stats.get("timeouts", 0) + 1
+            _stats["milp_fired"] = True
+            _stats["milp_cadence_skip"] = 0
+        return result
+
+    result = solve_milp(constraints_sp)
+    # The backend's time limit is cooperative: even a usable incumbent can arrive late.
+    if deadline is not None and time.perf_counter() >= deadline:
+        return None
 
     # Try 2: Set Covering Relaxation (ub = inf) + Duplicate Cleanup if exact partitioning failed
     if result is None or result.x is None or getattr(result, "status", 1) != 0:
         constraints_sc = [LinearConstraint(cover, lb=np.ones(inst.n), ub=np.full(inst.n, np.inf))]
         if nv_ceiling is not None:
             constraints_sc.append(LinearConstraint(cover_nv, lb=np.array([0.0]), ub=np.array([float(nv_ceiling)])))
-        result = milp(
-            c=costs,
-            constraints=constraints_sc,
-            integrality=np.ones(n_routes, dtype=int),
-            bounds=Bounds(np.zeros(n_routes), np.ones(n_routes)),
-            options={"time_limit": float(cfg.sp_time_limit), "disp": False},
-        )
-
-    if _stats is not None:
-        _stats["calls"] = _stats.get("calls", 0) + 1
-        if result is not None and getattr(result, "status", None) == 1:
-            _stats["timeouts"] = _stats.get("timeouts", 0) + 1
-        _stats["milp_fired"] = True
-        _stats["milp_cadence_skip"] = 0
+        fallback = solve_milp(constraints_sc)
+        if deadline is not None and time.perf_counter() >= deadline:
+            return None
+        if fallback is not None:
+            result = fallback
 
     if result is None or result.x is None:
         _milp_cache_store(_cache, cache_key, ())
         return None
 
     chosen = [list(route_records[i].nodes) for i, v in enumerate(result.x) if v >= 0.5]
-    if not _is_exact_cover(Plan(chosen, inst, "SP-RECOMBINE")):
+    exact_cover = _is_exact_cover(Plan(chosen, inst, "SP-RECOMBINE"))
+    if deadline is not None and time.perf_counter() >= deadline:
+        return None
+    if not exact_cover:
         chosen = _cleanup_duplicate_nodes(chosen, inst)
 
     plan = Plan(chosen, inst, "SP-RECOMBINE")
+    valid = plan.feasible and _is_exact_cover(plan)
+    if deadline is not None and time.perf_counter() >= deadline:
+        return None
     _milp_cache_store(_cache, cache_key, tuple(tuple(r) for r in chosen))
-    return plan if plan.feasible and _is_exact_cover(plan) else None
+    return plan if valid else None
 
 
 def _cleanup_duplicate_nodes(routes: list[list[int]], inst: Inst) -> list[list[int]]:
@@ -478,10 +496,16 @@ def recombine_with_route_pool(
     heatmap: np.ndarray | None = None,
     alpha: float = 0.15,
     _stats: dict | None = None,
+    deadline: float | None = None,
 ) -> Plan:
+    """Recombine when enabled, before an optional absolute perf-counter deadline."""
+    if not getattr(cfg, "pool_recombine_enabled", True):
+        return incumbent
+    if deadline is not None and time.perf_counter() >= deadline:
+        return incumbent.copy()
     pool.add_plan(incumbent)
     recs = pool.records(incumbent)
-    if not recs:
+    if not recs or (deadline is not None and time.perf_counter() >= deadline):
         return incumbent.copy()
 
     # ── TD-only fast path ────────────────────────────────────────────────────
@@ -495,14 +519,20 @@ def recombine_with_route_pool(
             vehicle_penalty=0.0,
             _stats=_stats,
             _cache=pool._milp_cache,
+            deadline=deadline,
         )
+        if deadline is not None and time.perf_counter() >= deadline:
+            return incumbent.copy()
         if candidate is None:
             candidate = _greedy_recombine(recs, incumbent, nv_ceiling=effective_ceiling)
+        if deadline is not None and time.perf_counter() >= deadline:
+            return incumbent.copy()
         if (
             candidate.feasible
             and _is_exact_cover(candidate)
             and candidate.nv <= effective_ceiling
             and candidate.cost + 1e-6 < incumbent.cost
+            and (deadline is None or time.perf_counter() < deadline)
         ):
             return candidate
         return incumbent.copy()
@@ -523,10 +553,19 @@ def recombine_with_route_pool(
             alpha=alpha,
             _stats=_stats,
             _cache=pool._milp_cache,
+            deadline=deadline,
         )
+        if deadline is not None and time.perf_counter() >= deadline:
+            return incumbent.copy()
         if candidate is None:
             candidate = _greedy_recombine(recs, incumbent, nv_ceiling=effective_ceiling)
-        return candidate if candidate.dominates(incumbent) else incumbent.copy()
+        if deadline is not None and time.perf_counter() >= deadline:
+            return incumbent.copy()
+        return (
+            candidate
+            if candidate.dominates(incumbent) and (deadline is None or time.perf_counter() < deadline)
+            else incumbent.copy()
+        )
 
     # NV-targeted: try multiple penalty scales so one scale finds the partition
     # if it exists in the pool, even when mean_cost * 2.0 is insufficient.
@@ -552,6 +591,8 @@ def recombine_with_route_pool(
     enforce_cert = getattr(cfg, "sp_enforce_certified_penalty", True)
 
     for scale in penalty_scales:
+        if deadline is not None and time.perf_counter() >= deadline:
+            return incumbent.copy()
         grid_value = max(cfg.sp_vehicle_penalty_scale, mean_cost * scale)
         if enforce_cert and scale >= 50.0:
             penalty = max(grid_value, lambda_cert)
@@ -567,7 +608,10 @@ def recombine_with_route_pool(
             alpha=alpha,
             _stats=_stats,
             _cache=pool._milp_cache,
+            deadline=deadline,
         )
+        if deadline is not None and time.perf_counter() >= deadline:
+            return incumbent.copy()
         if candidate is not None and (effective_ceiling is None or candidate.nv <= effective_ceiling):
             # Run LS at the new NV to recover TD
             from .local_search import local_search
@@ -577,20 +621,31 @@ def recombine_with_route_pool(
                 max_passes=1,
                 nv_ceiling=candidate.nv,
                 max_ls_moves=10,
+                deadline=deadline,
             )
+            if deadline is not None and time.perf_counter() >= deadline:
+                return incumbent.copy()
             if (
                 candidate.feasible
                 and _is_exact_cover(candidate)
                 and (effective_ceiling is None or candidate.nv <= effective_ceiling)
+                and (deadline is None or time.perf_counter() < deadline)
             ):
                 return candidate
 
     # All scales failed: greedy fallback
+    if deadline is not None and time.perf_counter() >= deadline:
+        return incumbent.copy()
     candidate = _greedy_recombine(recs, incumbent, nv_ceiling=effective_ceiling)
+    if deadline is not None and time.perf_counter() >= deadline:
+        return incumbent.copy()
     if effective_ceiling is not None and candidate.nv > effective_ceiling:
         return incumbent.copy()
     return (
         candidate
-        if candidate.feasible and _is_exact_cover(candidate) and candidate.dominates(incumbent)
+        if candidate.feasible
+        and _is_exact_cover(candidate)
+        and candidate.dominates(incumbent)
+        and (deadline is None or time.perf_counter() < deadline)
         else incumbent.copy()
     )

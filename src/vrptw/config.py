@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 import os
 from dataclasses import dataclass, field
 from typing import Any
@@ -334,7 +335,7 @@ class Config:
     plateau_start: int = 72
     ctrl_start_floor: int = 10  # minimum non-improvement threshold floor to trigger plateau controller
     macro_enabled: bool = True  # If False, disables Macro Plateau Controller completely (pins mode=DEFAULT)
-    pool_recombine_enabled: bool = True  # If False, disables periodic and plateau Set Partitioning recombination
+    pool_recombine_enabled: bool = True  # Global switch for all SP queries and SP-specific pool seeding
     nv_increase_penalty: float = 15.0
     rl_recombine_min_routes: int = 24
     ctrl_tau: float = 0.005  # soft target update rate for PlateauController
@@ -378,6 +379,8 @@ class Config:
     milp_max_cols: int = 800
 
     # ── generalized ejection chains (GEC v2.0) ───────────────────────────
+    gec_enabled: bool = True  # False retains direct insertion but disables all displacement/chain/GES expansion
+    ablation_case: str = ""  # Explicit F[GEC,SP,Macro,Micro,LAC,GNN] binding; empty preserves legacy solver selection
     gec_max_depth: int = 3  # Depth of recursive 3-level customer displacement tree in MODE_ROUTE_REDUCE
     gec_candidate_k: int = 15  # Candidate neighbor branching factor in GEC
 
@@ -435,6 +438,7 @@ class Config:
 
     # ── OR-Tools ──────────────────────────────────────────────────────────
     ortools_time_limit: float = 15.0
+    neurolkh_root: str = ""
 
     # ── Learned Acceptance Criterion ──────────────────────────────────────
     lac_enabled: bool = True
@@ -473,7 +477,7 @@ class Config:
     highs_plateau_synthesis: bool = True
 
     # ── Split Controller ──────────────────────────────────────────────────
-    split_enabled: bool = False
+    split_enabled: bool = False  # Recursive sub-solves and main/tail learned split episodes
 
     # ── Anytime wall-clock budget ─────────────────────────────────────────
     # The search is otherwise bounded only by iteration count, which makes run
@@ -483,6 +487,9 @@ class Config:
     # ``time_limit_per_customer`` to 0.0) to opt out.
     time_limit: float | None = None
     time_limit_per_customer: float = 0.6
+    # Ignore iteration/patience stopping in iso-time experiments. Iteration
+    # parameters still define the nominal search schedules and tail batch sizes.
+    wall_clock_only: bool = False
     # Fraction of the budget the main destroy/repair loop may consume. The
     # remainder is reserved for the tail phases (route elimination, TD polish,
     # recombination), which contribute most of the final TD quality.
@@ -526,10 +533,12 @@ class Config:
             raise ValueError(f"lac_batch must be >= 16, got {self.lac_batch}")
         if self.ctrl_start_floor < 1:
             raise ValueError(f"ctrl_start_floor must be >= 1, got {self.ctrl_start_floor}")
-        if self.time_limit is not None and self.time_limit <= 0.0:
-            raise ValueError(f"time_limit must be > 0 when set, got {self.time_limit}")
-        if self.time_limit_per_customer < 0.0:
+        if self.time_limit is not None and (not math.isfinite(self.time_limit) or self.time_limit <= 0.0):
+            raise ValueError(f"time_limit must be finite and > 0 when set, got {self.time_limit}")
+        if not math.isfinite(self.time_limit_per_customer) or self.time_limit_per_customer < 0.0:
             raise ValueError(f"time_limit_per_customer must be >= 0, got {self.time_limit_per_customer}")
+        if self.wall_clock_only and self.time_limit is None and self.time_limit_per_customer == 0.0:
+            raise ValueError("wall_clock_only requires a finite time budget")
         if not (0.0 < self.time_limit_main_loop_frac <= 1.0):
             raise ValueError(f"time_limit_main_loop_frac must be in (0.0, 1.0], got {self.time_limit_main_loop_frac}")
 

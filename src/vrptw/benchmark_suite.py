@@ -272,7 +272,7 @@ def execute_benchmark_task(task: BenchmarkTask) -> BenchmarkResult:
 
         t0 = time.time()
         if task.solver_name == "OR-Tools":
-            plan = run_ortools(inst, task_cfg.ortools_time_limit)
+            plan, _ = run_ortools(inst, task_cfg)
         else:
             try:
                 solver = task.solver_cls(inst, task_cfg, seed=task.seed)

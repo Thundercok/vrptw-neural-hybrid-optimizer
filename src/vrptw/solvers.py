@@ -5,6 +5,7 @@ import os
 import random
 import time
 from collections import Counter, deque
+from itertools import count
 
 import numpy as np
 import torch
@@ -19,7 +20,6 @@ from .config import (
     ALGO_HYBRID_DDQN,
     ALGO_HYBRID_FIXED,
     ALGO_HYBRID_RULE,
-    ALGO_ORTOOLS,
     BKS,
     MODE_DEFAULT,
     MODE_DIVERSIFY,
@@ -44,6 +44,7 @@ from .local_search import (
     td_converge_polish,
     td_inter_route_polish,
 )
+from .native_certification import NativeIncumbent, NativeNoSolutionError
 from .operators import (
     DESTROY,
     N_D,
@@ -55,6 +56,7 @@ from .operators import (
     destroy_size,
     op_neural_shaw,
     op_neural_worst,
+    op_shaw,
 )
 from .penalty import (
     AdaptiveFeasibilityManager,
@@ -185,7 +187,31 @@ class _StructuralFeatureCache:
         return self._feats
 
 
-class ALNSSolver:
+class _NativeCertificationMixin:
+    def _begin_native_certification(
+        self, start: float, deadline: float | None, certifier: NativeIncumbent | None = None
+    ) -> None:
+        self._native_incumbent = certifier or NativeIncumbent(
+            self.inst, start=start, deadline=deadline, clock=lambda: time.perf_counter()
+        )
+        self.native_certification = self._native_incumbent.diagnostics
+        self.trajectory_log = self._native_incumbent.trajectory
+
+    def _capture_native(self, plan: Plan, phase: str, iteration: int = 0) -> bool:
+        # Helpers also have standalone callers outside solve().
+        tracker = getattr(self, "_native_incumbent", None)
+        if tracker is not None:
+            return tracker.consider(plan, phase=phase, iteration=iteration)
+        return False
+
+    def _finish_native(self) -> Plan:
+        self.time_limit_hit = self.time_limit_hit or self._native_incumbent.expired()
+        plan = self._native_incumbent.finish()
+        plan.algo = getattr(self, "algo_name", ALGO_ALNS_BASE)
+        return plan
+
+
+class ALNSSolver(_NativeCertificationMixin):
     def __init__(self, inst: Inst, cfg: Config):
         self.inst = inst
         self.cfg = cfg
@@ -204,7 +230,11 @@ class ALNSSolver:
 
     def _destroy(self, di: int, plan: Plan, size: int) -> tuple[Plan, list[int]]:
         destroy_fn = DESTROY[di]
-        if destroy_fn in (op_neural_worst, op_neural_shaw):
+        if destroy_fn is op_neural_shaw:
+            return destroy_fn(plan, size, heatmap=self.heatmap, deadline=getattr(self, "_deadline", None))
+        if destroy_fn is op_shaw:
+            return destroy_fn(plan, size, deadline=getattr(self, "_deadline", None))
+        if destroy_fn is op_neural_worst:
             return destroy_fn(plan, size, heatmap=self.heatmap)
         return destroy_fn(plan, size)
 
@@ -215,8 +245,13 @@ class ALNSSolver:
             kwargs["pruning_threshold"] = getattr(self.cfg, "gnn_pruning_threshold_end", 0.003)
         return local_search(plan, **kwargs)
 
-    def solve(self, seed: int | None = None, init: Plan | None = None) -> tuple[Plan, list[float]]:
+    def solve(
+        self, seed: int | None = None, init: Plan | None = None, *, _certifier: NativeIncumbent | None = None
+    ) -> tuple[Plan, list[float]]:
+        t_start = _certifier.start if _certifier is not None else time.perf_counter()
+        self._t_start = t_start
         self.solver_history = []
+        self.search_iterations = 0
         if seed is not None:
             random.seed(seed)
             np.random.seed(seed)
@@ -226,12 +261,13 @@ class ALNSSolver:
 
         # Anytime budget (see Config.time_limit). ALNS-Base has no tail phases, so
         # it gets the whole budget for its main loop.
-        t_start = time.time()
         time_limit = cfg.time_limit
         if time_limit is None and cfg.time_limit_per_customer > 0.0:
             time_limit = cfg.time_limit_per_customer * self.inst.n
-        deadline = (t_start + time_limit) if time_limit else None
+        deadline = _certifier.deadline if _certifier is not None else ((t_start + time_limit) if time_limit else None)
+        self._deadline = deadline
         self.time_limit_hit = False
+        self._begin_native_certification(t_start, deadline, _certifier)
 
         # Initialize GNN edge predictor heatmap once per solve()
         self.heatmap = None
@@ -253,39 +289,32 @@ class ALNSSolver:
             else build_greedy(self.inst, ALGO_ALNS_BASE, heatmap=self.heatmap, gnn_strength=self.gamma)
         )
         best = cur.copy()
+        if not self._capture_native(best, "initial"):
+            self._finish_native()
         temp = cfg.temp_control * cur.cost / math.log(2)
         history = [best.cost]
-        self.trajectory_log = [
-            {
-                "t_sec": 0.0,
-                "nv": int(best.nv),
-                "td": round(float(best.cost), 3),
-                "iter": 0,
-            }
-        ]
         no_imp = 0
         self.q_scale = 1.0
-        for it in range(cfg.alns_iterations):
-            if deadline is not None and time.time() >= deadline:
+        for it in count() if cfg.wall_clock_only else range(cfg.alns_iterations):
+            if deadline is not None and time.perf_counter() >= deadline:
                 self.time_limit_hit = True
                 break
             di, ri = self.bandit.select()
             size = destroy_size(it, cfg.alns_iterations, cfg, self.inst.n, scale=self.q_scale)
             dest, removed = self._destroy(di, cur.copy(), size)
-            cand = REPAIR[ri](dest, removed, heatmap=self.heatmap, gamma=self.gamma)
+            if deadline is not None and time.perf_counter() >= deadline:
+                self.time_limit_hit = True
+                break
+            cand = REPAIR[ri](dest, removed, heatmap=self.heatmap, gamma=self.gamma, deadline=deadline)
+            if cand is None or (deadline is not None and time.perf_counter() >= deadline):
+                self.time_limit_hit = True
+                break
             score = 0
             accepted = accept(cur, cand, temp)
             if accepted:
                 if cand.dominates(best):
                     best, score, no_imp = cand.copy(), cfg.sigma1, 0
-                    self.trajectory_log.append(
-                        {
-                            "t_sec": round(time.time() - t_start, 3),
-                            "nv": int(best.nv),
-                            "td": round(float(best.cost), 3),
-                            "iter": int(it),
-                        }
-                    )
+                    self._capture_native(best, "search", it)
                 elif cand.dominates(cur):
                     score, no_imp = cfg.sigma2, 0
                 else:
@@ -322,13 +351,15 @@ class ALNSSolver:
                 self.bandit.reset()  # reset về uniform khi halfway to early-stop
             temp *= cfg.temp_decay
             history.append(best.cost)
-            if no_imp >= cfg.early_stop_patience:
+            self.search_iterations += 1
+            if not cfg.wall_clock_only and no_imp >= cfg.early_stop_patience:
                 break
+        best = self._finish_native()
         best.algo = ALGO_ALNS_BASE
         return best, history
 
 
-class HybridDDQNSolver:
+class HybridDDQNSolver(_NativeCertificationMixin):
     algo_name = ALGO_HYBRID_DDQN
     use_op_rl = True
     use_rl = True
@@ -373,6 +404,8 @@ class HybridDDQNSolver:
         self.pool: RoutePool | None = None
         self.mode_trace = Counter()
 
+        self.controller_counts = Counter()
+
     def insert_dynamic_customer(self, plan: Plan, customer_id: int) -> Plan:
         """
         Fast dynamic insertion of a new customer into an active plan without recalculating full routes.
@@ -386,14 +419,22 @@ class HybridDDQNSolver:
         return new_plan
 
     def _out_of_time(self) -> bool:
-        """True once the hard anytime deadline has passed."""
+        """True once the cooperative perf_counter deadline has passed."""
         deadline = getattr(self, "_deadline", None)
         if deadline is None:
             return False
-        if time.time() >= deadline:
+        if time.perf_counter() >= deadline:
             self.time_limit_hit = True
             return True
         return False
+
+    def _validate_search_setup(self) -> None:
+        """Subclass contract checks, charged inside the native solve budget."""
+
+    def _recombine_with_pool(self, incumbent: Plan, pool: RoutePool, cfg: Config, **kwargs) -> Plan:
+        if not getattr(cfg, "pool_recombine_enabled", True):
+            return incumbent
+        return recombine_with_route_pool(incumbent, pool, cfg, deadline=getattr(self, "_deadline", None), **kwargs)
 
     def _adapt_params_to_instance(self, cfg, inst):
         """Tune search parameters based on instance characteristics."""
@@ -443,7 +484,11 @@ class HybridDDQNSolver:
     def _destroy(self, di: int, plan: Plan, size: int) -> tuple[Plan, list[int]]:
         """Dispatch destroy operator, passing heatmap to op_neural_worst and op_neural_shaw."""
         destroy_fn = DESTROY[di]
-        if destroy_fn in (op_neural_worst, op_neural_shaw):
+        if destroy_fn is op_neural_shaw:
+            return destroy_fn(plan, size, heatmap=self.heatmap, deadline=getattr(self, "_deadline", None))
+        if destroy_fn is op_shaw:
+            return destroy_fn(plan, size, deadline=getattr(self, "_deadline", None))
+        if destroy_fn is op_neural_worst:
             return destroy_fn(plan, size, heatmap=self.heatmap)
         return destroy_fn(plan, size)
 
@@ -474,6 +519,7 @@ class HybridDDQNSolver:
                 kwargs["pruning_threshold"] = pruning_threshold
             else:
                 kwargs["pruning_threshold"] = 0.0
+        kwargs.setdefault("deadline", getattr(self, "_deadline", None))
         return local_search(plan, **kwargs)
 
     def clone_weights(self) -> dict:
@@ -702,7 +748,7 @@ class HybridDDQNSolver:
             [
                 min((cur.cost - best.cost) / max(best.cost, 1), 1.0),
                 min(cur.nv / max(self._init_nv, 1), 2.0),
-                it / max(self.cfg.hybrid_iterations, 1),
+                min(it / max(self.cfg.hybrid_iterations, 1), 1.0),
                 (it % self.cfg.segment_size) / max(self.cfg.segment_size, 1),
                 min(temp / max(t0, 1e-6), 1.5),
                 min(no_imp / max(self.cfg.early_stop_patience, 1), 1.0),
@@ -809,6 +855,7 @@ class HybridDDQNSolver:
             self.cfg.ctrl_start_floor, self.cfg.ctrl_start // 2
         ):
             mode, flag = self.ctrl.act(state_before), (not frozen)
+            self.controller_counts["macro_ddqn" if self.ctrl.use_rl else "macro_bandit"] += 1
         else:
             mode, flag = MODE_DEFAULT, False
         self.mode_trace[mode] += 1
@@ -831,7 +878,7 @@ class HybridDDQNSolver:
             _bks_entry = BKS.get(self.inst.name)
             _bks_nv = int(_bks_entry["nv"]) if _bks_entry else 0
             is_at_bks_floor = nv_cap <= _bks_nv
-            recombined = recombine_with_route_pool(
+            recombined = self._recombine_with_pool(
                 refined,
                 pool,
                 self.cfg,
@@ -845,7 +892,7 @@ class HybridDDQNSolver:
                     recombined, max_passes=1, nv_ceiling=recombined.nv, max_ls_moves=self.cfg.max_ls_moves
                 )
         if len(refined.routes) >= 2:
-            merged = _try_route_merge(refined, max_pairs=8)
+            merged = _try_route_merge(refined, max_pairs=8, deadline=getattr(self, "_deadline", None))
             if merged is not None and merged.feasible and merged.nv < refined.nv:
                 refined = merged
         return refined
@@ -854,6 +901,7 @@ class HybridDDQNSolver:
         """3-level Generalized Ejection Chains (GEC) to eliminate a full route."""
         if len(plan.routes) <= 1:
             return None
+        max_depth = self.cfg.gec_max_depth if self.cfg.gec_enabled else 1
 
         routes = [list(r) for r in plan.routes]
         # Target shortest route
@@ -910,7 +958,7 @@ class HybridDDQNSolver:
                 continue
 
             # Level 2: 1-level customer displacement
-            if getattr(self.cfg, "gec_max_depth", 3) >= 2:
+            if max_depth >= 2:
                 ejection_found = False
                 for r_j_idx, r_j in enumerate(working_routes):
                     for v_pos, v in enumerate(r_j):
@@ -939,7 +987,7 @@ class HybridDDQNSolver:
                         break
 
             # Level 3: 2-level chained displacement (u -> R_j displacing v, v -> R_k displacing w, w -> R_l)
-            if not inserted and getattr(self.cfg, "gec_max_depth", 3) >= 3 and len(working_routes) <= 30:
+            if not inserted and max_depth >= 3 and len(working_routes) <= 30:
                 ejection_found_l3 = False
                 for r_j_idx, r_j in enumerate(working_routes):
                     for v_pos, v in enumerate(r_j):
@@ -1002,6 +1050,8 @@ class HybridDDQNSolver:
         initial_temp: float | None = None,
         gamma: float | None = None,
     ) -> Plan:
+        if self._out_of_time():
+            return start
         cfg = self.cfg
         target_nv = start.nv
         # Inherit operator statistics from main search instead of cold-starting
@@ -1009,7 +1059,10 @@ class HybridDDQNSolver:
         cur = self._local_search(
             start, max_passes=cfg.polish_ls_passes, nv_ceiling=target_nv, max_ls_moves=cfg.max_ls_moves
         )
+        if self._out_of_time():
+            return start
         best = cur.copy()
+        self._capture_native(best, "fixed_nv_polish", 0)
         pool.add_plan(best)
         if initial_temp is not None:
             temp = initial_temp
@@ -1027,8 +1080,16 @@ class HybridDDQNSolver:
             di, ri = polish_bandit.select()
             size = destroy_size(it, polish_iters, cfg, self.inst.n, scale=0.70)
             dest, removed = self._destroy(di, cur.copy(), size)
-            cand = REPAIR[ri](dest, removed, heatmap=self.heatmap, gamma=polish_gamma)
+            if self._out_of_time():
+                break
+            cand = REPAIR[ri](
+                dest, removed, heatmap=self.heatmap, gamma=polish_gamma, deadline=getattr(self, "_deadline", None)
+            )
+            if cand is None or self._out_of_time():
+                break
             cand = self._local_search(cand, max_passes=1, nv_ceiling=target_nv, max_ls_moves=cfg.max_ls_moves)
+            if self._out_of_time():
+                break
             pool.add_plan(cand)
             score, cur_before = 0, cur
             if accept_with_nv_ceiling(cur, cand, temp, target_nv):
@@ -1037,6 +1098,7 @@ class HybridDDQNSolver:
                     target_nv = cand.nv
                 if cand.dominates(best):
                     best, score, no_imp = cand.copy(), cfg.sigma1, 0
+                    self._capture_native(best, "fixed_nv_polish", it)
                 elif cand.nv == cur_before.nv and cand.cost + 1e-9 < cur_before.cost:
                     score, no_imp = cfg.sigma2, 0
                 else:
@@ -1049,10 +1111,14 @@ class HybridDDQNSolver:
             temp *= cfg.temp_decay * 0.997
             if no_imp >= cfg.polish_patience:
                 break
-        best = self._local_search(
-            best, max_passes=cfg.polish_ls_passes, nv_ceiling=best.nv, max_ls_moves=cfg.max_ls_moves
-        )
-        pool.add_plan(best)
+        if not self._out_of_time():
+            polished = self._local_search(
+                best, max_passes=cfg.polish_ls_passes, nv_ceiling=best.nv, max_ls_moves=cfg.max_ls_moves
+            )
+            if not self._out_of_time():
+                best = polished
+                self._capture_native(best, "fixed_nv_polish", it)
+                pool.add_plan(best)
         return best
 
     def _seed_pool_large_destroy(self, best: Plan, pool: RoutePool, n_seeds: int = 30) -> None:
@@ -1069,9 +1135,13 @@ class HybridDDQNSolver:
 
         NEVER updates best. Only seeds pool with individual routes and full plans.
         """
+        if not getattr(self.cfg, "pool_recombine_enabled", True):
+            return
         inst = self.inst
 
         for it in range(n_seeds):
+            if self._out_of_time():
+                return
             # Stagger ratios: 60% (large) and 42% (medium-large)
             ratio = 0.60 if it % 3 != 1 else 0.42
             size = max(5, int(ratio * inst.n))
@@ -1079,9 +1149,13 @@ class HybridDDQNSolver:
             # Alternate shaw (spatial clustering) and route_eliminate (full route removal)
             di = 2 if it % 2 == 0 else 5  # DESTROY[2]=op_shaw, DESTROY[5]=op_route_eliminate
             destroyed, removed = self._destroy(di, best.copy(), size)
+            if self._out_of_time():
+                return
 
             # regret-3 repair: tends to build fewer, longer routes than greedy
-            candidate = REPAIR[2](destroyed, removed)  # REPAIR[2] = op_regret_3
+            candidate = REPAIR[2](destroyed, removed, deadline=getattr(self, "_deadline", None))
+            if candidate is None or self._out_of_time():
+                return
 
             # Add individual routes unconditionally (each route is self-contained feasible)
             for route in candidate.routes:
@@ -1092,9 +1166,11 @@ class HybridDDQNSolver:
 
             # Every 5th seed: attempt explicit route merges on best for direct NV-1 seeds
             if it % 5 == 0:
-                for route in merged_route_candidates(best):
+                for route in merged_route_candidates(best, deadline=getattr(self, "_deadline", None)):
+                    if self._out_of_time():
+                        return
                     pool.add_route(route)
-                merged = _try_route_merge(best)
+                merged = _try_route_merge(best, deadline=getattr(self, "_deadline", None))
                 if merged is not None:
                     pool.add_plan(merged)
                     for route in merged.routes:
@@ -1110,8 +1186,12 @@ class HybridDDQNSolver:
         All generated routes are validated via _check_route() before insertion.
         Pool-seeding only — never modifies the input plan.
         """
+        if not getattr(self.cfg, "pool_recombine_enabled", True):
+            return
         inst = self.inst
         for route in plan.routes:
+            if self._out_of_time():
+                return
             if len(route) < 2:
                 continue
             # ── Sub-route slicing (building-block columns) ────────────────
@@ -1147,6 +1227,8 @@ class HybridDDQNSolver:
                 if not r1 or len(r1) < 2:
                     continue
                 for j in range(len(plan.routes)):
+                    if self._out_of_time():
+                        return
                     if j == i:
                         continue
                     r2 = plan.routes[j]
@@ -1221,12 +1303,18 @@ class HybridDDQNSolver:
 
         Never modifies best. Pool-seeding only.
         """
+        if not getattr(self.cfg, "pool_recombine_enabled", True):
+            return
         inst = self.inst
 
         for run in range(n_randomizations):
+            if self._out_of_time():
+                return
             # ── savings computation with run-scaled perturbation ──────────────
             savings: list[tuple[float, int, int]] = []
             for i in range(1, inst.n + 1):
+                if self._out_of_time():
+                    return
                 for j in range(i + 1, inst.n + 1):
                     s = float(inst.dist[0, i] + inst.dist[0, j] - inst.dist[i, j])
                     if run > 0:
@@ -1242,6 +1330,8 @@ class HybridDDQNSolver:
 
             # ── greedy merge loop ─────────────────────────────────────────────
             for _, i, j in savings:
+                if self._out_of_time():
+                    return
                 ri = which_route.get(i)
                 rj = which_route.get(j)
                 if ri is None or rj is None or ri == rj:
@@ -1303,13 +1393,19 @@ class HybridDDQNSolver:
 
         Pool-seeding only. Never modifies best.
         """
+        if not getattr(self.cfg, "pool_recombine_enabled", True):
+            return
         inst = self.inst
+        if self._out_of_time():
+            return
         customers = list(range(1, inst.n + 1))
         # Sort once by TW midpoint for reproducible seed spacing
         tw_sorted = sorted(customers, key=lambda n: (inst.ready_times[n] + inst.due_times[n]) / 2.0)
         step = max(1, inst.n // target_nv)
 
         for trial in range(n_trials):
+            if self._out_of_time():
+                return
             # Sweep offset across [0, step) so every trial has distinct seeds
             offset = trial % step
             seeds = []
@@ -1338,6 +1434,8 @@ class HybridDDQNSolver:
                 unassigned.sort(key=lambda n: -inst.demands[n])  # largest demand first
 
             for c in unassigned:
+                if self._out_of_time():
+                    return
                 best_delta, best_ri, best_pos = float("inf"), None, None
                 for ri, route in enumerate(route_lists):
                     if route_loads[ri] + inst.demands[c] > inst.capacity:
@@ -1443,7 +1541,7 @@ class HybridDDQNSolver:
                 # Try to build a different starting topology via pool recombination
                 _bks_entry = BKS.get(self.inst.name)
                 _bks_nv = int(_bks_entry["nv"]) if _bks_entry else 0
-                restart_plan = recombine_with_route_pool(
+                restart_plan = self._recombine_with_pool(
                     start,
                     pool,
                     cfg,
@@ -1468,7 +1566,11 @@ class HybridDDQNSolver:
             di, ri = bandit.select()
             size = destroy_size(it, effective_iters, cfg, inst.n, scale=1.0)
             dest, removed = self._destroy(di, cur.copy(), size)
-            cand = REPAIR[ri](dest, removed)
+            if self._out_of_time():
+                break
+            cand = REPAIR[ri](dest, removed, deadline=getattr(self, "_deadline", None))
+            if cand is None or self._out_of_time():
+                break
 
             for route in cand.routes:
                 pool.add_route(route)
@@ -1486,6 +1588,7 @@ class HybridDDQNSolver:
                         pool.add_plan(cand)
                         if best_found is None or cand.dominates(best_found) or cand.nv < best_found.nv:
                             best_found = cand.copy()
+                            self._capture_native(best_found, "committed_nv_search", it)
                             score = cfg.sigma1
                     else:
                         score = cfg.sigma3
@@ -1497,6 +1600,7 @@ class HybridDDQNSolver:
                 cur = cand
                 if best_found is None or cand.dominates(best_found) or cand.nv < best_found.nv:
                     best_found = cand.copy()
+                    self._capture_native(best_found, "committed_nv_search", it)
                     score = cfg.sigma1
 
             elif cand.feasible and cand.nv == target_nv + 1:
@@ -1523,7 +1627,7 @@ class HybridDDQNSolver:
                         if gec_res is not None and gec_res.feasible and gec_res.nv <= target_nv:
                             reduced = gec_res
                         else:
-                            chain = _ejection_chain_eliminate(cand)
+                            chain = _ejection_chain_eliminate(cand, gec_enabled=cfg.gec_enabled)
                             if chain is not None and chain.feasible and chain.nv <= target_nv:
                                 reduced = chain
 
@@ -1539,6 +1643,7 @@ class HybridDDQNSolver:
                                 pool=pool,
                                 hard_mode=(target_nv == _bks_nv),
                                 deadline=getattr(self, "_deadline", None),
+                                gec_enabled=cfg.gec_enabled,
                             )
                             if buff.feasible and buff.nv <= target_nv:
                                 reduced = buff
@@ -1546,7 +1651,7 @@ class HybridDDQNSolver:
                     # 3. Try MILP recombination
                     if not (reduced.feasible and reduced.nv <= target_nv):
                         if is_improving or it % 50 == 0:
-                            rec = recombine_with_route_pool(
+                            rec = self._recombine_with_pool(
                                 cand, pool, cfg, nv_target=target_nv, heatmap=self.heatmap, _stats=self.sp_stats
                             )
                             if rec.feasible and rec.nv <= target_nv:
@@ -1558,6 +1663,7 @@ class HybridDDQNSolver:
                         cur = reduced
                         if best_found is None or reduced.dominates(best_found) or reduced.nv < best_found.nv:
                             best_found = reduced.copy()
+                            self._capture_native(best_found, "committed_nv_search", it)
                             score = cfg.sigma1
                     else:
                         # Accept the near-miss candidate via SA to keep exploring
@@ -1581,10 +1687,13 @@ class HybridDDQNSolver:
         _is_sub_solve: bool = False,
         _deadline: float | None = None,
         pool: RoutePool | None = None,
+        _certifier: NativeIncumbent | None = None,
     ) -> tuple[Plan, list[float]]:
+        self._t_start = _certifier.start if _certifier is not None else time.perf_counter()
         self.solver_history = []
+        self.search_iterations = 0
         self.mode_trace = Counter()
-        self._t_start = time.time()
+        self.controller_counts = Counter()
         self.time_limit_hit = False
         self.phase1_done = False
         self.sp_stats = {"calls": 0, "timeouts": 0, "milp_fired": False, "milp_cadence_skip": 0}
@@ -1603,16 +1712,21 @@ class HybridDDQNSolver:
         cfg = self._adapt_params_to_instance(cfg, self.inst)
         self.cfg = cfg
 
-        # Anytime budget. An inherited ``_deadline`` wins so that sub-solves and the
+        # Absolute deadlines use perf_counter, never the adjustable calendar clock.
+        # An inherited ``_deadline`` wins so that sub-solves and the
         # reconcile pass share the parent's budget rather than each claiming a fresh
         # one; it must be resolved before the split block below, which spawns them.
         if _deadline is not None:
             self._deadline = _deadline
+        elif _certifier is not None:
+            self._deadline = _certifier.deadline
         elif cfg.time_limit:
             self._deadline = self._t_start + cfg.time_limit
         else:
             self._deadline = None
         split_deadline = self._deadline
+        self._begin_native_certification(self._t_start, self._deadline, _certifier)
+        self._validate_search_setup()
         if self.use_rl:
             self.ctrl.reset()
             self.op_ctrl.reset()
@@ -1675,15 +1789,19 @@ class HybridDDQNSolver:
             else build_greedy(self.inst, self.algo_name, heatmap=self.heatmap, gnn_strength=self.gamma)
         )
         best = cur.copy()
+        self._capture_native(best, "initial")
+        if self.native_certification["certificate"] is None:
+            self._finish_native()
 
         # RL-Guided Split Controller Architecture
-        if not _is_sub_solve and self.inst.n >= 200 and getattr(cfg, "split_enabled", True):
+        if not _is_sub_solve and self.inst.n >= 200 and cfg.split_enabled:
             import copy
 
             # 1. Run local search to establish starting structure if none passed in
             if init is None:
                 cur = self._local_search(cur, max_passes=2, nv_ceiling=cur.nv, max_ls_moves=cfg.max_ls_moves)
                 best = cur.copy()
+                self._capture_native(best, "search", 0)
 
             # 2. Partition routes using GNN connection weights
             routes1_indices, routes2_indices = self._split_routes_gnn_guided(cur.routes)
@@ -1721,16 +1839,24 @@ class HybridDDQNSolver:
                 # to the reconcile pass below. Without this each sub-solve would
                 # derive its own full budget and the split would triple the run.
                 if split_deadline is not None:
-                    now = time.time()
+                    now = time.perf_counter()
                     share = (split_deadline - now) / 3.0
                     sub1_deadline = now + share
                 else:
                     sub1_deadline = sub2_deadline = None
 
-                res1, _ = solver1.solve(init=init1, seed=seed, _is_sub_solve=True, _deadline=sub1_deadline)
+                try:
+                    res1, _ = solver1.solve(init=init1, seed=seed, _is_sub_solve=True, _deadline=sub1_deadline)
+                except NativeNoSolutionError:
+                    res1 = init1
+                if self._out_of_time():
+                    return self._finish_native(), [point["td"] for point in self.trajectory_log]
                 if split_deadline is not None:
-                    sub2_deadline = time.time() + (split_deadline - time.time()) / 2.0
-                res2, _ = solver2.solve(init=init2, seed=seed, _is_sub_solve=True, _deadline=sub2_deadline)
+                    sub2_deadline = time.perf_counter() + (split_deadline - time.perf_counter()) / 2.0
+                try:
+                    res2, _ = solver2.solve(init=init2, seed=seed, _is_sub_solve=True, _deadline=sub2_deadline)
+                except NativeNoSolutionError:
+                    res2 = init2
 
                 # Map back to original IDs
                 final_routes = []
@@ -1740,6 +1866,9 @@ class HybridDDQNSolver:
                     final_routes.append([custs2[c - 1] for c in r])
 
                 merged_plan = Plan(final_routes, self.inst, self.algo_name)
+                self._capture_native(merged_plan, "split_merge")
+                if self._out_of_time():
+                    return self._finish_native(), [point["td"] for point in self.trajectory_log]
 
                 # Run the remaining iterations on the merged plan to reconcile
                 return self.solve(
@@ -1748,6 +1877,7 @@ class HybridDDQNSolver:
                     _is_sub_solve=True,
                     _warm_start=True,
                     _deadline=split_deadline,
+                    _certifier=self._native_incumbent,
                 )
         self._init_nv = cur.nv
         # The main destroy/repair loop only gets time_limit_main_loop_frac of the
@@ -1766,14 +1896,6 @@ class HybridDDQNSolver:
         all_rw = np.ones((len(self.modes), N_R), dtype=np.float32)
         self.archive.update(best)
         history: list[float] = [best.cost]
-        self.trajectory_log = [
-            {
-                "t_sec": 0.0,
-                "nv": int(best.nv),
-                "td": round(float(best.cost), 3),
-                "iter": 0,
-            }
-        ]
         recent_improvements: deque[int] = deque(maxlen=cfg.segment_size)
         no_imp = 0
         self.no_imp = 0
@@ -1788,8 +1910,8 @@ class HybridDDQNSolver:
             else 0
         )
 
-        for seg_idx in range(n_segments):
-            if main_loop_deadline is not None and time.time() >= main_loop_deadline:
+        for seg_idx in count() if cfg.wall_clock_only else range(n_segments):
+            if main_loop_deadline is not None and time.perf_counter() >= main_loop_deadline:
                 self.time_limit_hit = True
                 break
             _bks_entry = BKS.get(self.inst.name)
@@ -1815,7 +1937,7 @@ class HybridDDQNSolver:
                 )
                 cur = best.copy()
 
-            progress = seg_idx / max(n_segments, 1)
+            progress = min(seg_idx / max(n_segments, 1), 1.0)
             imp_rate = sum(recent_improvements) / max(len(recent_improvements), 1)
             self._segment_recombine_used = False
             # Plateau-triggered seeding: fires once when plateau first reached
@@ -1848,19 +1970,21 @@ class HybridDDQNSolver:
 
             for offset in range(cfg.segment_size):
                 it = seg_idx * cfg.segment_size + offset
-                if it >= cfg.hybrid_iterations:
+                if not cfg.wall_clock_only and it >= cfg.hybrid_iterations:
                     break
                 # Checked per iteration too: a single segment can be long at scale.
-                if main_loop_deadline is not None and time.time() >= main_loop_deadline:
+                if main_loop_deadline is not None and time.perf_counter() >= main_loop_deadline:
                     self.time_limit_hit = True
                     break
                 self.current_it = it
                 no_best_imp += 1
                 op_state = self._op_state(cur, best, action, it, temp, no_imp, pool, imp_rate)
                 if getattr(self, "use_op_rule", False):
+                    self.controller_counts["micro_rule"] += 1
                     di, ri = self._rule_micro_select(op_state, action)
                     op_action = di * N_R + ri
                 elif getattr(self, "use_op_rl", True):
+                    self.controller_counts["micro_ddqn" if self.op_ctrl.use_rl else "micro_bandit"] += 1
                     op_action, di, ri = self.op_ctrl.act(
                         op_state,
                         biased_dw,
@@ -1870,6 +1994,7 @@ class HybridDDQNSolver:
                         ucb_aug=self.ucb_aug if not frozen else None,
                     )
                 else:
+                    self.controller_counts["micro_bandit"] += 1
                     di, ri = mode_bandit.select(
                         prior=self.op_ctrl._prior(biased_dw, biased_rw),
                         prior_strength=self.cfg.bandit_prior_strength,
@@ -1883,7 +2008,11 @@ class HybridDDQNSolver:
                 best_cost_before = best.cost
                 best_nv_before = best.nv
                 dest, removed = self._destroy(di, cur.copy(), size)
-                cand = REPAIR[ri](dest, removed, heatmap=self.heatmap, gamma=self.gamma)
+                if self._out_of_time():
+                    break
+                cand = REPAIR[ri](dest, removed, heatmap=self.heatmap, gamma=self.gamma, deadline=main_loop_deadline)
+                if cand is None or self._out_of_time():
+                    break
                 has_fragile_route = any(len(r) <= 4 for r in cur.routes)
                 if (
                     action == MODE_ROUTE_REDUCE
@@ -1896,6 +2025,8 @@ class HybridDDQNSolver:
                         cand = gec_plan
 
                 cand = self._refine_candidate(cand, action, pool, cur, best, no_imp, it)
+                if self._out_of_time():
+                    break
 
                 lac_decided = False
                 allow_nv_increase = action == MODE_DIVERSIFY
@@ -1928,7 +2059,7 @@ class HybridDDQNSolver:
                             and not frozen
                         ):
                             t0_init = cfg.temp_control * max(best.cost, 1.0) / math.log(2)
-                            progress = it / max(cfg.hybrid_iterations, 1)
+                            progress = min(it / max(cfg.hybrid_iterations, 1), 1.0)
                             lac_feats = self.lac.features(
                                 cost_delta=cand.cost - cur.cost,
                                 cur_cost=cur.cost,
@@ -1945,7 +2076,12 @@ class HybridDDQNSolver:
                             tau_min = getattr(cfg, "lac_tau_min", 0.40)
                             tau_max = getattr(cfg, "lac_tau_max", 0.75)
                             lac_tau = tau_min + (tau_max - tau_min) * (progress**0.75)
-                            accepted, _ = self.lac.decide(lac_feats, best.cost, tau=lac_tau)
+                            accepted, _ = self.lac.decide(
+                                lac_feats,
+                                best.cost,
+                                tau=lac_tau,
+                                sa_probability=math.exp(-(cand.cost - cur.cost) / max(temp, 1e-6)),
+                            )
                             lac_decided = True
                         else:
                             accepted = random.random() < math.exp(-(cand.cost - cur.cost) / max(temp, 1e-6))
@@ -1968,7 +2104,7 @@ class HybridDDQNSolver:
                         and not frozen
                         and self.ls_budget.should_trigger(action, True, is_new_best, self.modes)
                     ):
-                        t_ls = time.time()
+                        t_ls = time.perf_counter()
                         cost_pre = cand.cost
                         nv_cap = (
                             best.nv
@@ -1981,19 +2117,12 @@ class HybridDDQNSolver:
                             nv_ceiling=nv_cap,
                             max_ls_moves=cfg.max_ls_moves,
                         )
-                        self.ls_budget.record(time.time() - t_ls, cost_pre, cand.cost)
+                        self.ls_budget.record(time.perf_counter() - t_ls, cost_pre, cand.cost)
                     improved = cand.dominates(cur)
                     pool.add_plan(cand)
                     if cand.feasible and cand.nv <= best.nv and cand.dominates(best):
                         best, score, no_imp = cand.copy(), cfg.sigma1, 0
-                        self.trajectory_log.append(
-                            {
-                                "t_sec": round(time.time() - self._t_start, 3),
-                                "nv": int(best.nv),
-                                "td": round(float(best.cost), 3),
-                                "iter": int(it),
-                            }
-                        )
+                        self._capture_native(best, "search", it)
                         pool.add_plan(best)
                         self.archive.update(best)
                         no_best_imp = 0
@@ -2050,7 +2179,7 @@ class HybridDDQNSolver:
                         nv_cap = best.nv
                         _bks_entry = BKS.get(self.inst.name)
                         _bks_nv = int(_bks_entry["nv"]) if _bks_entry else 0
-                        recombined = recombine_with_route_pool(
+                        recombined = self._recombine_with_pool(
                             best,
                             pool,
                             cfg,
@@ -2063,6 +2192,7 @@ class HybridDDQNSolver:
                             best = self._local_search(
                                 recombined, max_passes=1, nv_ceiling=recombined.nv, max_ls_moves=cfg.max_ls_moves
                             )
+                            self._capture_native(best, "search", it)
                             pool.add_plan(best)
                             self.archive.update(best)
                             cur = best.copy()
@@ -2083,7 +2213,7 @@ class HybridDDQNSolver:
                     cadence = max(15, cfg.plateau_start // 3)
                     if no_best_imp % cadence == 0:
                         target_nv = best.nv - 1
-                        sp_res = recombine_with_route_pool(
+                        sp_res = self._recombine_with_pool(
                             best,
                             pool,
                             cfg,
@@ -2096,6 +2226,7 @@ class HybridDDQNSolver:
                             best = self._local_search(
                                 sp_res, max_passes=2, nv_ceiling=sp_res.nv, max_ls_moves=cfg.max_ls_moves
                             )
+                            self._capture_native(best, "search", it)
                             pool.add_plan(best)
                             self.archive.update(best)
                             cur = best.copy()
@@ -2106,7 +2237,7 @@ class HybridDDQNSolver:
 
                 # Trigger RL-guided split controller at dynamic intervals
                 trigger_interval = max(cfg.split_trigger_interval, self.inst.n // 2)
-                if not frozen and it >= cfg.split_trigger_after and it % trigger_interval == 0:
+                if cfg.split_enabled and not frozen and it >= cfg.split_trigger_after and it % trigger_interval == 0:
                     split_res = self.split_ctrl.try_split(best, best.nv)
                     if split_res is not None:
                         split_res = self._local_search(
@@ -2117,6 +2248,7 @@ class HybridDDQNSolver:
                         )
                         if split_res.dominates(best):
                             best = split_res
+                            self._capture_native(best, "search", it)
                             pool.add_plan(best)
                             self.archive.update(best)
                             cur = best.copy()
@@ -2150,7 +2282,7 @@ class HybridDDQNSolver:
                     )
                 next_imp = sum(recent_improvements) / max(len(recent_improvements), 1)
                 next_state = self._op_state(cur, best, action, it + 1, temp, no_imp, pool, next_imp)
-                done = 1.0 if no_imp >= cfg.early_stop_patience else 0.0
+                done = 1.0 if not cfg.wall_clock_only and no_imp >= cfg.early_stop_patience else 0.0
                 if not frozen and getattr(self, "use_op_rl", True):
                     iter_rew_raw = self._iteration_reward(
                         cur_cost_before,
@@ -2182,7 +2314,8 @@ class HybridDDQNSolver:
 
                 temp *= cfg.temp_decay * mode.temp_decay_scale
                 history.append(best.cost)
-                if no_imp >= cfg.early_stop_patience:
+                self.search_iterations += 1
+                if not cfg.wall_clock_only and no_imp >= cfg.early_stop_patience:
                     break
 
             for mb in self.mode_bandits:
@@ -2228,14 +2361,14 @@ class HybridDDQNSolver:
                     0.0,
                 )
                 self.ctrl.train_step()
-            if no_imp >= cfg.early_stop_patience:
+            if not cfg.wall_clock_only and no_imp >= cfg.early_stop_patience:
                 break
 
         _bks_entry = BKS.get(self.inst.name)
         _bks_nv = int(_bks_entry["nv"]) if _bks_entry else 0
 
         if getattr(cfg, "pool_recombine_enabled", True) and cfg.recombine_after_main_search and not self._out_of_time():
-            recombined = recombine_with_route_pool(
+            recombined = self._recombine_with_pool(
                 best,
                 pool,
                 cfg,
@@ -2246,31 +2379,17 @@ class HybridDDQNSolver:
             )
             if recombined.dominates(best):
                 best = recombined
+                self._capture_native(best, "tail", it)
                 pool.add_plan(best)
                 history.append(best.cost)
-                self.trajectory_log.append(
-                    {
-                        "t_sec": round(time.time() - self._t_start, 3),
-                        "nv": int(best.nv),
-                        "td": round(float(best.cost), 3),
-                        "iter": int(it),
-                    }
-                )
 
         if not self._out_of_time():
             best = self._fixed_nv_polish(best, pool, inherited_bandit=self.mode_bandits[MODE_INTENSIFY])
+            self._capture_native(best, "tail", it)
             history.append(best.cost)
-            self.trajectory_log.append(
-                {
-                    "t_sec": round(time.time() - self._t_start, 3),
-                    "nv": int(best.nv),
-                    "td": round(float(best.cost), 3),
-                    "iter": int(it),
-                }
-            )
 
         if cfg.recombine_after_polish and not self._out_of_time():
-            recombined = recombine_with_route_pool(
+            recombined = self._recombine_with_pool(
                 best,
                 pool,
                 cfg,
@@ -2283,15 +2402,8 @@ class HybridDDQNSolver:
                 best = self._local_search(
                     recombined, max_passes=cfg.polish_ls_passes, nv_ceiling=recombined.nv, max_ls_moves=cfg.max_ls_moves
                 )
+                self._capture_native(best, "tail", it)
                 history.append(best.cost)
-                self.trajectory_log.append(
-                    {
-                        "t_sec": round(time.time() - self._t_start, 3),
-                        "nv": int(best.nv),
-                        "td": round(float(best.cost), 3),
-                        "iter": int(it),
-                    }
-                )
 
         # Scale post-processing search effort based on hybrid_iterations budget
         budget_scale = max(0.005, cfg.hybrid_iterations / 1200.0)
@@ -2342,7 +2454,7 @@ class HybridDDQNSolver:
             for _target_nv in range(best.nv - 1, max(_bks_nv - 1, 0), -1):
                 if self._out_of_time():
                     break
-                _rec = recombine_with_route_pool(
+                _rec = self._recombine_with_pool(
                     best, pool, cfg, nv_target=_target_nv, heatmap=self.heatmap, _stats=_stats
                 )
                 if not _rec.feasible or _rec.nv > _target_nv:
@@ -2356,18 +2468,22 @@ class HybridDDQNSolver:
                 )
                 if _rec.feasible and _rec.nv <= _target_nv:
                     best = _rec
+                    self._capture_native(best, "tail", it)
                     pool.add_plan(best)
                     history.append(best.cost)
 
             # Each elimination pass is skipped once the deadline has passed; a
             # skipped pass leaves ``best`` untouched, so the guards below no-op.
-            chain_result = _ejection_chain_eliminate(best) if not self._out_of_time() else None
+            chain_result = (
+                _ejection_chain_eliminate(best, gec_enabled=cfg.gec_enabled) if not self._out_of_time() else None
+            )
             if (
                 chain_result is not None
                 and chain_result.feasible
                 and (chain_result.nv < best.nv or chain_result.dominates(best))
             ):
                 best = chain_result
+                self._capture_native(best, "tail", it)
                 pool.add_plan(best)
                 history.append(best.cost)
 
@@ -2378,18 +2494,21 @@ class HybridDDQNSolver:
                     pool=pool,
                     hard_mode=_one_over_bks,
                     deadline=getattr(self, "_deadline", None),
+                    gec_enabled=cfg.gec_enabled,
                 )
                 if not self._out_of_time()
                 else best
             )
             if buffered.feasible and (buffered.nv < best.nv or buffered.dominates(best)):
                 best = buffered
+                self._capture_native(best, "tail", it)
                 pool.add_plan(best)
                 history.append(best.cost)
 
             eliminated = _iterative_route_elimination(best, self.inst, pool=pool) if not self._out_of_time() else best
             if eliminated.feasible and (eliminated.nv < best.nv or eliminated.dominates(best)):
                 best = eliminated
+                self._capture_native(best, "tail", it)
                 pool.add_plan(best)
                 history.append(best.cost)
 
@@ -2402,11 +2521,13 @@ class HybridDDQNSolver:
                     and (committed.nv < best.nv or committed.dominates(best))
                 ):
                     best = committed
+                    self._capture_native(best, "tail", it)
                     pool.add_plan(best)
                     history.append(best.cost)
-                    chain2 = _ejection_chain_eliminate(best)
+                    chain2 = _ejection_chain_eliminate(best, gec_enabled=cfg.gec_enabled)
                     if chain2 is not None and chain2.feasible and (chain2.nv < best.nv or chain2.dominates(best)):
                         best = chain2
+                        self._capture_native(best, "tail", it)
                         pool.add_plan(best)
                         history.append(best.cost)
 
@@ -2418,6 +2539,7 @@ class HybridDDQNSolver:
             is_wide_tw = self.inst.tw_tight_frac < 0.25
             n_intra_passes = 45 if is_wide_tw else 25
             best = td_converge_polish(best, max_passes=n_intra_passes, deadline=getattr(self, "_deadline", None))
+            self._capture_native(best, "tail", it)
             if best.feasible:
                 history.append(best.cost)
 
@@ -2435,10 +2557,11 @@ class HybridDDQNSolver:
             )
             if td_polished.feasible and td_polished.cost + 1e-6 < best.cost:
                 best = td_polished
+                self._capture_native(best, "tail", it)
                 history.append(best.cost)
 
             td_rec = (
-                recombine_with_route_pool(
+                self._recombine_with_pool(
                     best,
                     pool,
                     cfg,
@@ -2451,6 +2574,7 @@ class HybridDDQNSolver:
             )
             if td_rec.feasible and td_rec.cost + 1e-6 < best.cost:
                 best = td_rec
+                self._capture_native(best, "tail", it)
                 pool.add_plan(best)
                 history.append(best.cost)
 
@@ -2459,8 +2583,10 @@ class HybridDDQNSolver:
                 best = self._fixed_nv_polish(
                     best, pool, inherited_bandit=self.mode_bandits[MODE_INTENSIFY], initial_temp=1.0
                 )
+                self._capture_native(best, "tail", it)
                 history.append(best.cost)
                 best = td_converge_polish(best, max_passes=n_intra_passes, deadline=getattr(self, "_deadline", None))
+                self._capture_native(best, "tail", it)
                 if best.feasible:
                     history.append(best.cost)
 
@@ -2472,12 +2598,13 @@ class HybridDDQNSolver:
                     deadline=getattr(self, "_deadline", None),
                     heatmap=self.heatmap,
                 )
+                self._capture_native(best, "tail", it)
                 if best.feasible:
                     history.append(best.cost)
 
             # Phase E: Final Exact Set Partitioning Recombination on Full Accumulated Pool
             if not self._out_of_time():
-                final_rec = recombine_with_route_pool(
+                final_rec = self._recombine_with_pool(
                     best,
                     pool,
                     cfg,
@@ -2488,14 +2615,16 @@ class HybridDDQNSolver:
                 )
                 if final_rec.feasible and final_rec.cost + 1e-6 < best.cost:
                     best = final_rec
+                    self._capture_native(best, "tail", it)
                     pool.add_plan(best)
                     history.append(best.cost)
                 best = td_converge_polish(best, max_passes=15, deadline=getattr(self, "_deadline", None))
+                self._capture_native(best, "tail", it)
                 if best.feasible:
                     history.append(best.cost)
 
         # Final split controller attempt at the end of search
-        if not frozen and self.split_ctrl is not None and not self._out_of_time():
+        if cfg.split_enabled and not frozen and self.split_ctrl is not None and not self._out_of_time():
             split_res = self.split_ctrl.try_split(best, best.nv)
             if split_res is not None:
                 split_res = self._local_search(
@@ -2506,24 +2635,43 @@ class HybridDDQNSolver:
                 )
                 if split_res.dominates(best):
                     best = split_res
+                    self._capture_native(best, "tail", it)
                     pool.add_plan(best)
                     history.append(best.cost)
 
         # Final Purge of Stranded / Fragmented Routes (Eliminate single-seed vehicle leaks)
         _bks_entry = BKS.get(self.inst.name)
         _bks_nv = int(_bks_entry["nv"]) if _bks_entry else 0
-        if best.nv > _bks_nv and len(best.routes) >= 2:
+        if best.nv > _bks_nv and len(best.routes) >= 2 and not self._out_of_time():
             gec_last = self._try_gec_route_reduction(best)
             if gec_last is not None and gec_last.feasible and gec_last.nv < best.nv:
                 best = gec_last
+                self._capture_native(best, "tail", it)
                 pool.add_plan(best)
-                best = td_converge_polish(best, max_passes=10)
-            merged_last = _try_route_merge(best, max_pairs=16)
+                best = td_converge_polish(best, max_passes=10, deadline=getattr(self, "_deadline", None))
+                self._capture_native(best, "tail", it)
+            merged_last = (
+                _try_route_merge(best, max_pairs=16, deadline=getattr(self, "_deadline", None))
+                if not self._out_of_time()
+                else None
+            )
             if merged_last is not None and merged_last.feasible and merged_last.nv < best.nv:
                 best = merged_last
+                self._capture_native(best, "tail", it)
                 pool.add_plan(best)
-                best = td_converge_polish(best, max_passes=10)
+                best = td_converge_polish(best, max_passes=10, deadline=getattr(self, "_deadline", None))
+                self._capture_native(best, "tail", it)
 
+        # Keep searching, rather than carrying an early final result forward to
+        # later cutoffs, if the normal tail phases finish before their allocation.
+        while cfg.wall_clock_only and not self._out_of_time():
+            polished = self._fixed_nv_polish(best, pool, inherited_bandit=self.mode_bandits[MODE_INTENSIFY])
+            if polished.dominates(best):
+                best = polished
+                self._capture_native(best, "tail", it)
+                history.append(best.cost)
+
+        best = self._finish_native()
         best.algo = self.algo_name
         self.archive.update(best)
 
@@ -2685,6 +2833,7 @@ class HybridFixedSolver(HybridDDQNSolver):
         _is_sub_solve: bool = False,
         _warm_start: bool = False,
         _deadline: float | None = None,
+        _certifier: NativeIncumbent | None = None,
     ) -> tuple[Plan, list[float]]:
         plan, history = super().solve(
             seed=seed,
@@ -2694,6 +2843,7 @@ class HybridFixedSolver(HybridDDQNSolver):
             _is_sub_solve=_is_sub_solve,
             _warm_start=_warm_start,
             _deadline=_deadline,
+            _certifier=_certifier,
         )
         plan.algo = self.algo_name
         return plan, history
@@ -2736,6 +2886,7 @@ class HybridRuleSolver(HybridDDQNSolver):
         _is_sub_solve: bool = False,
         _warm_start: bool = False,
         _deadline: float | None = None,
+        _certifier: NativeIncumbent | None = None,
     ) -> tuple[Plan, list[float]]:
         plan, history = super().solve(
             seed=seed,
@@ -2745,6 +2896,7 @@ class HybridRuleSolver(HybridDDQNSolver):
             _is_sub_solve=_is_sub_solve,
             _warm_start=_warm_start,
             _deadline=_deadline,
+            _certifier=_certifier,
         )
         plan.algo = self.algo_name
         return plan, history
@@ -2772,6 +2924,7 @@ class RuleMacroHybridSolver(HybridDDQNSolver):
     def _select_action(self, state_before, cur, best, no_imp, progress, pool, frozen) -> tuple[int, bool]:
         del state_before, best, frozen
         # 1. route_reduce_trigger -> a3 ROUTE_ELIMINATE
+        self.controller_counts["macro_rule"] += 1
         if self._route_reduce_trigger(cur, no_imp):
             mode = MODE_ROUTE_REDUCE
         # 2. elif rho_fill >= 0.66 & progress < 0.92 & stagnant & pool big -> a4 POOL_RECOMBINE
@@ -2870,6 +3023,7 @@ class FlatDDQNSolver(HybridDDQNSolver):
         _is_sub_solve: bool = False,
         _warm_start: bool = False,
         _deadline: float | None = None,
+        _certifier: NativeIncumbent | None = None,
     ) -> tuple[Plan, list[float]]:
         plan, history = super().solve(
             seed=seed,
@@ -2879,84 +3033,25 @@ class FlatDDQNSolver(HybridDDQNSolver):
             _is_sub_solve=_is_sub_solve,
             _warm_start=_warm_start,
             _deadline=_deadline,
+            _certifier=_certifier,
         )
         plan.algo = self.algo_name
         return plan, history
 
 
 def run_ortools(inst: Inst, cfg: Config) -> tuple[Plan | None, float]:
+    """Compatibility API; elapsed now includes model construction and validation."""
     if not ORTOOLS_OK:
         print("  [OR-Tools] not installed — skipping")
         return None, 0.0
-    from ortools.constraint_solver import pywrapcp, routing_enums_pb2
+    from .ortools_baseline import ORToolsNoSolutionError, ORToolsSolver
 
-    scale = 100000  # Increased scale factor from 100 to 100000 for precision
-    n_nodes = inst.n + 1
-    n_vehicles = inst.n
-    manager = pywrapcp.RoutingIndexManager(n_nodes, n_vehicles, 0)
-    routing = pywrapcp.RoutingModel(manager)
-
-    # Use np.round to avoid truncation/underflow errors
-    dist_mat = np.round(inst.dist * scale).astype(np.int64)
-    serv_int = np.round(inst.service_times * scale).astype(np.int64)
-
-    # 1. Cost Evaluator: pure travel distance (avoids GLS search bias from service times)
-    cost_matrix = dist_mat.tolist()
-    cost_idx = routing.RegisterTransitMatrix(cost_matrix)
-    routing.SetArcCostEvaluatorOfAllVehicles(cost_idx)
-
-    # Set a large fixed cost per vehicle to ensure OR-Tools prioritizes vehicle count minimization (fleet size)
-    routing.SetFixedCostOfAllVehicles(int(100000 * scale))
-    demands_int = inst.demands.astype(int)
-
-    def demand_cb(fi):
-        return int(demands_int[manager.IndexToNode(fi)])
-
-    demand_idx = routing.RegisterUnaryTransitCallback(demand_cb)
-    routing.AddDimensionWithVehicleCapacity(demand_idx, 0, [int(inst.capacity)] * n_vehicles, True, "Capacity")
-
-    # 2. Time Dimension: travel distance + service time (required for time windows)
-    transit_matrix = (dist_mat + serv_int[:, None]).tolist()
-    transit_idx = routing.RegisterTransitMatrix(transit_matrix)
-    routing.AddDimension(
-        transit_idx, int(np.round(inst.horizon * scale)), int(np.round(inst.horizon * scale)), False, "Time"
-    )
-    time_dim = routing.GetDimensionOrDie("Time")
-    for node in range(1, inst.n + 1):
-        idx = manager.NodeToIndex(node)
-        time_dim.CumulVar(idx).SetRange(
-            int(np.round(inst.ready_times[node] * scale)), int(np.round(inst.due_times[node] * scale))
-        )
-    for v in range(n_vehicles):
-        routing.AddVariableMinimizedByFinalizer(time_dim.CumulVar(routing.Start(v)))
-        routing.AddVariableMinimizedByFinalizer(time_dim.CumulVar(routing.End(v)))
-    params = pywrapcp.DefaultRoutingSearchParameters()
-    params.first_solution_strategy = routing_enums_pb2.FirstSolutionStrategy.LOCAL_CHEAPEST_INSERTION
-    params.local_search_metaheuristic = routing_enums_pb2.LocalSearchMetaheuristic.GUIDED_LOCAL_SEARCH
-    params.time_limit.seconds = int(cfg.ortools_time_limit)
-    params.log_search = False
-    t0 = time.time()
-    solution = routing.SolveWithParameters(params)
-    elapsed = time.time() - t0
-    if not solution:
-        print(f"  [OR-Tools] no solution ({elapsed:.1f}s)")
-        return None, elapsed
-    routes: list[list[int]] = []
-    for v in range(n_vehicles):
-        route: list[int] = []
-        idx = routing.Start(v)
-        while not routing.IsEnd(idx):
-            node = manager.IndexToNode(idx)
-            if node != 0:
-                route.append(node)
-            idx = solution.Value(routing.NextVar(idx))
-        if route:
-            routes.append(route)
-    plan = Plan(routes, inst, ALGO_ORTOOLS)
-    if not plan.feasible:
-        print(f"  [OR-Tools] infeasible ({elapsed:.1f}s)")
-        return None, elapsed
-    return plan, elapsed
+    solver = ORToolsSolver(inst, cfg)
+    try:
+        plan, _ = solver.solve(seed=cfg.seed)
+    except ORToolsNoSolutionError:
+        return None, solver.elapsed_sec
+    return plan, solver.elapsed_sec
 
 
 class ReplayBuffer:

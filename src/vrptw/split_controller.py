@@ -320,7 +320,7 @@ class SplitController:
         evaluates feasibility, computes rewards, trains SplitController, and returns
         the new Plan if it strictly dominates the original.
         """
-        if not plan.routes:
+        if not self.cfg.split_enabled or not plan.routes:
             return None
 
         tour = extract_giant_tour(plan)

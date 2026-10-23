@@ -89,7 +89,7 @@ def test_split_controller_state_and_action(dummy_instance):
 
 
 def test_try_split(dummy_instance):
-    cfg = Config(split_eps_start=0.0)  # no exploration for deterministic test
+    cfg = Config(split_enabled=True, split_eps_start=0.0)  # explicit ON control, no exploration
     controller = SplitController(cfg, dummy_instance)
 
     # Set weights to make it predict action 0 (continue) or 1 (split)

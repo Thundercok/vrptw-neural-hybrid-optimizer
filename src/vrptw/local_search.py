@@ -149,7 +149,9 @@ class _PlanCache:
         )
 
 
-def _two_opt_best(route: list[int], inst: Inst) -> list[int]:
+def _two_opt_best(route: list[int], inst: Inst, *, deadline: float | None = None) -> list[int]:
+    if deadline is not None and time.perf_counter() >= deadline:
+        return route[:]
     if len(route) < 4:
         return route[:]
     route_arr = np.array(route, dtype=np.int64)
@@ -162,6 +164,8 @@ def _two_opt_best(route: list[int], inst: Inst) -> list[int]:
         inst.due_times,
         inst.service_times,
     )
+    if deadline is not None and time.perf_counter() >= deadline:
+        return route[:]
     return list(result)
 
 
@@ -175,13 +179,19 @@ def _best_relocate(
     heatmap: np.ndarray | None = None,
     pruning_threshold: float = 0.0,
     cache: _PlanCache | None = None,
+    *,
+    deadline: float | None = None,
 ):
+    if deadline is not None and time.perf_counter() >= deadline:
+        return None
     inst = plan.inst
     best_delta, best_move = -1e-9, None
     max_dist = max(inst.max_dist, 1.0)
 
     if cache is None:
         cache = _PlanCache.from_plan(plan)
+    if deadline is not None and time.perf_counter() >= deadline:
+        return None
 
     route_arrays = cache.route_arrays
     route_loads = cache.route_loads
@@ -193,8 +203,12 @@ def _best_relocate(
     relocate_thresh_sq = (0.55 * max_dist) ** 2
 
     for si in range(len(plan.routes)):
+        if deadline is not None and time.perf_counter() >= deadline:
+            return None
         source_route = plan.routes[si]
         for sp in range(len(source_route)):
+            if deadline is not None and time.perf_counter() >= deadline:
+                return None
             node = source_route[sp]
             sn_empty = len(source_route) == 1
             # Compute removal delta in O(1) — removing a node from a feasible
@@ -210,6 +224,8 @@ def _best_relocate(
             candidate_routes = set()
             if node < len(inst.neighbors_k):
                 for neighbor in inst.neighbors_k[node]:
+                    if deadline is not None and time.perf_counter() >= deadline:
+                        return None
                     ri_n = node_to_route[neighbor]
                     if ri_n >= 0:
                         candidate_routes.add(int(ri_n))
@@ -219,11 +235,15 @@ def _best_relocate(
                 cdiff = centroid_arr - node_coord
                 near = np.flatnonzero((cdiff * cdiff).sum(axis=1) <= relocate_thresh_sq)
                 for di in near:
+                    if deadline is not None and time.perf_counter() >= deadline:
+                        return None
                     di = int(di)
                     if di != si:
                         candidate_routes.add(di)
 
             for di in candidate_routes:
+                if deadline is not None and time.perf_counter() >= deadline:
+                    return None
                 # Fast capacity pre-check
                 if route_loads[di] + inst.demands[node] > inst.capacity:
                     continue
@@ -271,8 +291,12 @@ def _best_relocate(
                             0.0,
                             False,
                         )
+                        if deadline is not None and time.perf_counter() >= deadline:
+                            return None
                         scan_memo[mkey] = hit
                     _key, insert_delta, best_pos = hit
+                if deadline is not None and time.perf_counter() >= deadline:
+                    return None
                 if best_pos == -1:
                     continue
                 new_nv = plan.nv - (1 if sn_empty else 0)
@@ -286,6 +310,8 @@ def _best_relocate(
                     best_move = (si, sp, di, int(best_pos))
                     best_cost_delta = remove_delta + insert_delta
     if best_move is None:
+        return None
+    if deadline is not None and time.perf_counter() >= deadline:
         return None
     return best_move, best_cost_delta
 
@@ -306,13 +332,19 @@ def _best_swap(
     heatmap: np.ndarray | None = None,
     pruning_threshold: float = 0.0,
     cache: _PlanCache | None = None,
+    *,
+    deadline: float | None = None,
 ):
+    if deadline is not None and time.perf_counter() >= deadline:
+        return None
     inst = plan.inst
     best_delta, best_move = -1e-9, None
     max_dist = max(inst.max_dist, 1.0)
 
     if cache is None:
         cache = _PlanCache.from_plan(plan)
+    if deadline is not None and time.perf_counter() >= deadline:
+        return None
 
     route_arrays = cache.route_arrays
     centroid_sqdist = cache.centroid_sqdist
@@ -323,7 +355,11 @@ def _best_swap(
     pair_thresh_sq = (0.65 * max_dist) ** 2
 
     for si in range(len(plan.routes)):
+        if deadline is not None and time.perf_counter() >= deadline:
+            return None
         for di in range(si + 1, len(plan.routes)):
+            if deadline is not None and time.perf_counter() >= deadline:
+                return None
             # Neighbor list pruning: skip route pairs with no neighboring customers
             if route_sets[si].isdisjoint(route_neighbors[di]) and route_sets[di].isdisjoint(route_neighbors[si]):
                 continue
@@ -357,12 +393,18 @@ def _best_swap(
                         inst.due_times,
                         inst.service_times,
                     )
+                    if deadline is not None and time.perf_counter() >= deadline:
+                        return None
                     scan_memo[mkey] = hit
                 delta, sp, dp = hit
+            if deadline is not None and time.perf_counter() >= deadline:
+                return None
             if sp >= 0 and delta < best_delta:
                 best_delta = delta
                 best_move = (si, int(sp), di, int(dp))
     if best_move is None:
+        return None
+    if deadline is not None and time.perf_counter() >= deadline:
         return None
     return best_move, best_delta
 
@@ -379,13 +421,19 @@ def _best_swap_21(
     heatmap: np.ndarray | None = None,
     pruning_threshold: float = 0.0,
     cache: _PlanCache | None = None,
+    *,
+    deadline: float | None = None,
 ):
+    if deadline is not None and time.perf_counter() >= deadline:
+        return None
     inst = plan.inst
     best_delta, best_move = -1e-9, None
     max_dist = max(inst.max_dist, 1.0)
 
     if cache is None:
         cache = _PlanCache.from_plan(plan)
+    if deadline is not None and time.perf_counter() >= deadline:
+        return None
 
     route_arrays = cache.route_arrays
     centroid_sqdist = cache.centroid_sqdist
@@ -396,7 +444,11 @@ def _best_swap_21(
     pair_thresh_sq = (0.65 * max_dist) ** 2
 
     for si in range(len(plan.routes)):
+        if deadline is not None and time.perf_counter() >= deadline:
+            return None
         for di in range(si + 1, len(plan.routes)):
+            if deadline is not None and time.perf_counter() >= deadline:
+                return None
             if route_sets[si].isdisjoint(route_neighbors[di]) and route_sets[di].isdisjoint(route_neighbors[si]):
                 continue
             if centroid_sqdist[si, di] > pair_thresh_sq:
@@ -414,12 +466,18 @@ def _best_swap_21(
                     inst.due_times,
                     inst.service_times,
                 )
+                if deadline is not None and time.perf_counter() >= deadline:
+                    return None
                 scan_memo[mkey] = hit
             delta, mtype, sp, dp = hit
+            if deadline is not None and time.perf_counter() >= deadline:
+                return None
             if mtype > 0 and delta < best_delta:
                 best_delta = delta
                 best_move = (si, di, int(mtype), int(sp), int(dp))
     if best_move is None:
+        return None
+    if deadline is not None and time.perf_counter() >= deadline:
         return None
     return best_move, best_delta
 
@@ -449,7 +507,11 @@ def _cross_exchange(
     heatmap: np.ndarray | None = None,
     pruning_threshold: float = 0.0,
     cache: _PlanCache | None = None,
+    *,
+    deadline: float | None = None,
 ) -> Plan | None:
+    if deadline is not None and time.perf_counter() >= deadline:
+        return None
     inst = plan.inst
     if nv_ceiling is not None and plan.nv > nv_ceiling:
         return None
@@ -459,6 +521,8 @@ def _cross_exchange(
 
     if cache is None:
         cache = _PlanCache.from_plan(plan)
+    if deadline is not None and time.perf_counter() >= deadline:
+        return None
 
     route_arrays = cache.route_arrays
     centroid_sqdist = cache.centroid_sqdist
@@ -471,7 +535,11 @@ def _cross_exchange(
     pair_thresh_sq = (0.55 * max_dist) ** 2
 
     for i in range(len(plan.routes)):
+        if deadline is not None and time.perf_counter() >= deadline:
+            return None
         for j in range(i + 1, len(plan.routes)):
+            if deadline is not None and time.perf_counter() >= deadline:
+                return None
             r1, r2 = plan.routes[i], plan.routes[j]
             if not r1 or not r2:
                 continue
@@ -488,7 +556,12 @@ def _cross_exchange(
                 continue
             # Delegate entire (p1, p2, len1, len2) search to JIT
             if heatmap is not None and pruning_threshold > 0.0:
-                old_pair = float(_route_cost(r1_arr, inst.dist)) + float(_route_cost(r2_arr, inst.dist))
+                old_first = float(_route_cost(r1_arr, inst.dist))
+                if deadline is not None and time.perf_counter() >= deadline:
+                    return None
+                old_pair = old_first + float(_route_cost(r2_arr, inst.dist))
+                if deadline is not None and time.perf_counter() >= deadline:
+                    return None
                 max_len1 = 4 if len(r1) >= 20 else (3 if len(r1) >= 12 else 2)
                 max_len2 = 4 if len(r2) >= 20 else (3 if len(r2) >= 12 else 2)
                 delta, p1, len1, p2, len2 = _cross_exchange_pair_pruned_numba(
@@ -510,7 +583,12 @@ def _cross_exchange(
                 mkey = (3, route_keys[i], route_keys[j])
                 hit = scan_memo.get(mkey)
                 if hit is None:
-                    old_pair = float(_route_cost(r1_arr, inst.dist)) + float(_route_cost(r2_arr, inst.dist))
+                    old_first = float(_route_cost(r1_arr, inst.dist))
+                    if deadline is not None and time.perf_counter() >= deadline:
+                        return None
+                    old_pair = old_first + float(_route_cost(r2_arr, inst.dist))
+                    if deadline is not None and time.perf_counter() >= deadline:
+                        return None
                     max_len1 = 4 if len(r1) >= 20 else (3 if len(r1) >= 12 else 2)
                     max_len2 = 4 if len(r2) >= 20 else (3 if len(r2) >= 12 else 2)
                     hit = _cross_exchange_pair_numba(
@@ -526,8 +604,12 @@ def _cross_exchange(
                         inst.service_times,
                         old_pair,
                     )
+                    if deadline is not None and time.perf_counter() >= deadline:
+                        return None
                     scan_memo[mkey] = hit
                 delta, p1, len1, p2, len2 = hit
+            if deadline is not None and time.perf_counter() >= deadline:
+                return None
             if p1 >= 0 and delta < best_delta:
                 seg2 = list(r2[p2 : p2 + len2])
                 seg1 = list(r1[p1 : p1 + len1])
@@ -541,6 +623,8 @@ def _cross_exchange(
         cand = Plan(best_routes, inst, plan.algo)
         cand._cost = plan.cost + best_delta
         cand._ok = True
+        if deadline is not None and time.perf_counter() >= deadline:
+            return None
         return cand
     return None
 
@@ -551,7 +635,11 @@ def _cross_tail(
     heatmap: np.ndarray | None = None,
     pruning_threshold: float = 0.0,
     cache: _PlanCache | None = None,
+    *,
+    deadline: float | None = None,
 ) -> Plan | None:
+    if deadline is not None and time.perf_counter() >= deadline:
+        return None
     inst = plan.inst
     if nv_ceiling is not None and plan.nv > nv_ceiling:
         return None
@@ -562,6 +650,8 @@ def _cross_tail(
 
     if cache is None:
         cache = _PlanCache.from_plan(plan)
+    if deadline is not None and time.perf_counter() >= deadline:
+        return None
 
     route_arrays = cache.route_arrays
     centroid_sqdist = cache.centroid_sqdist
@@ -572,7 +662,11 @@ def _cross_tail(
     pair_thresh_sq = (0.65 * max_dist) ** 2
 
     for i in range(len(plan.routes)):
+        if deadline is not None and time.perf_counter() >= deadline:
+            return None
         for j in range(i + 1, len(plan.routes)):
+            if deadline is not None and time.perf_counter() >= deadline:
+                return None
             r1, r2 = plan.routes[i], plan.routes[j]
             if not r1 or not r2:
                 continue
@@ -588,7 +682,12 @@ def _cross_tail(
             r1_arr, r2_arr = route_arrays[i], route_arrays[j]
 
             if heatmap is not None and pruning_threshold > 0.0:
-                old_pair = float(_route_cost(r1_arr, inst.dist)) + float(_route_cost(r2_arr, inst.dist))
+                old_first = float(_route_cost(r1_arr, inst.dist))
+                if deadline is not None and time.perf_counter() >= deadline:
+                    return None
+                old_pair = old_first + float(_route_cost(r2_arr, inst.dist))
+                if deadline is not None and time.perf_counter() >= deadline:
+                    return None
                 delta, split_i, split_j = _cross_tail_pair_pruned_numba(
                     r1_arr,
                     r2_arr,
@@ -606,7 +705,12 @@ def _cross_tail(
                 mkey = (4, route_keys[i], route_keys[j])
                 hit = scan_memo.get(mkey)
                 if hit is None:
-                    old_pair = float(_route_cost(r1_arr, inst.dist)) + float(_route_cost(r2_arr, inst.dist))
+                    old_first = float(_route_cost(r1_arr, inst.dist))
+                    if deadline is not None and time.perf_counter() >= deadline:
+                        return None
+                    old_pair = old_first + float(_route_cost(r2_arr, inst.dist))
+                    if deadline is not None and time.perf_counter() >= deadline:
+                        return None
                     hit = _cross_tail_pair_numba(
                         r1_arr,
                         r2_arr,
@@ -618,9 +722,13 @@ def _cross_tail(
                         inst.service_times,
                         old_pair,
                     )
+                    if deadline is not None and time.perf_counter() >= deadline:
+                        return None
                     scan_memo[mkey] = hit
                 delta, split_i, split_j = hit
 
+            if deadline is not None and time.perf_counter() >= deadline:
+                return None
             if split_i >= 0:
                 # A vehicle is eliminated if either tail swap makes a route empty.
                 len1_new = split_i + (len(r2) - split_j)
@@ -649,11 +757,13 @@ def _cross_tail(
         cand = Plan(best_routes, inst, plan.algo)
         cand._cost = plan.cost + best_cost_delta
         cand._ok = True
+        if deadline is not None and time.perf_counter() >= deadline:
+            return None
         return cand
     return None
 
 
-def _try_route_compact(plan: Plan, nv_ceiling: int | None = None) -> Plan | None:
+def _try_route_compact(plan: Plan, nv_ceiling: int | None = None, *, deadline: float | None = None) -> Plan | None:
     if len(plan.routes) <= 1:
         return None
     inst = plan.inst
@@ -662,12 +772,16 @@ def _try_route_compact(plan: Plan, nv_ceiling: int | None = None) -> Plan | None
         key=lambda i: (len(plan.routes[i]), _route_load(plan.routes[i], inst), _route_cost_list(plan.routes[i], inst)),
     )
     for ridx in ranked:
+        if deadline is not None and time.perf_counter() >= deadline:
+            return None
         source = plan.routes[ridx]
         others = [r[:] for i, r in enumerate(plan.routes) if i != ridx]
         ok = True
         for node in sorted(source, key=lambda n: (inst.due_times[n] - inst.ready_times[n], -inst.demands[n])):
             best_c, best_r, best_p = float("inf"), None, None
             for oi, route in enumerate(others):
+                if deadline is not None and time.perf_counter() >= deadline:
+                    return None
                 delta, pos = _best_insert_position(node, route, inst)
                 if pos is not None and delta < best_c:
                     best_c, best_r, best_p = delta, oi, pos
@@ -678,6 +792,8 @@ def _try_route_compact(plan: Plan, nv_ceiling: int | None = None) -> Plan | None
         if not ok:
             continue
         cand = Plan([r for r in others if r], inst, plan.algo)
+        if deadline is not None and time.perf_counter() >= deadline:
+            return None
         if not cand.feasible:
             continue
         if nv_ceiling is not None and cand.nv > nv_ceiling:
@@ -693,7 +809,10 @@ def _best_or_opt(
     heatmap: np.ndarray | None = None,
     pruning_threshold: float = 0.0,
     cache: _PlanCache | None = None,
+    deadline: float | None = None,
 ):
+    if deadline is not None and time.perf_counter() >= deadline:
+        return None
     inst = plan.inst
     best_delta, best_move = -1e-9, None
     best_cost_delta = 0.0
@@ -712,6 +831,8 @@ def _best_or_opt(
 
     for si in range(len(plan.routes)):
         for di in range(si + 1, len(plan.routes)):
+            if deadline is not None and time.perf_counter() >= deadline:
+                return None
             # Neighbor list pruning: skip route pairs with no neighboring customers
             if route_sets[si].isdisjoint(route_neighbors[di]) and route_sets[di].isdisjoint(route_neighbors[si]):
                 continue
@@ -829,13 +950,17 @@ def _merge_orderings(r1: list[int], r2: list[int], inst: Inst) -> list[list[int]
     return deduped
 
 
-def _build_merged_route(ordering: list[int], inst: Inst) -> list[int] | None:
+def _build_merged_route(ordering: list[int], inst: Inst, *, deadline: float | None = None) -> list[int] | None:
     route: list[int] = []
     for node in ordering:
+        if deadline is not None and time.perf_counter() >= deadline:
+            return None
         _, pos = _best_insert_position(node, route, inst)
         if pos is None:
             return None
         route.insert(pos, node)
+    if deadline is not None and time.perf_counter() >= deadline:
+        return None
     return route if _check_route(route, inst) else None
 
 
@@ -859,7 +984,11 @@ def _ranked_merge_pairs(plan: Plan, max_pairs: int) -> list[tuple[int, int]]:
     return [(i, j) for _, i, j in candidates[:max_pairs]]
 
 
-def merged_route_candidates(plan: Plan, max_pairs: int = 24, max_routes: int = 32) -> list[list[int]]:
+def merged_route_candidates(
+    plan: Plan, max_pairs: int = 24, max_routes: int = 32, *, deadline: float | None = None
+) -> list[list[int]]:
+    if deadline is not None and time.perf_counter() >= deadline:
+        return []
     if len(plan.routes) <= 1:
         return []
 
@@ -868,7 +997,9 @@ def merged_route_candidates(plan: Plan, max_pairs: int = 24, max_routes: int = 3
     seen: set[tuple[int, ...]] = set()
     for i, j in _ranked_merge_pairs(plan, max_pairs=max_pairs):
         for ordering in _merge_orderings(plan.routes[i], plan.routes[j], inst):
-            merged_route = _build_merged_route(ordering, inst)
+            if deadline is not None and time.perf_counter() >= deadline:
+                return candidates
+            merged_route = _build_merged_route(ordering, inst, deadline=deadline)
             if merged_route is None:
                 continue
             key = tuple(merged_route)
@@ -881,7 +1012,9 @@ def merged_route_candidates(plan: Plan, max_pairs: int = 24, max_routes: int = 3
     return candidates
 
 
-def _try_route_merge(plan: Plan, max_pairs: int = 24) -> Plan | None:
+def _try_route_merge(plan: Plan, max_pairs: int = 24, *, deadline: float | None = None) -> Plan | None:
+    if deadline is not None and time.perf_counter() >= deadline:
+        return None
     inst = plan.inst
     if len(plan.routes) <= 1:
         return None
@@ -892,7 +1025,9 @@ def _try_route_merge(plan: Plan, max_pairs: int = 24) -> Plan | None:
         r1 = plan.routes[i]
         r2 = plan.routes[j]
         for ordering in _merge_orderings(r1, r2, inst):
-            merged_route = _build_merged_route(ordering, inst)
+            if deadline is not None and time.perf_counter() >= deadline:
+                return None
+            merged_route = _build_merged_route(ordering, inst, deadline=deadline)
             if merged_route is None:
                 continue
 
@@ -1124,7 +1259,7 @@ def _guided_ejection_search(
     while pool_stack:
         if steps >= max_steps:
             return None
-        if deadline is not None and time.time() >= deadline:
+        if deadline is not None and time.perf_counter() >= deadline:
             return None
         steps += 1
         v = pool_stack.pop()
@@ -1184,6 +1319,8 @@ def _buffered_route_elimination(
     pool=None,
     hard_mode: bool = False,
     deadline: float | None = None,
+    *,
+    gec_enabled: bool = True,
 ) -> Plan:
     if hard_mode:
         beam_width = max(beam_width * 2, 32)
@@ -1218,16 +1355,16 @@ def _buffered_route_elimination(
         ges_budget = max(6, min(24, len(best.routes)))
         ges_used = 0
         for target_idx in ranked[:n_targets]:
-            if deadline is not None and time.time() >= deadline:
+            if deadline is not None and time.perf_counter() >= deadline:
                 break
-            local_ejections = max(2, min(max_ejections, len(best.routes[target_idx]) // 2 + 1))
+            local_ejections = max(2, min(max_ejections, len(best.routes[target_idx]) // 2 + 1)) if gec_enabled else 0
             cand = _try_buffered_route_elimination(
                 best,
                 target_idx,
                 max_ejections=local_ejections,
                 beam_width=beam_width,
             )
-            if cand is None and ges_used < ges_budget:
+            if gec_enabled and cand is None and ges_used < ges_budget:
                 # Guided Ejection Search picks up exactly where the beam gave
                 # up: LIFO pool + penalty-guided ejections + perturbation.
                 ges_used += 1
@@ -1246,7 +1383,7 @@ def _buffered_route_elimination(
     return best
 
 
-def _intra_route_or_opt(plan: Plan, nv_ceiling: int | None = None) -> Plan | None:
+def _intra_route_or_opt(plan: Plan, nv_ceiling: int | None = None, *, deadline: float | None = None) -> Plan | None:
     """
     Intra-Route Or-Opt — JIT-accelerated.
     Moves customer segments (length 1-3) to better positions within
@@ -1256,6 +1393,8 @@ def _intra_route_or_opt(plan: Plan, nv_ceiling: int | None = None) -> Plan | Non
     improved = False
     routes: list[list[int]] = []
     for route in plan.routes:
+        if deadline is not None and time.perf_counter() >= deadline:
+            return None
         if len(route) < 4:
             routes.append(route[:])
             continue
@@ -1272,6 +1411,8 @@ def _intra_route_or_opt(plan: Plan, nv_ceiling: int | None = None) -> Plan | Non
         if imp:
             improved = True
         routes.append(list(result))
+    if deadline is not None and time.perf_counter() >= deadline:
+        return None
     if not improved:
         return None
     cand = Plan(routes, inst, plan.algo)
@@ -1281,7 +1422,9 @@ def _intra_route_or_opt(plan: Plan, nv_ceiling: int | None = None) -> Plan | Non
     return cand if cand.dominates(plan) else None
 
 
-def _intra_route_optimize(route: list[int], inst: Inst, max_passes: int = 25) -> list[int]:
+def _intra_route_optimize(
+    route: list[int], inst: Inst, max_passes: int = 25, *, deadline: float | None = None
+) -> list[int]:
     """
     Run 2-opt and or-opt(1,2,3) on a single route until convergence.
     Fully JIT-compiled — designed for wide-TW instances where routes
@@ -1289,6 +1432,16 @@ def _intra_route_optimize(route: list[int], inst: Inst, max_passes: int = 25) ->
     """
     if len(route) < 4:
         return route[:]
+    if deadline is not None:
+        best = route[:]
+        for _ in range(max_passes):
+            if time.perf_counter() >= deadline:
+                break
+            candidate = _intra_route_optimize(best, inst, max_passes=1)
+            if time.perf_counter() >= deadline or candidate == best:
+                break
+            best = candidate
+        return best
     route_arr = np.array(route, dtype=np.int64)
     result = _intra_route_optimize_numba(
         route_arr,
@@ -1309,16 +1462,16 @@ def td_converge_polish(plan: Plan, max_passes: int = 25, deadline: float | None 
     Called during the BKS-NV TD polish phase. Unlike local_search(),
     this never modifies route assignments — only improves sequence quality.
 
-    ``deadline`` (absolute ``time.time()`` value) makes this anytime-safe:
+    ``deadline`` (absolute ``time.perf_counter()`` value) makes this anytime-safe:
     routes not yet optimised when the deadline passes are kept as-is. Without
     it this phase was a measured contributor to the 8% budget overrun at n=1000.
     """
     routes = []
     for r in plan.routes:
-        if deadline is not None and time.time() >= deadline:
+        if deadline is not None and time.perf_counter() >= deadline:
             routes.append(r[:])
         else:
-            routes.append(_intra_route_optimize(r, plan.inst, max_passes))
+            routes.append(_intra_route_optimize(r, plan.inst, max_passes, deadline=deadline))
     cand = Plan(routes, plan.inst, plan.algo)
     return cand if cand.feasible and cand.cost + 1e-9 < plan.cost else plan
 
@@ -1335,19 +1488,25 @@ def td_inter_route_polish(
     Iteratively executes inter-route local search operators (Relocate, Or-Opt,
     Swap 1-1, Swap 2-1, Cross-Tail, Cross-Exchange) until local minimum.
     """
+    if deadline is not None and time.perf_counter() >= deadline:
+        return plan
     if not plan.feasible:
         return plan
     best = plan.copy()
     cache = None
 
     for _ in range(max_passes):
-        if deadline is not None and time.time() >= deadline:
+        if deadline is not None and time.perf_counter() >= deadline:
             break
         improved = False
 
         routes = []
         for route in best.routes:
-            nr = _two_opt_best(route, best.inst)
+            if deadline is not None and time.perf_counter() >= deadline:
+                return best
+            nr = _two_opt_best(route, best.inst, deadline=deadline)
+            if deadline is not None and time.perf_counter() >= deadline:
+                return best
             routes.append(nr)
             if nr != route:
                 improved = True
@@ -1356,12 +1515,16 @@ def td_inter_route_polish(
             best._ok = True
 
         while True:
-            if deadline is not None and time.time() >= deadline:
+            if deadline is not None and time.perf_counter() >= deadline:
                 break
             cache = _PlanCache.from_plan(best, prev=cache)
+            if deadline is not None and time.perf_counter() >= deadline:
+                return best
             step_improved = False
 
-            res = _best_relocate(best, nv_ceiling=best.nv, heatmap=heatmap, cache=cache)
+            res = _best_relocate(best, nv_ceiling=best.nv, heatmap=heatmap, cache=cache, deadline=deadline)
+            if deadline is not None and time.perf_counter() >= deadline:
+                return best
             if res is not None:
                 move, cost_delta = res
                 cand = _apply_relocate(best, move)
@@ -1371,7 +1534,9 @@ def td_inter_route_polish(
                     best, improved, step_improved = cand, True, True
                     continue
 
-            res = _best_or_opt(best, nv_ceiling=best.nv, heatmap=heatmap, cache=cache)
+            res = _best_or_opt(best, nv_ceiling=best.nv, heatmap=heatmap, cache=cache, deadline=deadline)
+            if deadline is not None and time.perf_counter() >= deadline:
+                return best
             if res is not None:
                 move, cost_delta = res
                 cand = _apply_or_opt(best, move)
@@ -1381,12 +1546,16 @@ def td_inter_route_polish(
                     best, improved, step_improved = cand, True, True
                     continue
 
-            intra = _intra_route_or_opt(best, nv_ceiling=best.nv)
+            intra = _intra_route_or_opt(best, nv_ceiling=best.nv, deadline=deadline)
+            if deadline is not None and time.perf_counter() >= deadline:
+                return best
             if intra is not None and intra.cost + 1e-9 < best.cost:
                 best, improved, step_improved = intra, True, True
                 continue
 
-            res = _best_swap(best, heatmap=heatmap, cache=cache)
+            res = _best_swap(best, heatmap=heatmap, cache=cache, deadline=deadline)
+            if deadline is not None and time.perf_counter() >= deadline:
+                return best
             if res is not None:
                 move, cost_delta = res
                 cand = _apply_swap(best, move)
@@ -1396,7 +1565,9 @@ def td_inter_route_polish(
                     best, improved, step_improved = cand, True, True
                     continue
 
-            res21 = _best_swap_21(best, heatmap=heatmap, cache=cache)
+            res21 = _best_swap_21(best, heatmap=heatmap, cache=cache, deadline=deadline)
+            if deadline is not None and time.perf_counter() >= deadline:
+                return best
             if res21 is not None:
                 move, cost_delta = res21
                 cand = _apply_swap_21(best, move)
@@ -1406,12 +1577,16 @@ def td_inter_route_polish(
                     best, improved, step_improved = cand, True, True
                     continue
 
-            cross_tail = _cross_tail(best, nv_ceiling=best.nv, heatmap=heatmap, cache=cache)
+            cross_tail = _cross_tail(best, nv_ceiling=best.nv, heatmap=heatmap, cache=cache, deadline=deadline)
+            if deadline is not None and time.perf_counter() >= deadline:
+                return best
             if cross_tail is not None and cross_tail.cost + 1e-9 < best.cost:
                 best, improved, step_improved = cross_tail, True, True
                 continue
 
-            cross = _cross_exchange(best, nv_ceiling=best.nv, heatmap=heatmap, cache=cache)
+            cross = _cross_exchange(best, nv_ceiling=best.nv, heatmap=heatmap, cache=cache, deadline=deadline)
+            if deadline is not None and time.perf_counter() >= deadline:
+                return best
             if cross is not None and cross.cost + 1e-9 < best.cost:
                 best, improved, step_improved = cross, True, True
                 continue
@@ -1433,17 +1608,26 @@ def local_search(
     pool=None,
     heatmap: np.ndarray | None = None,
     pruning_threshold: float = 0.0,
+    deadline: float | None = None,
 ) -> Plan:
+    if deadline is not None and time.perf_counter() >= deadline:
+        return plan
     if not plan.feasible:
         return plan
     best = plan.copy()
 
     cache = None
     for _ in range(max_passes):
+        if deadline is not None and time.perf_counter() >= deadline:
+            return best
         improved = False
         routes = []
         for route in best.routes:
-            nr = _two_opt_best(route, best.inst)
+            if deadline is not None and time.perf_counter() >= deadline:
+                return best
+            nr = _two_opt_best(route, best.inst, deadline=deadline)
+            if deadline is not None and time.perf_counter() >= deadline:
+                return best
             routes.append(nr)
             if nr != route:
                 improved = True
@@ -1453,13 +1637,24 @@ def local_search(
 
         moves = 0
         while moves < max_ls_moves:
+            if deadline is not None and time.perf_counter() >= deadline:
+                return best
             # Passing the previous iteration's cache reuses per-route data for
             # every route the last move didn't touch.
             cache = _PlanCache.from_plan(best, prev=cache)
+            if deadline is not None and time.perf_counter() >= deadline:
+                return best
             # 1. Relocate Move
             res = _best_relocate(
-                best, nv_ceiling=nv_ceiling, heatmap=heatmap, pruning_threshold=pruning_threshold, cache=cache
+                best,
+                nv_ceiling=nv_ceiling,
+                heatmap=heatmap,
+                pruning_threshold=pruning_threshold,
+                cache=cache,
+                deadline=deadline,
             )
+            if deadline is not None and time.perf_counter() >= deadline:
+                return best
             if res is not None:
                 move, cost_delta = res
                 cand = _apply_relocate(best, move)
@@ -1473,9 +1668,18 @@ def local_search(
                     continue
 
             # 1.5. String Relocate (Or-Opt Move)
+            if deadline is not None and time.perf_counter() >= deadline:
+                return best
             res = _best_or_opt(
-                best, nv_ceiling=nv_ceiling, heatmap=heatmap, pruning_threshold=pruning_threshold, cache=cache
+                best,
+                nv_ceiling=nv_ceiling,
+                heatmap=heatmap,
+                pruning_threshold=pruning_threshold,
+                cache=cache,
+                deadline=deadline,
             )
+            if deadline is not None and time.perf_counter() >= deadline:
+                return best
             if res is not None:
                 move, cost_delta = res
                 cand = _apply_or_opt(best, move)
@@ -1489,7 +1693,11 @@ def local_search(
                     continue
 
             # 2. Intra-Route Or-Opt
-            intra = _intra_route_or_opt(best, nv_ceiling=nv_ceiling)
+            if deadline is not None and time.perf_counter() >= deadline:
+                return best
+            intra = _intra_route_or_opt(best, nv_ceiling=nv_ceiling, deadline=deadline)
+            if deadline is not None and time.perf_counter() >= deadline:
+                return best
             if intra is not None:
                 best, improved = intra, True
                 moves += 1
@@ -1498,7 +1706,11 @@ def local_search(
                 continue
 
             # 3. Swap Move
-            res = _best_swap(best, heatmap=heatmap, pruning_threshold=pruning_threshold, cache=cache)
+            if deadline is not None and time.perf_counter() >= deadline:
+                return best
+            res = _best_swap(best, heatmap=heatmap, pruning_threshold=pruning_threshold, cache=cache, deadline=deadline)
+            if deadline is not None and time.perf_counter() >= deadline:
+                return best
             if res is not None:
                 move, cost_delta = res
                 cand = _apply_swap(best, move)
@@ -1512,7 +1724,13 @@ def local_search(
                     continue
 
             # 3.25. Swap(2,1) Move
-            res21 = _best_swap_21(best, heatmap=heatmap, pruning_threshold=pruning_threshold, cache=cache)
+            if deadline is not None and time.perf_counter() >= deadline:
+                return best
+            res21 = _best_swap_21(
+                best, heatmap=heatmap, pruning_threshold=pruning_threshold, cache=cache, deadline=deadline
+            )
+            if deadline is not None and time.perf_counter() >= deadline:
+                return best
             if res21 is not None:
                 move, cost_delta = res21
                 cand = _apply_swap_21(best, move)
@@ -1526,9 +1744,18 @@ def local_search(
                     continue
 
             # 3.5. CROSS Tail-Swap
+            if deadline is not None and time.perf_counter() >= deadline:
+                return best
             cross_tail = _cross_tail(
-                best, nv_ceiling=nv_ceiling, heatmap=heatmap, pruning_threshold=pruning_threshold, cache=cache
+                best,
+                nv_ceiling=nv_ceiling,
+                heatmap=heatmap,
+                pruning_threshold=pruning_threshold,
+                cache=cache,
+                deadline=deadline,
             )
+            if deadline is not None and time.perf_counter() >= deadline:
+                return best
             if cross_tail is not None:
                 best, improved = cross_tail, True
                 moves += 1
@@ -1537,9 +1764,18 @@ def local_search(
                 continue
 
             # 4. Cross Exchange
+            if deadline is not None and time.perf_counter() >= deadline:
+                return best
             cross = _cross_exchange(
-                best, nv_ceiling=nv_ceiling, heatmap=heatmap, pruning_threshold=pruning_threshold, cache=cache
+                best,
+                nv_ceiling=nv_ceiling,
+                heatmap=heatmap,
+                pruning_threshold=pruning_threshold,
+                cache=cache,
+                deadline=deadline,
             )
+            if deadline is not None and time.perf_counter() >= deadline:
+                return best
             if cross is not None:
                 best, improved = cross, True
                 moves += 1
@@ -1548,7 +1784,11 @@ def local_search(
                 continue
 
             # 5. Route Compaction
-            compact = _try_route_compact(best, nv_ceiling=nv_ceiling)
+            if deadline is not None and time.perf_counter() >= deadline:
+                return best
+            compact = _try_route_compact(best, nv_ceiling=nv_ceiling, deadline=deadline)
+            if deadline is not None and time.perf_counter() >= deadline:
+                return best
             if compact is not None:
                 best, improved = compact, True
                 moves += 1
@@ -1562,9 +1802,15 @@ def local_search(
 
     # ── Post-Search Diversification Seeding (Executed exactly once at exit) ──
     if pool is not None:
-        for route in merged_route_candidates(best):
+        if deadline is not None and time.perf_counter() >= deadline:
+            return best
+        for route in merged_route_candidates(best, deadline=deadline):
+            if deadline is not None and time.perf_counter() >= deadline:
+                return best
             pool.add_route(route)
-        merged = _try_route_merge(best)
+        if deadline is not None and time.perf_counter() >= deadline:
+            return best
+        merged = _try_route_merge(best, deadline=deadline)
         if merged is not None:
             pool.add_plan(merged)
 
@@ -1640,7 +1886,9 @@ def _try_chain_elimination(plan: Plan, target_idx: int, beam_width: int = 3, max
     return cand if cand.feasible else None
 
 
-def _ejection_chain_eliminate(plan: Plan, beam_width: int | None = None, max_depth: int | None = None) -> Plan | None:
+def _ejection_chain_eliminate(
+    plan: Plan, beam_width: int | None = None, max_depth: int | None = None, *, gec_enabled: bool = True
+) -> Plan | None:
     """
     Tries to eliminate up to the 4 smallest routes via depth-2/depth-3 ejection chains.
     Complements _iterative_route_elimination: handles cases where greedy
@@ -1654,6 +1902,8 @@ def _ejection_chain_eliminate(plan: Plan, beam_width: int | None = None, max_dep
         beam_width = min(32, max(16, n // 6))
     if max_depth is None:
         max_depth = min(10, max(6, n // 15))
+    if not gec_enabled:
+        max_depth = 1
 
     ranked = sorted(
         range(len(plan.routes)),

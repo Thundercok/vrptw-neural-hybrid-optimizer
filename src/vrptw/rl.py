@@ -704,6 +704,10 @@ class OperatorController:
 # Learned Acceptance Criterion
 # ---------------------------------------------------------------------------
 class LearnedAcceptanceCriterion:
+    """Add predictive rescue to SA approvals, without a convergence guarantee."""
+
+    policy = "sa_or_predictive_v1"
+
     def __init__(self, cfg: Config, use_rl: bool = True):
         self.cfg = cfg
         self.use_rl = use_rl
@@ -756,10 +760,19 @@ class LearnedAcceptanceCriterion:
             dtype=np.float32,
         )
 
-    def decide(self, feats: np.ndarray, cur_best_cost: float, tau: float | None = None) -> tuple[bool, float]:
+    def decide(
+        self,
+        feats: np.ndarray,
+        cur_best_cost: float,
+        tau: float | None = None,
+        *,
+        sa_probability: float | None = None,
+    ) -> tuple[bool, float]:
         self.step += 1
         self._pending.append((feats.copy(), cur_best_cost, self.step))
-        metro_p = float(feats[-1])
+        # Neural features are float32; the solver passes original SA precision
+        # so rounding cannot change an acceptance at the uniform-draw boundary.
+        metro_p = float(feats[-1]) if sa_probability is None else float(sa_probability)
         if self.step < self.cfg.lac_warmup:
             accepted = random.random() < metro_p
             if accepted:
@@ -769,7 +782,7 @@ class LearnedAcceptanceCriterion:
             x = torch.from_numpy(feats).unsqueeze(0).to(DEVICE)
             p = float(self.net(x)[0, 0])
         threshold = tau if tau is not None else 0.5
-        accepted = p >= threshold or (random.random() < 0.05)
+        accepted = p >= threshold or (random.random() < metro_p)
         if accepted:
             self.accept_count += 1
         return accepted, p
