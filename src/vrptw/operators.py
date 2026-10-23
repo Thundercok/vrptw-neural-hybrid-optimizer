@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import math
 import random
+import time
 
 import numpy as np
 from numba import njit
@@ -52,7 +53,9 @@ def op_worst(plan: Plan, size: int) -> tuple[Plan, list[int]]:
     return _remove_nodes(plan, rs), removed
 
 
-def op_shaw(plan: Plan, size: int) -> tuple[Plan, list[int]]:
+def op_shaw(plan: Plan, size: int, *, deadline: float | None = None) -> tuple[Plan, list[int]]:
+    if deadline is not None and time.perf_counter() >= deadline:
+        return plan, []
     inst = plan.inst
     nodes = [n for r in plan.routes for n in r]
     if not nodes:
@@ -62,6 +65,8 @@ def op_shaw(plan: Plan, size: int) -> tuple[Plan, list[int]]:
     rs = {seed_node}
     relatedness = inst.relatedness
     while len(removed) < size:
+        if deadline is not None and time.perf_counter() >= deadline:
+            break
         ref_node = random.choice(removed)
         neighbors = inst.neighbors_k[ref_node]
         candidates = [(n, relatedness[ref_node, n]) for n in neighbors if n not in rs]
@@ -417,13 +422,17 @@ def op_neural_worst(plan: Plan, size: int, heatmap: np.ndarray | None = None) ->
     return _remove_nodes(plan, rs), removed
 
 
-def op_neural_shaw(plan: Plan, size: int, heatmap: np.ndarray | None = None) -> tuple[Plan, list[int]]:
+def op_neural_shaw(
+    plan: Plan, size: int, heatmap: np.ndarray | None = None, *, deadline: float | None = None
+) -> tuple[Plan, list[int]]:
     """Remove a coherent cluster of poorly-connected customers using Shaw relatedness and GNN edge probability.
 
     Falls back to ``op_shaw`` when no heatmap is available.
     """
+    if deadline is not None and time.perf_counter() >= deadline:
+        return plan, []
     if heatmap is None:
-        return op_shaw(plan, size)
+        return op_shaw(plan, size, deadline=deadline)
 
     inst = plan.inst
     nodes = [n for r in plan.routes for n in r]
@@ -449,6 +458,8 @@ def op_neural_shaw(plan: Plan, size: int, heatmap: np.ndarray | None = None) -> 
     rs = {seed_node}
 
     while len(removed) < size:
+        if deadline is not None and time.perf_counter() >= deadline:
+            break
         ref_node = random.choice(removed)
         neighbors = inst.neighbors_k[ref_node]
         candidates = []
@@ -505,7 +516,9 @@ DESTROY = [
 ]
 
 
-def _sequential_cheapest_insert(plan: Plan, order: list[int], heatmap: np.ndarray | None, gamma: float) -> Plan:
+def _sequential_cheapest_insert(
+    plan: Plan, order: list[int], heatmap: np.ndarray | None, gamma: float, *, deadline: float | None = None
+) -> Plan | None:
     """Insert ``order`` one node at a time, each at its cheapest feasible position.
 
     Behaviour-identical to calling ``_insert_into_cheapest_route`` per node, but
@@ -517,6 +530,10 @@ def _sequential_cheapest_insert(plan: Plan, order: list[int], heatmap: np.ndarra
     A node that fits nowhere opens a new route, which becomes a new column so
     later nodes can insert into it, exactly as before.
     """
+    # A timed-out repair may have mutated only its private candidate; never expose
+    # that incomplete plan as a usable solution.
+    if deadline is not None and time.perf_counter() >= deadline:
+        return None
     inst = plan.inst
     if not order:
         return Plan(plan.routes, inst, plan.algo)
@@ -554,6 +571,8 @@ def _sequential_cheapest_insert(plan: Plan, order: list[int], heatmap: np.ndarra
         loads[:n_routes] = route_loads
 
     for i in range(n):
+        if deadline is not None and time.perf_counter() >= deadline:
+            return None
         node = int(nodes[i])
         ri = -1
         if n_routes > 0:
@@ -591,16 +610,35 @@ def _sequential_cheapest_insert(plan: Plan, order: list[int], heatmap: np.ndarra
             keys[:, ri] = col_k
             positions[:, ri] = col_p
 
+    if deadline is not None and time.perf_counter() >= deadline:
+        return None
     plan.invalidate()
     return Plan(plan.routes, inst, plan.algo)
 
 
-def op_greedy(plan: Plan, removed: list[int], heatmap: np.ndarray | None = None, gamma: float = 0.0) -> Plan:
+def op_greedy(
+    plan: Plan,
+    removed: list[int],
+    heatmap: np.ndarray | None = None,
+    gamma: float = 0.0,
+    *,
+    deadline: float | None = None,
+) -> Plan | None:
     inst = plan.inst
-    return _sequential_cheapest_insert(plan, sorted(removed, key=lambda n: inst.due_times[n]), heatmap, gamma)
+    return _sequential_cheapest_insert(
+        plan, sorted(removed, key=lambda n: inst.due_times[n]), heatmap, gamma, deadline=deadline
+    )
 
 
-def _regret(plan: Plan, removed: list[int], k: int, heatmap: np.ndarray | None = None, gamma: float = 0.0) -> Plan:
+def _regret(
+    plan: Plan,
+    removed: list[int],
+    k: int,
+    heatmap: np.ndarray | None = None,
+    gamma: float = 0.0,
+    *,
+    deadline: float | None = None,
+) -> Plan | None:
     """Regret-k insertion.
 
     The (node x route) insertion-cost matrix is built in a single kernel call and
@@ -612,6 +650,8 @@ def _regret(plan: Plan, removed: list[int], k: int, heatmap: np.ndarray | None =
     in set order, and reproducing that order exactly is what keeps this change
     behaviour-preserving.
     """
+    if deadline is not None and time.perf_counter() >= deadline:
+        return None
     inst = plan.inst
     remaining: set = set(removed)
     if not remaining or not plan.routes:
@@ -644,6 +684,8 @@ def _regret(plan: Plan, removed: list[int], k: int, heatmap: np.ndarray | None =
     )
 
     while remaining:
+        if deadline is not None and time.perf_counter() >= deadline:
+            return None
         best_regret, chosen, choice = -float("inf"), None, None
         for node in remaining:
             i = row_of[node]
@@ -699,24 +741,48 @@ def _regret(plan: Plan, removed: list[int], k: int, heatmap: np.ndarray | None =
             for node in remaining:
                 plan.routes.append([node])
             break
+    if deadline is not None and time.perf_counter() >= deadline:
+        return None
     return Plan(plan.routes, inst, plan.algo)
 
 
-def op_regret_2(plan: Plan, removed: list[int], heatmap: np.ndarray | None = None, gamma: float = 0.0) -> Plan:
-    return _regret(plan, removed, 2, heatmap, gamma)
+def op_regret_2(
+    plan: Plan,
+    removed: list[int],
+    heatmap: np.ndarray | None = None,
+    gamma: float = 0.0,
+    *,
+    deadline: float | None = None,
+) -> Plan | None:
+    return _regret(plan, removed, 2, heatmap, gamma, deadline=deadline)
 
 
-def op_regret_3(plan: Plan, removed: list[int], heatmap: np.ndarray | None = None, gamma: float = 0.0) -> Plan:
-    return _regret(plan, removed, 3, heatmap, gamma)
+def op_regret_3(
+    plan: Plan,
+    removed: list[int],
+    heatmap: np.ndarray | None = None,
+    gamma: float = 0.0,
+    *,
+    deadline: float | None = None,
+) -> Plan | None:
+    return _regret(plan, removed, 3, heatmap, gamma, deadline=deadline)
 
 
-def op_tw_greedy(plan: Plan, removed: list[int], heatmap: np.ndarray | None = None, gamma: float = 0.0) -> Plan:
+def op_tw_greedy(
+    plan: Plan,
+    removed: list[int],
+    heatmap: np.ndarray | None = None,
+    gamma: float = 0.0,
+    *,
+    deadline: float | None = None,
+) -> Plan | None:
     inst = plan.inst
     return _sequential_cheapest_insert(
         plan,
         sorted(removed, key=lambda n: inst.due_times[n] - inst.ready_times[n]),
         heatmap,
         gamma,
+        deadline=deadline,
     )
 
 
@@ -803,15 +869,28 @@ def _fts_best_insert_position(node: int, route: list[int], inst: Inst) -> tuple[
     return float(best_cost), int(best_pos)
 
 
-def op_fts_greedy(plan: Plan, removed: list[int], heatmap: np.ndarray | None = None, gamma: float = 0.0) -> Plan:
+def op_fts_greedy(
+    plan: Plan,
+    removed: list[int],
+    heatmap: np.ndarray | None = None,
+    gamma: float = 0.0,
+    *,
+    deadline: float | None = None,
+) -> Plan | None:
+    if deadline is not None and time.perf_counter() >= deadline:
+        return None
     inst = plan.inst
     urgent_first = sorted(
         removed,
         key=lambda n: (inst.due_times[n] - inst.ready_times[n], inst.due_times[n], -inst.demands[n]),
     )
     for node in urgent_first:
+        if deadline is not None and time.perf_counter() >= deadline:
+            return None
         best_cost, best_route, best_pos = float("inf"), None, None
         for ri, route in enumerate(plan.routes):
+            if deadline is not None and time.perf_counter() >= deadline:
+                return None
             cost, pos = _fts_best_insert_position(node, route, inst)
             if pos is not None and cost < best_cost:
                 best_cost, best_route, best_pos = cost, ri, pos
@@ -820,6 +899,8 @@ def op_fts_greedy(plan: Plan, removed: list[int], heatmap: np.ndarray | None = N
         else:
             plan.routes.append([node])
         plan.invalidate()
+    if deadline is not None and time.perf_counter() >= deadline:
+        return None
     return Plan(plan.routes, inst, plan.algo)
 
 

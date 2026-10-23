@@ -109,8 +109,9 @@ def run_instance(
 
     if target_algo == ALGO_ORTOOLS:
         cfg_matched = copy.copy(cfg)
+        cfg_matched.seed = seed
         if ddqn_time is not None:
-            cfg_matched.ortools_time_limit = max(30.0, float(ddqn_time) * 0.95)
+            cfg_matched.time_limit = cfg_matched.ortools_time_limit = float(ddqn_time)
         plan, elapsed = run_ortools(inst, cfg_matched)
         if plan is None:
             return {

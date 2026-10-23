@@ -12,6 +12,21 @@ from .generators import load_datasets
 from .gnn import GNNEdgePredictor, get_gnn_features, plan_to_adj_matrix
 
 
+def edge_prediction_loss(model, inst, plan, device, *, sample_negatives=True):
+    node_feats, edge_feats, nbr_idx = (value.to(device) for value in get_gnn_features(inst))
+    targets = plan_to_adj_matrix(plan).to(device)
+    logits = model(node_feats, edge_feats, nbr_idx)[0]
+    pos_weight = torch.tensor([inst.n + 1], dtype=torch.float32, device=device)
+    loss_bce = nn.functional.binary_cross_entropy_with_logits(logits, targets, pos_weight=pos_weight)
+    pos_edges = (targets == 1.0).nonzero()
+    neg_edges = (targets == 0.0).nonzero()
+    if sample_negatives and neg_edges.shape[0] > pos_edges.shape[0] * 3:
+        perm = torch.randperm(neg_edges.shape[0])[: pos_edges.shape[0] * 3]
+        neg_edges = neg_edges[perm]
+    z_src, z_dst = model.get_contrastive_embeddings(node_feats, edge_feats, nbr_idx)
+    return loss_bce + 0.25 * model.compute_contrastive_loss(z_src, z_dst, pos_edges, neg_edges, tau=0.1)
+
+
 def find_elite_plans():
     """
     Scans results directories for elite JSON plans and returns a dictionary
@@ -108,36 +123,8 @@ def train_gnn(epochs: int = 150, lr: float = 1e-3, save_path: str = "docs/model/
         epoch_loss = 0.0
 
         for inst, plan in training_data:
-            node_feats, edge_feats, nbr_idx = get_gnn_features(inst)
-            targets = plan_to_adj_matrix(plan).to(device)  # (N+1, N+1)
-
             optimizer.zero_grad()
-            logits = model(node_feats.to(device), edge_feats.to(device), nbr_idx.to(device))[0]  # (N+1, N+1)
-
-            # Joint BCE + Contrastive InfoNCE Loss
-            n_nodes = inst.n + 1
-            pos_weight = torch.tensor([n_nodes], dtype=torch.float32, device=device)
-            loss_fn = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
-
-            loss_bce = loss_fn(logits, targets)
-
-            # Extract positive and negative edge indices for contrastive learning
-            pos_mask = targets == 1.0
-            neg_mask = targets == 0.0
-            pos_edges = pos_mask.nonzero()
-            neg_edges = neg_mask.nonzero()
-
-            # Sample subset of negative edges to balance batch
-            if neg_edges.shape[0] > pos_edges.shape[0] * 3:
-                perm = torch.randperm(neg_edges.shape[0], device=device)[: pos_edges.shape[0] * 3]
-                neg_edges = neg_edges[perm]
-
-            z_src, z_dst = model.get_contrastive_embeddings(
-                node_feats.to(device), edge_feats.to(device), nbr_idx.to(device)
-            )
-            loss_cl = model.compute_contrastive_loss(z_src, z_dst, pos_edges, neg_edges, tau=0.1)
-
-            total_loss = loss_bce + 0.25 * loss_cl
+            total_loss = edge_prediction_loss(model, inst, plan, device)
             total_loss.backward()
             optimizer.step()
 

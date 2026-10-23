@@ -23,6 +23,7 @@ build-backend = "setuptools.build_meta"
 where = ["src"]
 
 [project.optional-dependencies]
+baselines = ["pyvrp==0.14.1"]
 dev = [
     "ruff>=0.7",
     "pytest>=8.0",

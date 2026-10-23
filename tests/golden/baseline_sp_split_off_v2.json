@@ -1,0 +1,167 @@
+{
+  "iters": 200,
+  "seeds": [
+    1,
+    7
+  ],
+  "records": [
+    {
+      "instance": "R101",
+      "solver": "Hybrid-DDQN",
+      "seed": 1,
+      "nv": 19,
+      "cost": 1656.9527671064811,
+      "feasible": true,
+      "wall_time": 5.986
+    },
+    {
+      "instance": "R101",
+      "solver": "Hybrid-DDQN",
+      "seed": 7,
+      "nv": 19,
+      "cost": 1661.2929251898202,
+      "feasible": true,
+      "wall_time": 5.18
+    },
+    {
+      "instance": "R101",
+      "solver": "ALNS-Base",
+      "seed": 1,
+      "nv": 19,
+      "cost": 1705.711639433697,
+      "feasible": true,
+      "wall_time": 0.396
+    },
+    {
+      "instance": "R101",
+      "solver": "ALNS-Base",
+      "seed": 7,
+      "nv": 20,
+      "cost": 1717.5155000309958,
+      "feasible": true,
+      "wall_time": 0.342
+    },
+    {
+      "instance": "RC207",
+      "solver": "Hybrid-DDQN",
+      "seed": 1,
+      "nv": 3,
+      "cost": 1110.7643450858768,
+      "feasible": true,
+      "wall_time": 14.113
+    },
+    {
+      "instance": "RC207",
+      "solver": "Hybrid-DDQN",
+      "seed": 7,
+      "nv": 3,
+      "cost": 1165.857607113323,
+      "feasible": true,
+      "wall_time": 10.829
+    },
+    {
+      "instance": "RC207",
+      "solver": "ALNS-Base",
+      "seed": 1,
+      "nv": 4,
+      "cost": 1119.4201797841615,
+      "feasible": true,
+      "wall_time": 0.423
+    },
+    {
+      "instance": "RC207",
+      "solver": "ALNS-Base",
+      "seed": 7,
+      "nv": 4,
+      "cost": 1047.4771748506244,
+      "feasible": true,
+      "wall_time": 0.417
+    },
+    {
+      "instance": "C101",
+      "solver": "Hybrid-DDQN",
+      "seed": 1,
+      "nv": 10,
+      "cost": 828.936866942834,
+      "feasible": true,
+      "wall_time": 2.347
+    },
+    {
+      "instance": "C101",
+      "solver": "Hybrid-DDQN",
+      "seed": 7,
+      "nv": 10,
+      "cost": 828.936866942834,
+      "feasible": true,
+      "wall_time": 2.258
+    },
+    {
+      "instance": "C101",
+      "solver": "ALNS-Base",
+      "seed": 1,
+      "nv": 10,
+      "cost": 828.936866942834,
+      "feasible": true,
+      "wall_time": 0.65
+    },
+    {
+      "instance": "C101",
+      "solver": "ALNS-Base",
+      "seed": 7,
+      "nv": 10,
+      "cost": 828.936866942834,
+      "feasible": true,
+      "wall_time": 1.096
+    },
+    {
+      "instance": "r1_2_1",
+      "solver": "Hybrid-DDQN",
+      "seed": 1,
+      "nv": 20,
+      "cost": 4893.721454365685,
+      "feasible": true,
+      "wall_time": 12.166
+    },
+    {
+      "instance": "r1_2_1",
+      "solver": "Hybrid-DDQN",
+      "seed": 7,
+      "nv": 20,
+      "cost": 4928.165849568383,
+      "feasible": true,
+      "wall_time": 10.087
+    },
+    {
+      "instance": "r1_2_1",
+      "solver": "ALNS-Base",
+      "seed": 1,
+      "nv": 22,
+      "cost": 5408.834004357041,
+      "feasible": true,
+      "wall_time": 1.097
+    },
+    {
+      "instance": "r1_2_1",
+      "solver": "ALNS-Base",
+      "seed": 7,
+      "nv": 21,
+      "cost": 5486.564277755519,
+      "feasible": true,
+      "wall_time": 1.001
+    }
+  ],
+  "contract": {
+    "pool_recombine_enabled": false,
+    "split_enabled": false,
+    "sp_specific_seeding": false
+  },
+  "provenance": {
+    "parent": "tests/golden/baseline.json",
+    "parent_sha256": "92af6dc05839f900d1f7a83d6657ab02570b97914d3d6a3ba586941d399a1483",
+    "source_sha256": "1a1971fb8002596390b54ac19ce826166c1c74f222feeabbdc33787dc4a1f6cb",
+    "architecture": "arm64",
+    "system": "Darwin",
+    "capture_script_sha256": "37a8a9baa83e5c33cc83f095461f69188f9ab49a560b768ccf9a5425ba38a474",
+    "scope": "Same 16 existing 200-iteration regression cases; no SP/split execution permitted; timings are not benchmark evidence."
+  }
+}
