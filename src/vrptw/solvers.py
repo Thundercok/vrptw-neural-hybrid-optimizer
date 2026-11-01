@@ -364,6 +364,10 @@ class HybridDDQNSolver(_NativeCertificationMixin):
     use_op_rl = True
     use_rl = True
 
+    def _reference_entry(self) -> dict | None:
+        # Per-instance reference fleet used inside search; None in reference-blind runs.
+        return None if self.cfg.reference_blind else BKS.get(self.inst.name)
+
     def __init__(self, inst: Inst, cfg: Config, seed: int | None = None):
         import copy
 
@@ -875,7 +879,7 @@ class HybridDDQNSolver(_NativeCertificationMixin):
         ):
             self._segment_recombine_used = True
             nv_cap = min(best.nv, refined.nv)
-            _bks_entry = BKS.get(self.inst.name)
+            _bks_entry = self._reference_entry()
             _bks_nv = int(_bks_entry["nv"]) if _bks_entry else 0
             is_at_bks_floor = nv_cap <= _bks_nv
             recombined = self._recombine_with_pool(
@@ -1539,7 +1543,7 @@ class HybridDDQNSolver(_NativeCertificationMixin):
                 temp = cfg.temp_control * start.cost / math.log(2) * temp_mult
 
                 # Try to build a different starting topology via pool recombination
-                _bks_entry = BKS.get(self.inst.name)
+                _bks_entry = self._reference_entry()
                 _bks_nv = int(_bks_entry["nv"]) if _bks_entry else 0
                 restart_plan = self._recombine_with_pool(
                     start,
@@ -1636,7 +1640,7 @@ class HybridDDQNSolver(_NativeCertificationMixin):
                         if is_improving or it % 40 == 0:
                             from .local_search import _buffered_route_elimination
 
-                            _bks_entry = BKS.get(inst.name)
+                            _bks_entry = self._reference_entry()
                             _bks_nv = int(_bks_entry["nv"]) if _bks_entry else 0
                             buff = _buffered_route_elimination(
                                 cand,
@@ -1914,7 +1918,7 @@ class HybridDDQNSolver(_NativeCertificationMixin):
             if main_loop_deadline is not None and time.perf_counter() >= main_loop_deadline:
                 self.time_limit_hit = True
                 break
-            _bks_entry = BKS.get(self.inst.name)
+            _bks_entry = self._reference_entry()
             _bks_nv = int(_bks_entry["nv"]) if _bks_entry else None
             should_early_stop_phase1 = False
             if not self.phase1_done and best is not None:
@@ -2177,7 +2181,7 @@ class HybridDDQNSolver(_NativeCertificationMixin):
                 if getattr(cfg, "pool_recombine_enabled", True) and it > 0 and it % cfg.recombine_interval == 0:
                     if len(pool._routes) >= cfg.rl_recombine_min_routes:
                         nv_cap = best.nv
-                        _bks_entry = BKS.get(self.inst.name)
+                        _bks_entry = self._reference_entry()
                         _bks_nv = int(_bks_entry["nv"]) if _bks_entry else 0
                         recombined = self._recombine_with_pool(
                             best,
@@ -2364,7 +2368,7 @@ class HybridDDQNSolver(_NativeCertificationMixin):
             if not cfg.wall_clock_only and no_imp >= cfg.early_stop_patience:
                 break
 
-        _bks_entry = BKS.get(self.inst.name)
+        _bks_entry = self._reference_entry()
         _bks_nv = int(_bks_entry["nv"]) if _bks_entry else 0
 
         if getattr(cfg, "pool_recombine_enabled", True) and cfg.recombine_after_main_search and not self._out_of_time():
@@ -2445,7 +2449,7 @@ class HybridDDQNSolver(_NativeCertificationMixin):
             # ── Resolve BKS floor: never search below BKS NV ─────────────────────
             # Prevents 22-second committed search on instances already at optimal NV
             # (e.g. RC207 at NV=3 wasting time chasing NV=2 instead of fixing TD).
-            _bks_entry = BKS.get(self.inst.name)
+            _bks_entry = self._reference_entry()
             _bks_nv = int(_bks_entry["nv"]) if _bks_entry else max(1, best.nv - 2)
 
             # NV-reduction loop stops at BKS floor (or at the hard deadline —
@@ -2640,7 +2644,7 @@ class HybridDDQNSolver(_NativeCertificationMixin):
                     history.append(best.cost)
 
         # Final Purge of Stranded / Fragmented Routes (Eliminate single-seed vehicle leaks)
-        _bks_entry = BKS.get(self.inst.name)
+        _bks_entry = self._reference_entry()
         _bks_nv = int(_bks_entry["nv"]) if _bks_entry else 0
         if best.nv > _bks_nv and len(best.routes) >= 2 and not self._out_of_time():
             gec_last = self._try_gec_route_reduction(best)

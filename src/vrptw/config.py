@@ -439,6 +439,10 @@ class Config:
     # ── OR-Tools ──────────────────────────────────────────────────────────
     ortools_time_limit: float = 15.0
     neurolkh_root: str = ""
+    # Reference-blind run: the hybrid never reads the per-instance BKS fleet and
+    # takes its unknown-instance fallbacks instead. Set VRPTW_REFERENCE_BLIND=1 so
+    # the flag reaches supervised workers without changing the CLI.
+    reference_blind: bool = field(default_factory=lambda: os.environ.get("VRPTW_REFERENCE_BLIND") == "1")
 
     # ── Learned Acceptance Criterion ──────────────────────────────────────
     lac_enabled: bool = True
