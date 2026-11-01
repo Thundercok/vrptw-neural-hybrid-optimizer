@@ -82,10 +82,10 @@ guarantees exact global lexicographic optimality over $\mathcal{P}$ without the 
 Since the current incumbent solution $s_{\text{inc}} \in \mathcal{X}_{\text{SP}}$, the feasible set $\mathcal{X}_{\text{SP}} \neq \emptyset$. Stage 1 optimizes an integer objective bounded below by $\lceil \sum q_i / Q \rceil \ge 1$, terminating at an exact integer fleet floor $NV^* \in \mathbb{N}$. Fixing $\sum x_p \le NV^*$ as a rigid cutting plane in Stage 2 guarantees that any candidate solution $\mathbf{x}'$ with $\sum x'_p > NV^*$ is strictly infeasible. In contrast, an unscaled scalar penalty objective $\sum (M + c_p) x_p$ with $M \ge 10^7$ can induce ill-conditioning in floating-point linear programming solvers. The two-stage decomposition preserves unit condition scaling ($\kappa(\mathbf{A}) \le 10^3$), eliminating floating-point rounding instability.
 \end{proof}
 
-\section{Convergence of Adaptive Entropy-Gated DDQN}
+\section{Bellman Contraction and the Scope of Convergence Claims for the Entropy-Gated DDQN}
 
 \begin{theorem}[Bellman Contraction under Entropy Confidence Gating]
-Let the behavior policy blend the Dueling DDQN softmax distribution $\pi_{\theta}$ with prior heuristic distributions via the normalized Shannon entropy weight $w_{\text{conc}}(\mathbf{s}) \in [0, 1]$. Under prioritized replay sampling and Polyak soft updates, the Bellman optimality operator $\mathcal{T}$ remains a $\gamma$-contraction in $L_\infty$-norm with unique fixed point $Q^*$.
+Consider a finite Markov decision process with discount $\gamma < 1$, and let the behavior policy blend the Dueling DDQN softmax distribution $\pi_{\theta}$ with prior heuristic distributions via the normalized Shannon entropy weight $w_{\text{conc}}(\mathbf{s}) \in [0, 1]$. The Bellman optimality operator $\mathcal{T}$ is a $\gamma$-contraction in the $L_\infty$-norm with unique fixed point $Q^*$, and it does not depend on the behavior policy, the replay scheme or the target-network update.
 \end{theorem}
 
 \begin{proof}
@@ -111,7 +111,9 @@ Crucially, the entropy gating coefficient $w_{\text{conc}}(\mathbf{s})$ modulate
 \begin{equation}
 \pi_{\text{behavior}}(a \mid \mathbf{s}) = \text{Softmax}\left( Q_{\text{eff}}(\mathbf{s}, a) / \tau_{\text{soft}} \right)
 \end{equation}
-yields unbiased state-action transitions $(s_t, a_t, R_t, s_{t+1})$. As long as all state-action pairs continue to be sampled infinitely often (guaranteed by the non-zero exploration floor of the blended behavior policy), the off-policy Bellman target contraction ensures asymptotic convergence of $Q(\cdot; \theta)$ to the optimal value function $Q^*$.
+yields transitions $(s_t, a_t, R_t, s_{t+1})$ whose distribution affects which parts of $\mathcal{T}$ are sampled but not $\mathcal{T}$ itself, so the gate leaves the fixed point unchanged.
+
+\emph{Scope.} The contraction property establishes only that $Q^*$ is well defined for a finite MDP; it is not a convergence result for the solver. Convergence of tabular Q-learning to $Q^*$ additionally requires a Markov state, infinitely frequent visits of every state-action pair and suitable step sizes. None of these conditions is established here: the controllers observe aggregated features that are not a sufficient statistic of the search state (main text, macro controller section), they use nonlinear function approximation with replay and target networks, and each run is finite. We therefore claim no convergence of $Q(\cdot; \theta)$ to $Q^*$, and the learned controllers are evaluated empirically.
 \end{proof}
 
 \section{Computational Complexity and Algebraic Derivation of Generalized Ejection Chains}
