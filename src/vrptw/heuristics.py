@@ -571,6 +571,8 @@ def build_greedy(inst: Inst, algo: str = "", heatmap: np.ndarray | None = None, 
                 return False, None
             ft += inst.service_times[nxt]
             prev = nxt
+        if ft + inst.dist[prev, 0] > inst.due_times[0]:
+            return False, None
         return True, t
 
     def compute_arrivals(route):
@@ -639,7 +641,10 @@ def build_greedy(inst: Inst, algo: str = "", heatmap: np.ndarray | None = None, 
             feasible = [
                 c
                 for c in unrouted_set
-                if load + inst.demands[c] <= inst.capacity and t + inst.dist[node, c] <= inst.due_times[c]
+                if load + inst.demands[c] <= inst.capacity
+                and t + inst.dist[node, c] <= inst.due_times[c]
+                and max(t + inst.dist[node, c], inst.ready_times[c]) + inst.service_times[c] + inst.dist[c, 0]
+                <= inst.due_times[0]
             ]
             if not feasible:
                 break
