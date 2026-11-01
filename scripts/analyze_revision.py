@@ -32,10 +32,12 @@ from vrptw import sweep_statistics as stats  # noqa: E402
 
 SWEEP = ROOT / "results/cutoff_clock_audit_20261029/run"
 RERUN = ROOT / "results/alns_greedy_fix_20261101/run/records.csv"
+BLIND_RECORDS = ROOT / "results/reference_blind_t300_20261101/run/records.csv"
 DESIGN = ROOT / "results/ablation_design_20261019"
 BKS = ROOT / "data/reference/sintef_official_bks.json"
 RETURN_UPPER_SLACK = 0.5
 TREATMENT = "F111111"
+BLIND = "F111111-blind"
 GAP_MODES = ("drop_pair", "gap_as_failure", "worst_case")
 
 
@@ -112,6 +114,33 @@ def load_rows():
         )
     metadata = {n: {"customers": c, "geometry_sha256": s} for n, (c, s) in geometry.items()}
     return rows, metadata, set(gaps)
+
+
+def add_blind_rows(rows, metadata):
+    """Append the reference-blind T300 cells; a cell that failed validation counts as no solution."""
+    with BLIND_RECORDS.open(newline="") as f:
+        blind = list(csv.DictReader(f))
+    keys = {(r["instance"], int(r["seed"])) for r in blind}
+    stats.require(
+        len(blind) == 370 and len(keys) == 370 and {k[0] for k in keys} == set(metadata), "blind run incomplete"
+    )
+    for r in blind:
+        ok = r["available"] == "True"
+        rows.append(
+            {
+                "instance": r["instance"],
+                "case_id": BLIND,
+                "seed": int(r["seed"]),
+                "cutoff_sec": 300,
+                **metadata[r["instance"]],
+                "available": ok,
+                "nv": int(r["nv"]) if ok else None,
+                "td": float(r["td"]) if ok else None,
+                "integrity_ok": True,
+                "return_ok": ok and float(r["runtime_sec"]) <= 300 + RETURN_UPPER_SLACK,
+                "binding_ok": ok,
+            }
+        )
 
 
 def analyze_pair(rows, metadata, names, treatment, control, cutoff, draws, weights, gaps, mode, family_size=1):
@@ -206,6 +235,7 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output-dir", type=Path, default=ROOT / "results/revision_analysis_20261101")
     parser.add_argument("--replicates", type=int, default=10000)
+    parser.add_argument("--blind", action="store_true", help="add the reference-blind T300 comparisons")
     args = parser.parse_args(argv)
     rows, metadata, gaps = load_rows()
     design = json.loads((DESIGN / "design.json").read_text())
@@ -288,6 +318,37 @@ def main(argv=None):
                     ),
                 }
             )
+    if args.blind:
+        add_blind_rows(rows, metadata)
+        for control in (TREATMENT, "ALNS-Base", "PyVRP-ILS", "NeuroLKH-adapted"):
+            scopes = [("all_74", names, main_weights)] + [
+                (f"size_{size}", [n for n in names if metadata[n]["customers"] == size], {size: 1.0})
+                for size in (100, 200, 400)
+            ]
+            for scope, subset, weights in scopes:
+                results.append(
+                    {
+                        "analysis": "reference_blind",
+                        "cutoff_sec": 300,
+                        "treatment": BLIND,
+                        "control": control,
+                        "scope": scope,
+                        "gap_mode": "drop_pair",
+                        **analyze_pair(
+                            rows,
+                            metadata,
+                            subset,
+                            BLIND,
+                            control,
+                            300,
+                            draws,
+                            weights,
+                            gaps,
+                            "drop_pair",
+                            4 if scope == "all_74" else 1,
+                        ),
+                    }
+                )
     args.output_dir.mkdir(parents=True, exist_ok=True)
     (args.output_dir / "results.json").write_text(json.dumps(results, indent=1))
     desc = descriptive(rows, gaps)
