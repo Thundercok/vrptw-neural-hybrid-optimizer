@@ -32,6 +32,7 @@ from .config import (
     Config,
 )
 from .core import Inst, Plan, _avg_slack, _check_route, _fleet_fill, _plan_spread, _route_cost, _route_ok
+from .ges import fleet_lower_bound, ges_minimize
 from .heuristics import _best_insert_position, build_greedy
 from .local_search import (
     _buffered_route_elimination,
@@ -204,6 +205,26 @@ class _NativeCertificationMixin:
             return tracker.consider(plan, phase=phase, iteration=iteration)
         return False
 
+    def _ges_phase(self, plan: Plan, seed: int | None) -> Plan:
+        """Fleet minimisation before search, then one local-search pass on the result."""
+        cfg = self.cfg
+        if not cfg.ges_phase_enabled or self._deadline is None:
+            return plan
+        now = time.perf_counter()
+        reduced = ges_minimize(
+            plan,
+            now + cfg.ges_phase_frac * max(self._deadline - now, 0.0),
+            0 if seed is None else seed,
+            on_improve=lambda p: self._capture_native(p, "ges"),
+        )
+        if reduced.nv >= plan.nv:
+            return plan
+        polished = self._local_search(reduced, max_passes=2, nv_ceiling=reduced.nv, max_ls_moves=cfg.max_ls_moves)
+        if polished.feasible and polished.nv <= reduced.nv:
+            self._capture_native(polished, "ges")
+            return polished
+        return reduced
+
     def _finish_native(self) -> Plan:
         self.time_limit_hit = self.time_limit_hit or self._native_incumbent.expired()
         plan = self._native_incumbent.finish()
@@ -291,6 +312,9 @@ class ALNSSolver(_NativeCertificationMixin):
         best = cur.copy()
         if not self._capture_native(best, "initial"):
             self._finish_native()
+        if init is None:
+            cur = self._ges_phase(cur, seed)
+            best = cur.copy()
         temp = cfg.temp_control * cur.cost / math.log(2)
         history = [best.cost]
         no_imp = 0
@@ -365,8 +389,11 @@ class HybridDDQNSolver(_NativeCertificationMixin):
     use_rl = True
 
     def _reference_entry(self) -> dict | None:
-        # Per-instance reference fleet used inside search; None in reference-blind runs.
-        return None if self.cfg.reference_blind else BKS.get(self.inst.name)
+        # Per-instance reference fleet used inside search; None in reference-blind runs,
+        # unless the GES phase is on, which supplies the provable capacity bound instead.
+        if self.cfg.reference_blind:
+            return {"nv": fleet_lower_bound(self.inst)} if self.cfg.ges_phase_enabled else None
+        return BKS.get(self.inst.name)
 
     def __init__(self, inst: Inst, cfg: Config, seed: int | None = None):
         import copy
@@ -1796,6 +1823,9 @@ class HybridDDQNSolver(_NativeCertificationMixin):
         self._capture_native(best, "initial")
         if self.native_certification["certificate"] is None:
             self._finish_native()
+        if init is None and not _is_sub_solve:
+            cur = self._ges_phase(cur, seed)
+            best = cur.copy()
 
         # RL-Guided Split Controller Architecture
         if not _is_sub_solve and self.inst.n >= 200 and cfg.split_enabled:

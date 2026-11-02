@@ -443,6 +443,9 @@ class Config:
     # takes its unknown-instance fallbacks instead. Set VRPTW_REFERENCE_BLIND=1 so
     # the flag reaches supervised workers without changing the CLI.
     reference_blind: bool = field(default_factory=lambda: os.environ.get("VRPTW_REFERENCE_BLIND") == "1")
+    # Full-budget GES before search (vrptw.ges), opt-in; blind runs then use the capacity bound as the fleet floor.
+    ges_phase_enabled: bool = field(default_factory=lambda: os.environ.get("VRPTW_GES_PHASE") == "1")
+    ges_phase_frac: float = field(default_factory=lambda: float(os.environ.get("VRPTW_GES_FRAC", "0.1")))
 
     # ── Learned Acceptance Criterion ──────────────────────────────────────
     lac_enabled: bool = True
