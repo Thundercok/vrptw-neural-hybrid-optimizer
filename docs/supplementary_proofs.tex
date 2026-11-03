@@ -11,6 +11,8 @@
 
 \newcommand{\NV}{{N_\mathrm{V}}}
 \newcommand{\TD}{{D_\mathrm{T}}}
+\newcommand{\NVs}[1]{N_{\mathrm{V},\text{#1}}}
+\newcommand{\TDs}[1]{D_{\mathrm{T},\text{#1}}}
 \newcommand{\PENDING}[1]{\textbf{[PENDING: #1]}}
 
 \newtheorem{theorem}{Theorem}
@@ -102,7 +104,7 @@ The entropy gating coefficient $w_{\text{conf}}(\mathbf{s})$ affects only the be
 \emph{Scope.} The contraction property establishes only that $Q^*$ is well defined for a finite MDP; it is not a convergence result for the solver. Convergence of tabular Q-learning to $Q^*$ additionally requires a Markov state, infinitely frequent visits of every state-action pair and suitable step sizes. None of these conditions is established here: the controllers observe aggregated features that are not a sufficient statistic of the search state (main text, macro controller section), they use nonlinear function approximation with replay and target networks, and each run is finite. We therefore claim no convergence of $Q(\cdot; \theta)$ to $Q^*$, and the learned controllers are evaluated empirically.
 \end{proof}
 
-\section{Worst-Case Work of the Implemented Generalized Ejection Chain}
+\section{Worst-Case Work of the Implemented Ejection Chain}
 \label{sec:supp_gec}
 
 \begin{proposition}[Polynomial Worst-Case Work]
@@ -214,7 +216,7 @@ Algorithm~\ref{alg:supp_hybrid_ddqn_alns} follows the implementation used in the
 \section{Reward Formulation}
 \label{sec:supp_reward_parameters}
 
-Table~\ref{tab:supp_reward_coefficients} lists the coefficients of the macro segment reward $R_{\text{seg}} = 0.30[\text{Base} + \lambda_{\text{fleet}} \Psi_{NV} + (1 - \lambda_{\text{fleet}}) \Psi_{TD} + \text{Bonus}_{NV}] + \Delta \Phi$. These constants were set by hand during development to balance the scales of discrete vehicle eliminations and continuous distance reductions. We did not retain a calibration log, so we cannot document how they were chosen or show that they are independent of earlier runs on the benchmark instances. They were frozen before the sweeps reported in the paper. We did not run a sensitivity analysis on them under the evaluation protocol of the paper.
+Table~\ref{tab:supp_reward_coefficients} lists the coefficients of the macro segment reward $R_{\text{seg}} = 0.30[\text{Base} + \lambda_{\text{fleet}} \Psi_{\mathrm{NV}} + (1 - \lambda_{\text{fleet}}) \Psi_{\mathrm{TD}} + \text{Bonus}_{\mathrm{NV}}] + \Delta \Phi$. These constants were set by hand during development to balance the scales of discrete vehicle eliminations and continuous distance reductions. We did not retain a calibration log, so we cannot document how they were chosen or show that they are independent of earlier runs on the benchmark instances. They were frozen before the sweeps reported in the paper. We did not run a sensitivity analysis on them under the evaluation protocol of the paper.
 
 \begin{table}[!htbp]
 \caption{Coefficients of the Macro Segment Reward and the Micro Iteration Reward.}
@@ -225,16 +227,16 @@ Table~\ref{tab:supp_reward_coefficients} lists the coefficients of the macro seg
 \toprule
 \textbf{Component} & \textbf{Term} & \textbf{Macro} & \textbf{Micro} & \textbf{Role} \\
 \midrule
-\multirow{4}{*}{\textbf{Fleet Term $\Psi_{NV}$}}
- & $\Delta NV_{\text{best}}$ & 8.0 & 3.0 & Vehicles removed from the best solution \\
+\multirow{4}{*}{\textbf{Fleet Term $\Psi_{\mathrm{NV}}$}}
+ & $\Delta \NVs{best}$ & 8.0 & 3.0 & Vehicles removed from the best solution \\
  & $\Delta C_{\text{best}}$ & 1.2 & 0.40 & Percent distance gain of the best solution, floored at zero \\
- & $\Delta NV_{\text{cur}}$ & 5.0 & 2.0 & Vehicles removed from the current solution \\
+ & $\Delta \NVs{cur}$ & 5.0 & 2.0 & Vehicles removed from the current solution \\
  & $\Delta C_{\text{cur}}$ & 0.6 & 0.20 & Percent distance gain of the current solution, floored at zero \\
 \midrule
-\multirow{4}{*}{\textbf{Distance Term $\Psi_{TD}$}}
- & $\Delta NV_{\text{best}}$ & 3.0 & 0.50 & As above \\
+\multirow{4}{*}{\textbf{Distance Term $\Psi_{\mathrm{TD}}$}}
+ & $\Delta \NVs{best}$ & 3.0 & 0.50 & As above \\
  & $\Delta C_{\text{best}}$ & 3.5 & 1.80 & As above \\
- & $\Delta NV_{\text{cur}}$ & 2.0 & 0.30 & As above \\
+ & $\Delta \NVs{cur}$ & 2.0 & 0.30 & As above \\
  & $\Delta C_{\text{cur}}$ & 1.8 & 0.90 & As above \\
 \midrule
 \multirow{5}{*}{\textbf{Base}}

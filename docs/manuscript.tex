@@ -50,6 +50,8 @@
 }
 \newcommand{\NV}{{N_\mathrm{V}}}
 \newcommand{\TD}{{D_\mathrm{T}}}
+\newcommand{\NVs}[1]{N_{\mathrm{V},\text{#1}}}
+\newcommand{\TDs}[1]{D_{\mathrm{T},\text{#1}}}
 \newcommand{\BKS}{\text{BKS}}
 \newcommand{\PENDING}[1]{\textbf{[PENDING: #1]}}
 \newdimen\xfigwd
@@ -256,8 +258,8 @@ The remainder of this paper is organized as follows: Section~\ref{sec:related_wo
 & Neural VRPTW \cite{falkner2020learning, lin2021deep} & \makecell{$\times$\\\scriptsize(Mask-fragile)} & Scalarized & N/A & $\times$ & N/A & \makecell{Very Low\\\scriptsize(One-shot)} \\
 \addlinespace[2pt]
 \multirow{3}{\linewidth}{\textbf{Single-Policy Hybrid RL-LNS}}
-& Learned LNS \cite{lu2020learning} & \makecell{N/A\\\scriptsize(No TW)} & Scalarized & $\checkmark$ & \makecell{$\times$\\\scriptsize(Single-agent)} & \makecell{$\times$\\\scriptsize(SA)} & \makecell{Moderate\\\scriptsize(Policy NN)} \\
-& Neural LNS \cite{hottung2020neural} & \makecell{N/A\\\scriptsize(No TW)} & Scalarized & $\checkmark$ & \makecell{$\times$\\\scriptsize(Single-agent)} & \makecell{$\times$\\\scriptsize(Greedy)} & \makecell{Moderate\\\scriptsize(Policy NN)} \\
+& L2I \cite{lu2020learning} & \makecell{N/A\\\scriptsize(No TW)} & Distance & $\checkmark$ & \makecell{$\times$\\\scriptsize(Single-agent)} & \makecell{$\times$\\\scriptsize(None)} & \makecell{Moderate\\\scriptsize(Policy NN)} \\
+& Neural LNS \cite{hottung2020neural} & \makecell{N/A\\\scriptsize(No TW)} & Distance & $\checkmark$ & \makecell{$\times$\\\scriptsize(Single-agent)} & \makecell{$\times$\\\scriptsize(SA/Greedy)} & \makecell{Moderate\\\scriptsize(Policy NN)} \\
 & Graph RL ALNS \cite{johnn2023graph}, DR-ALNS \cite{reijnen2024online} & \makecell{Problem-\\dependent} & \makecell{Problem-\\dependent} & $\checkmark$ & \makecell{$\times$\\\scriptsize(Single policy)} & \makecell{Partly\\\scriptsize(DR-ALNS)} & \makecell{Moderate\\\scriptsize(Policy NN)} \\
 \midrule
 \textbf{Proposed Tri-Level Hybrid DDQN-ALNS} & \textbf{This Work} & \makecell{\textbf{Validated}\\\textbf{\scriptsize(Returned plan)}} & \textbf{Lexicographic} & $\mathbf{\checkmark}$ & \makecell{$\mathbf{\checkmark}$\\\textbf{\scriptsize(Two controllers)}} & \makecell{$\mathbf{\checkmark}$\\\textbf{\scriptsize(LAC)}} & \makecell{\textbf{High}\\\textbf{\scriptsize(RL/MIP)}} \\
@@ -268,7 +270,7 @@ The remainder of this paper is organized as follows: Section~\ref{sec:related_wo
 \subsection{Classical Metaheuristics and ALNS for VRPTW}
 \label{sec:rw_classical}
 
-Metaheuristics have long dominated practical VRPTW optimization \cite{braysy2005vehicle}. Building on Solomon's insertion heuristics \cite{Solomon1987} and Shaw's Large Neighborhood Search \cite{shaw1998using}, Ropke and Pisinger \cite{Ropke2006, pisinger2007general, pisinger2010large} formalized Adaptive Large Neighborhood Search (ALNS), wherein removal and insertion operators compete for selection via roulette-wheel probabilities updated from historical performance. For fleet minimization, Guided Ejection Search \cite{nagata2009ges} and penalty-based edge assembly memetic algorithms \cite{nagata2010srex} represent dedicated mechanisms, while matheuristic hybrids leverage elite route pools to periodically solve Set Partitioning models \cite{rochat1995probabilistic, alvarenga2007genetic, subramanian2013hybrid, vidal2013hybrid}. More recently, Slack Induction by String Removals \cite{christiaens2020slack} demonstrated that specialized ruin operators can rival complex frameworks.
+Metaheuristics have long dominated practical VRPTW optimization \cite{braysy2005vehicle}. Building on Solomon's insertion heuristics \cite{Solomon1987} and Shaw's Large Neighborhood Search \cite{shaw1998using}, Ropke and Pisinger \cite{Ropke2006, pisinger2007general, pisinger2010large} formalized Adaptive Large Neighborhood Search (ALNS), wherein removal and insertion operators compete for selection via roulette-wheel probabilities updated from historical performance. For fleet minimization, Guided Ejection Search \cite{nagata2009ges} and penalty-based edge assembly memetic algorithms \cite{nagata2010srex} represent dedicated mechanisms, while matheuristic hybrids leverage elite route pools to periodically solve Set Partitioning models \cite{rochat1995probabilistic, alvarenga2007genetic, subramanian2013hybrid}. More recently, Slack Induction by String Removals \cite{christiaens2020slack} demonstrated that specialized ruin operators can rival complex frameworks.
 
 Despite this success, standard ALNS has an intrinsic limitation: operator weights are updated as exponentially smoothed scores across coarse iteration segments, resulting in delayed, aggregated credit assignment. The selection policy is \emph{stateless}, ignoring route topology, cluster fragmentation, and time-window tightness. Turke\v{s} et al.\ \cite{turkes2021meta} found that this adaptive mechanism yields only marginal gains over non-adaptive LNS. That result leaves open whether a better selection policy would help or whether operator selection matters little, which is one reason we measure it directly.
 
@@ -280,7 +282,7 @@ Neural Combinatorial Optimization (NCO) learns data-driven routing policies usin
 \subsection{Learning-Augmented Metaheuristics}
 \label{sec:rw_hybrid}
 
-To combine machine learning with operational guarantees, the ``Learning to Optimize'' paradigm \cite{bengio2021machine} embeds neural models inside metaheuristic search loops for operator selection \cite{syberfeldt2009reinforcement, lu2020learning}, solution perturbation \cite{chen2019learning}, and learned destroy policies \cite{hottung2020neural}. Closest to this work, Johnn et al.~\cite{johnn2023graph} formulate operator choice in ALNS as a Markov decision process solved with deep reinforcement learning and graph neural networks, and DR-ALNS~\cite{reijnen2024online} learns a policy that selects operators, adjusts parameters and controls the acceptance criterion, so learned influence on acceptance is not new. Our design differs in three respects: separate controllers for plateau regimes and operator pairs in place of one policy, an acceptance model added to Simulated Annealing by a disjunctive rule, and online learning from random weights in every run with no prior policy training for these controllers. We did not run these methods, and these differences are not evidence that our method performs better.
+To combine machine learning with operational guarantees, the ``Learning to Optimize'' paradigm \cite{bengio2021machine} embeds neural models inside metaheuristic search loops for operator selection \cite{kallestad2023general, lu2020learning}, solution perturbation \cite{chen2019learning}, and learned destroy policies \cite{hottung2020neural}. Closest to this work, Johnn et al.~\cite{johnn2023graph} formulate operator choice in ALNS as a Markov decision process solved with deep reinforcement learning and graph neural networks, and DR-ALNS~\cite{reijnen2024online} learns a policy that selects operators, adjusts parameters and controls the acceptance criterion, so learned influence on acceptance is not new. Our design differs in three respects: separate controllers for plateau regimes and operator pairs in place of one policy, an acceptance model added to Simulated Annealing by a disjunctive rule, and online learning from random weights in every run with no prior policy training for these controllers. We did not run these methods, and these differences are not evidence that our method performs better.
 
 \subsection{Positioning of This Work}
 \label{sec:rw_positioning}
@@ -471,7 +473,7 @@ At the start of segment $k$, the macro controller observes a 12-dimensional stat
 \begin{align}
   \mathbf{s}_k^{\text{macro}} = \Big[ 
     &\min\Big(\frac{\text{no\_imp}}{\text{patience}}, 1\Big), \; \min\Big(\frac{C_{\text{cur}} - C_{\text{best}}}{C_{\text{best}}}, 1\Big), \nonumber \\
-    &\min\Big(\frac{T}{T_0}, 1.5\Big), \; \text{imp\_rate}, \; \min\Big(\frac{NV_{\text{cur}}}{NV_{\text{init}}}, 2\Big), \nonumber \\
+    &\min\Big(\frac{T}{T_0}, 1.5\Big), \; \text{imp\_rate}, \; \min\Big(\frac{\NVs{cur}}{\NVs{init}}, 2\Big), \nonumber \\
     &rb, \; lb, \; \tau_{\text{tight}}, \nonumber \\
     &\bar{s}, \; \rho_{\text{fill}}, \; \rho_{\text{pool}}, \; \frac{k}{K_{\max}} \Big]
   \label{eq:macro_state}
@@ -491,28 +493,31 @@ The main destroy-repair loop receives $80\%$ of the time budget. The remaining $
 \subsubsection{Multi-Objective Segment Reward \& Surrogate Policy Optimization}
 To guide reinforcement learning exploration in alignment with the primary-secondary optimization hierarchy, the segment reward $R_{\text{seg}}$ balances vehicle reduction gains against distance savings via an adaptive fleet pressure factor $\lambda_{\text{fleet}} \in [0, 1]$:
 \begin{equation}
-  R_{\text{seg}} = 0.30\big[\text{Base} + \lambda_{\text{fleet}} \Psi_{NV} + (1 - \lambda_{\text{fleet}}) \Psi_{TD} + \text{Bonus}_{NV}\big] + \Delta \Phi
+  \begin{split}
+    R_{\text{seg}} = 0.30\big[&\text{Base} + \lambda_{\text{fleet}} \Psi_{\mathrm{NV}} + (1 - \lambda_{\text{fleet}}) \Psi_{\mathrm{TD}} \\
+    &+ \text{Bonus}_{\mathrm{NV}}\big] + \Delta \Phi
+  \end{split}
   \label{eq:segment_reward}
 \end{equation}
-where $\Psi_{NV} = \sum_{j=1}^4 \beta_{NV, j} \Delta X_j$ and \allowbreak $\Psi_{TD} = \sum_{j=1}^4 \beta_{TD, j} \Delta X_j$ linearly weight improvements across best-so-far and incumbent fleet size ($\Delta NV$) and travel distance ($\Delta C$), with representative primary fleet coefficient $\beta_{NV, 1} = 8.0$. Baseline computational penalty $\text{Base}$ penalizes intensive local search passes and unproductive stagnation, while $\text{Bonus}_{NV}$ provides a discrete reward of $+15$ per vehicle removed from the best solution and $+5$ per vehicle removed from the current solution. All coefficients are listed in Supplementary Section~6.
+where $\Psi_{\mathrm{NV}} = \sum_{j=1}^4 \beta_{\mathrm{NV}, j} \Delta X_j$ and \allowbreak $\Psi_{\mathrm{TD}} = \sum_{j=1}^4 \beta_{\mathrm{TD}, j} \Delta X_j$ linearly weight improvements across best-so-far and incumbent fleet size ($\Delta\NV$) and travel distance ($\Delta C$), with representative primary fleet coefficient $\beta_{\mathrm{NV}, 1} = 8.0$. Baseline computational penalty $\text{Base}$ penalizes intensive local search passes and unproductive stagnation, while $\text{Bonus}_{\mathrm{NV}}$ provides a discrete reward of $+15$ per vehicle removed from the best solution and $+5$ per vehicle removed from the current solution. All coefficients are listed in Supplementary Section~6.
 
-The presence of two parallel fleet-reward pathways in~\eqref{eq:segment_reward} addresses credit assignment across temporal scales: (i) Dense Continuous Guidance ($\lambda_{\text{fleet}} \Psi_{NV}$) encourages moves that balance inter-route capacity utilization and narrow the vehicle count gap relative to the incumbent; and (ii) Sparse Milestone Reinforcement ($\text{Bonus}_{NV}$) awards these amounts only when a vehicle is eliminated, preventing the sparse route collapse signal from being diluted across routine distance variations.
+The presence of two parallel fleet-reward pathways in~\eqref{eq:segment_reward} addresses credit assignment across temporal scales: (i) Dense Continuous Guidance ($\lambda_{\text{fleet}} \Psi_{\mathrm{NV}}$) encourages moves that balance inter-route capacity utilization and narrow the vehicle count gap relative to the incumbent; and (ii) Sparse Milestone Reinforcement ($\text{Bonus}_{\mathrm{NV}}$) awards these amounts only when a vehicle is eliminated, preventing the sparse route collapse signal from being diluted across routine distance variations.
 
 \paragraph{Reward Constants}
 The reward constants were set by hand during development, and Section~\ref{sec:setup} states what we can and cannot document about them and how the test set influenced later development.
 
-We emphasize a fundamental architectural dichotomy between the combinatorial evaluation layer and the reinforcement learning training layer: (i) Strict Lexicographic Evaluation: Incumbent replacement, elite archive admission, and final solution selection strictly evaluate the true lexicographic ordering $f(s) = (NV(s), TD(s))$, guaranteeing that fleet reduction strictly dominates distance; and (ii) Smooth RL Reward Surrogate: The reinforcement learning policy receives scalarized reward feedback $R_{\text{seg}}$ modulated by $\lambda_{\text{fleet}}$. When surplus capacity exists ($NV_{\text{cur}} > NV_{\text{best}}$), setting $\lambda_{\text{fleet}} \to 1$ concentrates gradients on fleet collapse; once fleet size stabilizes ($NV_{\text{cur}} = NV_{\text{best}}$), setting $\lambda_{\text{fleet}} \le 0.5$ transfers gradient sensitivity to routing distance.
+We emphasize a fundamental architectural dichotomy between the combinatorial evaluation layer and the reinforcement learning training layer: (i) Strict Lexicographic Evaluation: Incumbent replacement, elite archive admission, and final solution selection strictly evaluate the true lexicographic ordering $f(s) = (\NV(s), \TD(s))$, guaranteeing that fleet reduction strictly dominates distance; and (ii) Smooth RL Reward Surrogate: The reinforcement learning policy receives scalarized reward feedback $R_{\text{seg}}$ modulated by $\lambda_{\text{fleet}}$. When surplus capacity exists ($\NVs{cur} > \NVs{best}$), setting $\lambda_{\text{fleet}} \to 1$ concentrates gradients on fleet collapse; once fleet size stabilizes ($\NVs{cur} = \NVs{best}$), setting $\lambda_{\text{fleet}} \le 0.5$ transfers gradient sensitivity to routing distance.
 
 To accelerate learning while preventing artificial reward cycles in the surrogate MDP, we incorporate potential-based reward shaping $\Delta \Phi = \gamma_{\text{macro}}\,\Phi(\mathbf{s}_{k+1}^{\text{macro}}) - \Phi(\mathbf{s}_k^{\text{macro}})$. We explicitly note that this term implements potential-based shaping of the \emph{macro surrogate objective} \cite{ng1999policy} rather than guaranteeing policy invariance with respect to the underlying lexicographic VRPTW objective (which is enforced externally by the combinatorial evaluator). The adaptive fleet pressure factor $\lambda_{\text{fleet}} \in [0, 1]$ dynamically shifts optimization priority toward fleet reduction whenever surplus capacity exists:
 \begin{equation}
-  \lambda_{\text{fleet}}(s) = \sigma\!\left(8.0 \cdot \frac{NV_{\text{cur}} - NV_{\text{best}}}{NV_{\text{init}}}\right)
+  \lambda_{\text{fleet}}(s) = \sigma\!\left(8.0 \cdot \frac{\NVs{cur} - \NVs{best}}{\NVs{init}}\right)
   \label{eq:lambda_fleet}
 \end{equation}
 where $\sigma(\cdot)$ is the logistic sigmoid, with the state potential defined as:
 \begin{align}
-  \Phi(s) = &-15\,\lambda_{\text{fleet}}(s) \frac{\max(NV - NV_{\text{best}}, 0)}{NV_{\text{init}}} \nonumber \\
+  \Phi(s) = &-15\,\lambda_{\text{fleet}}(s) \frac{\max(\NV - \NVs{best}, 0)}{\NVs{init}} \nonumber \\
   &- 0.18\bigl(1 - \lambda_{\text{fleet}}(s)\bigr) \nonumber \\
-  &\quad \times \operatorname{clip}\!\left(\frac{TD - TD_{\text{best}}}{TD_{\text{best}}} \cdot 100, -25, 25\right)
+  &\quad \times \operatorname{clip}\!\left(\frac{\TD - \TDs{best}}{\TDs{best}} \cdot 100, -25, 25\right)
   \label{eq:potential_function}
 \end{align}
 The Macro Plateau Controller trains a dedicated Dueling Double DQN network ($Q_{\text{macro}}$) with prioritized replay buffer $\mathcal{D}_{\text{macro}}$, executing Adam gradient steps with Cosine Annealing learning rate scheduling at the completion of each macro segment.
@@ -534,9 +539,9 @@ At each iteration $t$, the operator controller observes a 20-dimensional state v
 \textbf{Idx} & \textbf{Sym} & \textbf{Definition} & \textbf{Idx} & \textbf{Sym} & \textbf{Definition} \\
 \midrule
 $s_1$ & $\Delta C_{\text{rel}}$ & $(C_{\text{cur}}\!-\!C_{\text{best}})/C_{\text{best}}$ & $s_{11}$ & $\rho_{\text{fill}}$ & Capacity fill ratio \\
-$s_2$ & $\text{Ratio}_{NV}$ & $NV_{\text{cur}}/NV_{\text{init}}$ & $s_{12}$ & $\rho_{\text{pool}}$ & Pool fill ratio $|\mathcal{P}|/\mathcal{P}_{\max}$ \\
+$s_2$ & $\text{Ratio}_{\mathrm{NV}}$ & $\NVs{cur}/\NVs{init}$ & $s_{12}$ & $\rho_{\text{pool}}$ & Pool fill ratio $|\mathcal{P}|/\mathcal{P}_{\max}$ \\
 $s_3$ & $\text{Prog}_{\text{global}}$ & $\min(t / 10000, 1)$ & $s_{13}$ & $m_{\text{idx}}$ & Active macro mode index \\
-$s_4$ & $\text{Prog}_{\text{seg}}$ & $(t \bmod \Delta_{\text{seg}})/\Delta_{\text{seg}}$ & $s_{14}$ & $\Delta NV_{\text{rel}}$ & $(NV_{\text{cur}}\!-\!NV_{\text{best}})/NV_{\text{init}}$ \\
+$s_4$ & $\text{Prog}_{\text{seg}}$ & $(t \bmod \Delta_{\text{seg}})/\Delta_{\text{seg}}$ & $s_{14}$ & $\Delta \NVs{rel}$ & $(\NVs{cur}\!-\!\NVs{best})/\NVs{init}$ \\
 $s_5$ & $T_{\text{norm}}$ & $T / T_0$ & $s_{15}$ & $\text{Imp}_{\text{rec}}$ & Recent improvement rate \\
 $s_6$ & $\text{Stag}_{\text{ratio}}$ & $\text{no\_imp} / \text{patience}$ & $s_{16}$ & $\text{Gini}_{\text{len}}$ & Gini of route loads \\
 $s_7$ & $rb$ & Route separation index & $s_{17}$ & $\mu_{\text{slack}}$ & Mean customer forward slack \\
@@ -733,7 +738,7 @@ This section evaluates the method on 74 standard benchmark instances: Solomon-10
 
 All experiments ran on one Apple M1 notebook (4 performance and 4 efficiency cores, 16\,GB memory, macOS 26.5.2), with four cells at a time and one numerical-library thread per cell. macOS assigns cores itself, so processes were not pinned to cores.
 
-\textit{Machine-speed variation.} A wall-clock budget does not fix the compute a run receives. PyVRP and NeuroLKH with the same seed retrace the same search, so the time needed to reach the same (fleet, distance) step measures machine speed. On 18 instances at 60\,s, cells of our first full sweep took a median of 2.3 times as long as the same cells on a later night, ranging from about 0.65 to 9.6 times per instance. During that sweep the notebook was also used for other work and was at times unplugged or asleep, but the cause of the slowdown is not established. Absolute times therefore do not describe a steady machine speed, and comparisons are valid within a block of cells that ran together, not across blocks. In the reported rerun, all cases of one instance, seed and cutoff run together as a block. A cell whose wall-clock span exceeds its monotonic duration by more than 5\,s was frozen by machine sleep, and its whole block runs again. Each cell records power state and load at its start, and the primary comparisons are repeated without blocks that started a cell at a one-minute load above 8.
+\textit{Machine-speed variation.} A wall-clock budget does not fix the compute a run receives. PyVRP and NeuroLKH with the same seed retrace the same search, so the time needed to reach the same (fleet, distance) step measures machine speed. On 18 instances at 60\,s, cells of our first full sweep took a median of 2.3 times as long as the same cells on a later night, ranging from about 0.65 to 9.6 times per instance. During that sweep the notebook was also used for other work and was at times unplugged or asleep, but the cause of the slowdown is not established. Absolute times therefore do not describe a steady machine speed, and comparisons are valid within a block of cells that ran together, not across blocks. In the reported rerun, all cases of one instance, seed and cutoff run together as a block. A cell whose wall-clock span exceeds its monotonic duration by more than 5\,s was frozen by machine sleep, and its whole block runs again. Each cell records power state and load at its start, and the primary comparisons are repeated without blocks that started a cell at a one-minute load above 8. Other work on the notebook raised the load as high as 233 early in the rerun. Before any result was read, we therefore moved 58 of the first 111 blocks at 300\,s, those with a cell started above load 8, aside unread and ran them again, and from then on no new cell started above that load. A cell can still start below that load and then run above it, so also before any result was read, we began sampling load once a minute and added two repeats at 300\,s: one without blocks that have a cell whose mean load during its run was above 8, and one that also leaves out blocks with a cell not measured this way. Load during a run is not known for the roughly 450 cells at 300\,s that finished before sampling began.
 % TODO(T300): report blocks rerun and the load-sensitivity result. Update this paragraph if the rerun moves to another machine.
 
 ALNS-Base is our own implementation in the framework of Ropke and Pisinger~\cite{Ropke2006, pisinger2007general}, not a reproduction of it. It shares the 13 destroy and 5 repair operators of our search infrastructure. It loads no GNN, so its two heatmap-guided destroy operators receive no heatmap. Pairs are selected by Thompson sampling over 65 Beta posteriors instead of a roulette wheel, with scores $(\sigma_1, \sigma_2, \sigma_3) = (33, 9, 3)$ normalized by $\sigma_1$, posterior decay $0.95$ every 100 iterations, and a posterior reset after 1,250 iterations without improvement. Simulated Annealing starts at $T_0 = 0.05\,c_0 / \ln 2$, where $c_0$ is the cost of the starting solution, and cools geometrically with $\alpha = 0.99975$. Its main loop applies no local search, ejection chains or set partitioning. Initialization is algorithm-specific: ALNS-Base starts from the unweighted greedy construction (\textsf{\small BuildGreedyInitialSolution}), the hybrid starts from the same construction with GNN-weighted insertion costs, and PyVRP-ILS and NeuroLKH use their own construction procedures; construction and model inference are charged to each solver's budget. A defect in the greedy construction, which did not check the depot return deadline, made the ALNS-Base start infeasible on R1\_2\_5, so all 20 ALNS-Base runs on that instance terminated without a solution. We corrected the construction, which leaves the start unchanged on the other 73 instances, and reran those 20 runs.
@@ -743,7 +748,7 @@ PyVRP-ILS is the iterated local search of PyVRP~\cite{wouda2024pyvrp}, version 0
 All cases share one supervisor. A case's clock starts in a fresh process with an empty work directory and JIT cache, and construction, model inference, search, JIT compilation after the start, certification and communication with the supervisor are charged to its budget. Imports and loading of frozen models are recorded separately. An incumbent counts only if the supervisor has received, validated and hashed it before the cutoff, and the process must return within $[T-0.05, T+0.5]$\,s of the cutoff $T$.
 
 \paragraph{Reference-Fleet Information}
-In the first full sweep (Section~\ref{sec:first_sweep}), the hybrid read the best-known fleet size $NV_{\text{BKS}}$~\cite{sintef_homberger} of each benchmark instance during search. It served as the floor at which vehicle-reduction phases stop, as the trigger for switching set partitioning to a distance-only objective, and as a parameter of the recombination and route-elimination steps. None of the baselines uses this information, it is not available for new instances, and equal compute alone does not remove this asymmetry. The rerun therefore disables every lookup. With the Guided Ejection Search phase on, the capacity bound takes the place of the reference fleet; with it off, the hybrid uses its fallbacks for unknown instances. The effect of reading the reference fleet was not re-estimated under matched conditions, so we report only that the first sweep's hybrid read it.
+In the first full sweep (Section~\ref{sec:first_sweep}), the hybrid read the best-known fleet size $\NVs{BKS}$~\cite{sintef_homberger} of each benchmark instance during search. It served as the floor at which vehicle-reduction phases stop, as the trigger for switching set partitioning to a distance-only objective, and as a parameter of the recombination and route-elimination steps. None of the baselines uses this information, it is not available for new instances, and equal compute alone does not remove this asymmetry. The rerun therefore disables every lookup. With the Guided Ejection Search phase on, the capacity bound takes the place of the reference fleet; with it off, the hybrid uses its fallbacks for unknown instances. The effect of reading the reference fleet was not re-estimated under matched conditions, so we report only that the first sweep's hybrid read it.
 
 \paragraph{Hyperparameter Specification and Experimental Firewall}
 The hyperparameters in Table~\ref{tab:hyperparameters} combine literature defaults (for example the Adam optimizer parameters and the Polyak update rate $\tau=0.005$) with values set by hand during development. We did not retain a calibration log, so we cannot document how the hand-set values were chosen or show that they are independent of earlier runs on the benchmark instances. They were frozen before the sweeps reported here. One solver rule reads family information from the benchmark's naming convention: the fleet-reduction search receives more iterations when an instance name begins with RC and the current fleet exceeds the target by at least one vehicle.
@@ -834,7 +839,7 @@ NeuroLKH-adapted & \PENDING{} & \PENDING{} & \PENDING{} \\
 \end{tabular}
 \end{table}
 
-\PENDING{text for Table~\ref{tab:primary}, then the same comparisons by size (100, 200, 400 customers), the bounds for infrastructure gaps, the repeat without blocks started at load above 8, and F111111+GES against F111111-blind whatever the adoption outcome.}
+\PENDING{text for Table~\ref{tab:primary}, then the same comparisons by size (100, 200, 400 customers), the bounds for infrastructure gaps, the repeat without blocks started at load above 8, the two repeats based on load during a run with their block counts, and F111111+GES against F111111-blind whatever the adoption outcome.}
 
 \subsection{Effect of the Time Budget (RQ2)}
 \label{sec:budget_results}
@@ -984,10 +989,10 @@ B.~Lin, B.~Ghaddar, and J.~Nathwani, ``Deep reinforcement learning for the elect
 J.~Christiaens and G.~Vanden~Berghe, ``Slack induction by string removals for vehicle routing problems,'' \emph{Transportation Science}, vol.~54, no.~2, pp. 417--433, 2020.
 
 \bibitem{vidal2013hybrid}
-T.~Vidal, T.~G. Crainic, M.~Gendreau, and P.~C. Prins, ``A hybrid genetic algorithm with adaptive diversity management for a large class of vehicle routing problems with time-windows,'' \emph{Computers \& Operations Research}, vol.~40, no.~1, pp. 475--489, 2013.
+T.~Vidal, T.~G. Crainic, M.~Gendreau, and C.~Prins, ``A hybrid genetic algorithm with adaptive diversity management for a large class of vehicle routing problems with time-windows,'' \emph{Computers \& Operations Research}, vol.~40, no.~1, pp. 475--489, 2013.
 
 \bibitem{lu2020learning}
-H.~Lu, X.~Zhang, and S.~Yang, ``A learning-based iterative search for the vehicle routing problem,'' \emph{IEEE Transactions on Neural Networks and Learning Systems}, vol.~31, no.~10, pp. 4348--4362, 2020.
+H.~Lu, X.~Zhang, and S.~Yang, ``A learning-based iterative method for solving vehicle routing problems,'' in \emph{International Conference on Learning Representations (ICLR)}, 2020.
 
 \bibitem{hottung2020neural}
 A.~Hottung and K.~Tierney, ``Neural large neighborhood search for the capacitated vehicle routing problem,'' in \emph{Proc. 24th European Conference on Artificial Intelligence (ECAI)}, 2020, pp. 443--450.
@@ -1011,16 +1016,16 @@ Y.~Nagata and O.~Br{\"a}ysy, ``A powerful route minimization heuristic for the v
 Y.~Nagata, O.~Br{\"a}ysy, and W.~Dullaert, ``A penalty-based edge assembly memetic algorithm for the vehicle routing problem with time windows,'' \emph{Computers \& Operations Research}, vol.~37, no.~4, pp. 724--737, 2010.
 
 \bibitem{rochat1995probabilistic}
-Y.~Rochat and {\'E}.~D. Taillard, ``Probabilistic diversification and diversification in local search for vehicle routing,'' \emph{Journal of Heuristics}, vol.~1, no.~1, pp. 147--167, 1995.
+Y.~Rochat and {\'E}.~D. Taillard, ``Probabilistic diversification and intensification in local search for vehicle routing,'' \emph{Journal of Heuristics}, vol.~1, no.~1, pp. 147--167, 1995.
 
 \bibitem{alvarenga2007genetic}
-G.~R. Alvarenga, G.~R. Mateus, and G.~de~Azambuja~Silveira, ``A genetic and set partitioning approach for the vehicle routing problem with time windows,'' \emph{Computers \& Operations Research}, vol.~34, no.~10, pp. 2991--3004, 2007.
+G.~B. Alvarenga, G.~R. Mateus, and G.~de~Tomi, ``A genetic and set partitioning two-phase approach for the vehicle routing problem with time windows,'' \emph{Computers \& Operations Research}, vol.~34, no.~6, pp. 1561--1584, 2007.
 
 \bibitem{subramanian2013hybrid}
-A.~Subramanian, P.~H.~V. Penna, E.~Uchoa, and L.~S. Ochi, ``A hybrid algorithm for the vehicle routing problem with simultaneous pickup and delivery,'' \emph{Computers \& Operations Research}, vol.~40, no.~1, pp. 468--477, 2013.
+A.~Subramanian, E.~Uchoa, and L.~S. Ochi, ``A hybrid algorithm for a class of vehicle routing problems,'' \emph{Computers \& Operations Research}, vol.~40, no.~10, pp. 2519--2531, 2013.
 
 \bibitem{turkes2021meta}
-R.~Turke{\v{s}}, K.~S{\"o}rensen, and L.~M. Hvattum, ``Meta-analysis of adaptive large neighborhood search,'' \emph{European Journal of Operational Research}, vol. 292, no.~2, pp. 423--442, 2021.
+R.~Turke{\v{s}}, K.~S{\"o}rensen, and L.~M. Hvattum, ``Meta-analysis of metaheuristics: Quantifying the effect of adaptiveness in adaptive large neighborhood search,'' \emph{European Journal of Operational Research}, vol. 292, no.~2, pp. 423--442, 2021.
 
 \bibitem{bello2016neural}
 I.~Bello, H.~Pham, Q.~V. Le, M.~Norouzi, and S.~Bengio, ``Neural combinatorial optimization with reinforcement learning,'' \emph{arXiv preprint arXiv:1611.09940}, 2016.
@@ -1034,11 +1039,11 @@ C.~K. Joshi, T.~Laurent, and X.~Bresson, ``An efficient graph convolutional netw
 \bibitem{bengio2021machine}
 Y.~Bengio, A.~Lodi, and Y.~Prouvost, ``Machine learning for combinatorial optimization: A methodological tour d'horizon,'' \emph{European Journal of Operational Research}, vol. 290, no.~2, pp. 405--421, 2021.
 
-\bibitem{syberfeldt2009reinforcement}
-A.~Syberfeldt and T.~B{\"a}ck, ``Reinforcement learning for parameter control in metaheuristics,'' in \emph{Proc. IEEE Congress on Evolutionary Computation (CEC)}, 2009, pp. 2526--2533.
+\bibitem{kallestad2023general}
+J.~Kallestad, R.~Hasibi, A.~Hemmati, and K.~S{\"o}rensen, ``A general deep reinforcement learning hyperheuristic framework for solving combinatorial optimization problems,'' \emph{European Journal of Operational Research}, vol.~309, no.~1, pp. 446--468, 2023.
 
 \bibitem{chen2019learning}
-X.~Chen and Y.~Tian, ``Learning to perform local rewrite for combinatorial optimization,'' in \emph{Advances in NeurIPS}, vol.~32, 2019, pp. 8484--8494.
+X.~Chen and Y.~Tian, ``Learning to perform local rewriting for combinatorial optimization,'' in \emph{Advances in NeurIPS}, vol.~32, 2019, pp. 6281--6292.
 
 \bibitem{sutton1999between}
 R.~S. Sutton, D.~Precup, and S.~Singh, ``Between MDPs and semi-MDPs: A framework for temporal abstraction in reinforcement learning,'' \emph{Artificial Intelligence}, vol. 112, no.~1-2, pp. 181--211, 1999.
@@ -1062,7 +1067,7 @@ A.~Y. Ng, D.~Harada, and S.~Russell, ``Policy invariance under reward transforma
 Z.~Wang \emph{et~al.}, ``Dueling network architectures for deep reinforcement learning,'' in \emph{Proc. 33rd ICML}, vol.~48, 2016, pp. 1995--2003.
 
 \bibitem{auer2002finite}
-P.~Auer, N.~Cesa-Bianchi, and P.~Fischer, ``Finite-time analysis of the multiarmed bandit problem,'' \emph{Machine Learning}, vol.~47, no.~2, pp. 235--256, 2002.
+P.~Auer, N.~Cesa-Bianchi, and P.~Fischer, ``Finite-time analysis of the multiarmed bandit problem,'' \emph{Machine Learning}, vol.~47, no.~2--3, pp. 235--256, 2002.
 
 \bibitem{audibert2009exploration}
 J.-Y.~Audibert, R.~Munos, and C.~Szepesv{\'a}ri, ``Exploration--exploitation tradeoff using variance estimates in multi-armed bandits,'' \emph{Theoretical Computer Science}, vol. 410, no.~19, pp. 1876--1902, 2009.
