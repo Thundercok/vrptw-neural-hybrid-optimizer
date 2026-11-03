@@ -147,6 +147,70 @@ def test_load_sensitivity_drops_whole_blocks():
     assert row["seed_pairs_used"] == row["seed_pairs_total"] - 1
 
 
+def test_run_load_sensitivities_drop_exposed_and_unmeasured_blocks():
+    m = api()
+    cells = t300_cells(m, ges_nv=9)
+    for c in cells:
+        c["run_load1"] = 5.0
+        if c["instance"] == "C101" and c["seed"] == 44 and c["case_id"] == m.PYVRP:
+            c["run_load1"] = 9.0
+        if c["instance"] == "R101" and c["seed"] == 45 and c["case_id"] == m.GES:
+            c["run_load1"] = None
+    results, decision = primary(m, cells)
+    assert decision["run_load_exposed_blocks"] == 1 and decision["run_load_unmeasured_blocks"] == 1
+    assert decision["ges_adopted"] and results[0]["analysis"] == "adoption_rule"
+    total = results[0]["seed_pairs_total"]
+    assert results[0]["seed_pairs_used"] == total
+    for analysis, dropped, level in (
+        ("adoption_run_load_a", 1, 0.9875), ("adoption_run_load_b", 2, 0.9875),
+        ("primary_run_load_a", 1, 1 - 0.05 / 3), ("primary_run_load_b", 2, 1 - 0.05 / 3),
+    ):
+        for row in m.comparison_rows(results, analysis):
+            assert row["seed_pairs_used"] == total - dropped
+            assert row["intervals"]["fleet_score"]["level"] == pytest.approx(level)
+
+
+def test_run_load_sensitivity_survives_dropping_every_seed_of_an_instance():
+    m = api()
+    cells = t300_cells(m, ges_nv=9)
+    for c in cells:
+        c["run_load1"] = 9.0 if c["instance"] == "C101" else 5.0
+    results, decision = primary(m, cells)
+    assert decision["run_load_exposed_blocks"] == len(SEEDS)
+    row = m.comparison_rows(results, "primary_run_load_a")[0]
+    assert row["seed_pairs_used"] == row["seed_pairs_total"] - len(SEEDS)
+    assert row["fleet_score"] == pytest.approx(1.0), "the dropped instance must not count as ties"
+
+
+def test_report_says_undefined_when_a_size_has_no_block_left():
+    m = api()
+    cells = t300_cells(m, ges_nv=9)
+    for c in cells:
+        c["run_load1"] = 9.0 if c["customers"] == 400 else 5.0
+    results, decision = primary(m, cells)
+    assert m.comparison_rows(results, "primary_run_load_a")[0]["fleet_score"] is None
+    assert "fleet undefined" in m.report(decision, results, {}, {"primary_t300"})
+
+
+def test_run_load_needs_three_samples_inside_the_cell(tmp_path):
+    m = api()
+    samples = tmp_path / "load_samples.jsonl"
+    samples.write_text(
+        "\n".join(json.dumps({"utc": t, "load": [v, 0, 0]}) for t, v in [(50, 99.0), (110, 4.0), (170, 6.0), (230, 8.0), (400, 99.0)])
+    )
+    for run, start, end in (("three", 100, 300), ("two", 100, 200), ("none", 500, 800)):
+        (tmp_path / run).mkdir()
+        (tmp_path / run / "started.json").write_text(json.dumps({"utc": start}))
+        (tmp_path / run / "completed.json").write_text(json.dumps({"utc": end}))
+    cells = [{"run": "three"}, {"run": "two"}, {"run": "none"}]
+    m.attach_run_load(cells, tmp_path, samples)
+    assert cells[0]["run_load1"] == pytest.approx(6.0)
+    assert cells[1]["run_load1"] is None and cells[2]["run_load1"] is None
+    no_file = [{"run": "three"}]
+    m.attach_run_load(no_file, tmp_path, tmp_path / "absent.jsonl")
+    assert no_file[0]["run_load1"] is None
+
+
 def test_comparisons_stay_inside_the_rerun():
     m = api()
     results, _ = primary(m, t300_cells(m))

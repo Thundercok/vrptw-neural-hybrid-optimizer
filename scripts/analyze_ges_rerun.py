@@ -43,6 +43,7 @@ PRIMARY_FAMILY = 3
 ABLATION_FAMILY = 8
 SLEEP_GAP_SEC = 5.0
 LOAD_LIMIT = 8.0
+MIN_LOAD_SAMPLES = 3  # Amendment 5: a cell needs this many load samples during its run to count as measured
 RETURN_UPPER_SLACK = 0.5
 STAGES = ("primary_t300", "primary_t60", "primary_t10", "ablation_t60", "ablation_t300", "primary_t900")
 # Validator messages that mean the cell cannot be trusted at all, as opposed to finding no solution.
@@ -83,6 +84,7 @@ def load_cells(records_path: Path, metadata: dict) -> list[dict]:
             runtime = float(r["runtime_sec"]) if r["runtime_sec"] else None
             cells.append(
                 {
+                    "run": r["run"],
                     "stage": r["stage"],
                     "instance": r["instance"],
                     "case_id": r["case_id"],
@@ -138,12 +140,40 @@ def stage_rows(cells, stage, names, cases, seeds, metadata):
     return rows, gaps
 
 
+def block_gaps(rows, blocks):
+    return {
+        (r["instance"], r["case_id"], r["seed"], r["cutoff_sec"]) for r in rows if (r["instance"], r["seed"]) in blocks
+    }
+
+
 def high_load_blocks(rows):
     """Cells of every (instance, seed) block with a cell started at load1 above the limit, as gap keys."""
     blocks = {(r["instance"], r["seed"]) for r in rows if r["load1"] is not None and r["load1"] > LOAD_LIMIT}
-    return blocks, {
-        (r["instance"], r["case_id"], r["seed"], r["cutoff_sec"]) for r in rows if (r["instance"], r["seed"]) in blocks
-    }
+    return blocks, block_gaps(rows, blocks)
+
+
+def attach_run_load(cells, run_root: Path, samples_path: Path):
+    """Set run_load1 to the mean load1 sampled during a cell's run, or None with too few samples (Amendment 5)."""
+    samples = []
+    if samples_path.exists():
+        for line in samples_path.read_text().splitlines():
+            entry = json.loads(line)
+            samples.append((entry["utc"], entry["load"][0]))
+    times = np.array([s[0] for s in samples], dtype=float)
+    loads = np.array([s[1] for s in samples], dtype=float)
+    for c in cells:
+        cell = run_root / c["run"]
+        start = json.loads((cell / "started.json").read_text())["utc"]
+        end = json.loads((cell / "completed.json").read_text())["utc"]
+        during = loads[(times >= start) & (times <= end)]
+        c["run_load1"] = float(during.mean()) if len(during) >= MIN_LOAD_SAMPLES else None
+
+
+def run_load_blocks(rows):
+    """Blocks with an exposed cell and blocks with an unmeasured cell. A missing cell has no run_load1 key."""
+    exposed = {(r["instance"], r["seed"]) for r in rows if (r.get("run_load1") or 0.0) > LOAD_LIMIT}
+    unmeasured = {(r["instance"], r["seed"]) for r in rows if "run_load1" in r and r["run_load1"] is None}
+    return exposed, unmeasured
 
 
 def adopted(result: dict) -> bool:
@@ -194,6 +224,20 @@ def analyze_primary(cells, metadata, names, seeds, draws, weights, closed):
     blocks, load_gaps = high_load_blocks(rows)
     decision["high_load_blocks"] = len(blocks)
     decision["t300_gaps"] = len(gaps)
+    exposed, unmeasured = run_load_blocks(rows)
+    decision["run_load_exposed_blocks"] = len(exposed)
+    decision["run_load_unmeasured_blocks"] = len(unmeasured)
+    run_load_analyses = (
+        ("run_load_a", gaps | block_gaps(rows, exposed)),
+        ("run_load_b", gaps | block_gaps(rows, exposed | unmeasured)),
+    )
+    for label, dropped in run_load_analyses:
+        results.append(
+            compare(
+                rows, metadata, names, GES, BLIND, 300, draws, weights, dropped, "drop_pair", ADOPTION_FAMILY,
+                analysis=f"adoption_{label}", scope="all",
+            )
+        )
     for control in (base, PYVRP, NEUROLKH):
         for mode in revision.GAP_MODES:
             results.append(
@@ -208,6 +252,13 @@ def analyze_primary(cells, metadata, names, seeds, draws, weights, closed):
                 PRIMARY_FAMILY, analysis="primary_load_sensitivity", scope="all",
             )
         )
+        for label, dropped in run_load_analyses:
+            results.append(
+                compare(
+                    rows, metadata, names, proposed, control, 300, draws, weights, dropped, "drop_pair",
+                    PRIMARY_FAMILY, analysis=f"primary_{label}", scope="all",
+                )
+            )
         for scope, subset, scoped in size_scopes(names, metadata, weights)[1:]:
             results.append(
                 compare(
@@ -462,12 +513,18 @@ def report(decision, results, conditions, closed):
         f"GES adopted: {decision['ges_adopted']}. Proposed configuration: {decision['proposed']}.",
         f"T300 infrastructure gaps: {decision['t300_gaps']}. Blocks with a cell started at load above "
         f"{LOAD_LIMIT:g}: {decision['high_load_blocks']}.",
+        f"Blocks with a cell run at mean load above {LOAD_LIMIT:g}: {decision['run_load_exposed_blocks']}. "
+        f"Blocks with a cell not measured during its run: {decision['run_load_unmeasured_blocks']}.",
         "",
     ]
     for title, analysis, mode in (
         ("Primary family, 98.33% intervals", "primary", "drop_pair"),
         ("Primary family, treatment gaps as failures", "primary", "worst_case"),
         ("Primary family without high-load blocks", "primary_load_sensitivity", "drop_pair"),
+        ("Adoption contrast without blocks run at high load", "adoption_run_load_a", "drop_pair"),
+        ("Adoption contrast on measured blocks only", "adoption_run_load_b", "drop_pair"),
+        ("Primary family without blocks run at high load", "primary_run_load_a", "drop_pair"),
+        ("Primary family on measured blocks only", "primary_run_load_b", "drop_pair"),
         ("By size, unadjusted", "primary_by_size", "drop_pair"),
         ("Other configuration, unadjusted", "other_configuration", "drop_pair"),
         ("Budgets, unadjusted", "budget", "drop_pair"),
@@ -482,7 +539,7 @@ def report(decision, results, conditions, closed):
             bounds = "undefined" if iv["lower"] is None else f"[{iv['lower']:.3f}, {iv['upper']:.3f}]"
             lines.append(
                 f"- {r['cutoff_sec']} s {r['scope']} {r['treatment']} vs {r['control']}: "
-                f"fleet {r['fleet_score']:+.3f} {bounds}, "
+                f"fleet {'undefined' if r['fleet_score'] is None else format(r['fleet_score'], '+.3f')} {bounds}, "
                 f"W/T/L {r['seed_wins']}/{r['seed_ties']}/{r['seed_losses']}, matched TD "
                 + (f"{td:+.2f}%" if td is not None else "none")
                 + (" (interval undefined)" if r["intervals"]["td_pct"]["suppressed"] else "")
@@ -522,6 +579,7 @@ def main(argv=None):
 
     closed = closed_stages(args.run_dir / "sweep.log", (args.run_dir / "run/finished.json").exists())
     cells = load_cells(args.run_dir / "run/records.csv", metadata)
+    attach_run_load(cells, args.run_dir / "run", args.run_dir / "load_samples.jsonl")
     draws = stats.make_draws(metadata, seeds, args.replicates, 20261019)
 
     results, decision = analyze_primary(cells, metadata, names, seeds, draws, weights, closed)
