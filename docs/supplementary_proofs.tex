@@ -24,7 +24,7 @@
 \renewcommand{\thefigure}{S\arabic{figure}}
 
 \title{\textbf{Supplementary Material: Derivations, Algorithm Specification, and Per-Instance Results for Tri-Level Hybrid DDQN-ALNS}}
-\author{Huynh Nhat Huy \quad Ho Thi Linh \quad Nguyen Nhat Huy \quad Nguyen Thi Bao Tran}
+\author{Huynh Nhat Huy \quad Thi-Linh Ho \quad Nguyen Nhat Huy \quad Nguyen Thi Bao Tran}
 \date{\today}
 
 \begin{document}
@@ -33,7 +33,7 @@
 \section{Penalty Bound for Lexicographic Set Partitioning}
 
 \begin{definition}[Lexicographic Set Partitioning over Finite Route Pool]
-Let $\mathcal{P} = \{R_1, \dots, R_m\}$ be the finite pool of feasible routes accumulated during search, $\mathbf{a}_p \in \{0, 1\}^n$ the customer-incidence binary vector of route $R_p$, and $c_p = \text{TD}(R_p)$ the Euclidean tour length of route $R_p$. The lexicographic set partitioning problem seeks:
+Let $\mathcal{P} = \{R_1, \dots, R_m\}$ be the finite pool of feasible routes accumulated during search, $\mathbf{a}_p \in \{0, 1\}^n$ the customer-incidence binary vector of route $R_p$, and $c_p = \TD(R_p)$ the Euclidean tour length of route $R_p$. The lexicographic set partitioning problem seeks:
 \begin{align}
 \min_{\mathbf{x} \in \{0, 1\}^m} \text{lex} \left( \sum_{p=1}^m x_p, \; \sum_{p=1}^m c_p x_p \right) \quad \text{s.t.} \quad \sum_{p=1}^m a_{ip} x_p = 1, \; \forall i \in \mathcal{N}.
 \end{align}
@@ -124,7 +124,7 @@ The bound is not small, and the procedure has no candidate beam and no internal 
 \section{Derivation of Savelsbergh Forward Time Slack Insertion Delay Condition}
 
 \begin{proposition}[Forward Time Slack Insertion Feasibility]
-Let a route visit sequence be $(v_0, v_1, \dots, v_m, v_{m+1})$. For each node $v_k$, let $e_k$ and $l_k$ denote the earliest and latest ready times, $s_k$ the service duration, $t_k$ the arrival time, and $B_k = \max(t_k, e_k)$ the service begin time. The forward time slack at node $v_k$ is defined recursively as:
+Let a route visit sequence be $(v_0, v_1, \dots, v_m, v_{m+1})$. For each node $v_k$, let $e_k$ and $l_k$ denote the earliest and latest service start times, $s_k$ the service duration, $t_k$ the arrival time, and $B_k = \max(t_k, e_k)$ the service begin time. The forward time slack at node $v_k$ is defined as:
 \begin{equation}
 F_k = \min_{k \le j \le m+1} \left\{ l_j - B_j + \sum_{p=k+1}^j W_p \right\},
 \end{equation}

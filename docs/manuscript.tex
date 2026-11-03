@@ -208,8 +208,8 @@ Adaptive Large Neighborhood Search, Deep Reinforcement Learning, Double DQN, Sem
 Commercial freight planning often treats the objective as lexicographic: dispatchers prioritize minimizing the total number of deployed vehicles ($\NV$) before minimizing total travel distance ($\TD$) \cite{Toth2014, braysy2005vehicle}. Formally, letting $\mathcal{S}$ denote the space of feasible routing solutions, a solution $s_1 \in \mathcal{S}$ is strictly preferred over $s_2 \in \mathcal{S}$ (denoted $s_1 \prec s_2$) if and only if:
 \begin{equation}
   \begin{aligned}
-    NV(s_1) < NV(s_2) \;\lor\; \big(&NV(s_1) = NV(s_2) \;\land \\
-    &TD(s_1) < TD(s_2)\big)
+    \NV(s_1) < \NV(s_2) \;\lor\; \big(&\NV(s_1) = \NV(s_2) \;\land \\
+    &\TD(s_1) < \TD(s_2)\big)
   \end{aligned}
   \label{eq:lexicographic_intro}
 \end{equation}
@@ -219,12 +219,12 @@ Adaptive Large Neighborhood Search (ALNS) \cite{pisinger2007general, Ropke2006} 
 
 In parallel, Neural Combinatorial Optimization (NCO) has emerged as a data-driven alternative, using Deep Reinforcement Learning (DRL) models such as Pointer Networks \cite{vinyals2015pointer}, Attention Models \cite{kool2019attention}, and constructive policies \cite{nazari2018reinforcement}. While capturing spatial regularities without manual heuristic engineering, direct application of pure end-to-end neural solvers to industrial VRPTW encounters critical bottlenecks:
 \begin{itemize}
-    \item[(i)] Feasibility Fragility under Tight Time Windows, where autoregressive decoding deadlocks or requires delicate penalty tunings \cite{falkner2020learning, lin2021deep};
+    \item[(i)] Feasibility Fragility under Tight Time Windows, where autoregressive decoding deadlocks or requires delicate penalty tuning \cite{falkner2020learning, lin2021deep};
     \item[(ii)] Objective Misalignment, optimizing scalarized distance rather than strict lexicographic fleet minimization ($\NV \succ \TD$); and
     \item[(iii)] Out-of-Distribution Sensitivity, often degrading on larger scales or different customer distributions without retuning.
 \end{itemize}
 
-To bridge these paradigms, this paper presents Tri-Level Hybrid DDQN-ALNS, a learning-augmented optimization framework that embeds state-conditioned reinforcement learning directly inside the iterative search loop of ALNS. Rather than replacing the metaheuristic with a neural solver, our approach keeps the neighborhood operators of operations research and returns only solutions validated as feasible, structuring search governance into three coordinated tiers: two learned reinforcement learning tiers (Macro Plateau Governance and Micro Operator Selection) coupled with a heuristic search tier. Whether this control pays for the compute it consumes is an empirical question, and we treat it as one. 
+To bridge these paradigms, this paper presents Tri-Level Hybrid DDQN-ALNS, a learning-augmented optimization framework that embeds state-conditioned reinforcement learning directly inside the iterative search loop of ALNS. Rather than replacing the metaheuristic with a neural solver, our approach keeps the neighborhood operators of operations research and returns only solutions validated as feasible, structuring search governance into three coordinated tiers: two learned reinforcement learning tiers (Macro Plateau Governance and Micro Operator Selection) coupled with a heuristic search tier. Whether this control pays for the compute it consumes is an empirical question, and we treat it as one.
 
 The primary contributions of this paper are summarized as follows:
 \begin{enumerate}\setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}
@@ -234,7 +234,7 @@ The primary contributions of this paper are summarized as follows:
     \item We report the limits of the method and of the evidence: where it does not help, how results depend on the budget, the method's earlier dependence on reference fleet sizes, the machine-speed variation we measured, and the way test results influenced development.
 \end{enumerate}
 
-The remainder of this paper is organized as follows: Section~\ref{sec:related_work} reviews related literature. Section~\ref{sec:formulation} presents the problem formulation. Section~\ref{sec:methodology} describes the proposed Tri-Level Hybrid DDQN-ALNS methodology. Section~\ref{sec:experiments} details the empirical benchmark results, statistical tests, and ablation analyses. Section~\ref{sec:discussion} discusses scale-aware dynamics, analytical properties, and limitations. Finally, Section~\ref{sec:conclusion} concludes the paper.
+The remainder of this paper is organized as follows: Section~\ref{sec:related_work} reviews related literature. Section~\ref{sec:formulation} presents the problem formulation. Section~\ref{sec:methodology} describes the proposed Tri-Level Hybrid DDQN-ALNS methodology. Section~\ref{sec:experiments} details the empirical benchmark results, statistical tests, and ablation analyses. Section~\ref{sec:discussion} discusses where the method helps, its analytical properties, and its limitations. Finally, Section~\ref{sec:conclusion} concludes the paper.
 
 \section{Related Work}
 \label{sec:related_work}
@@ -294,7 +294,7 @@ Table~\ref{tab:taxonomy} situates Tri-Level Hybrid DDQN-ALNS within the routing 
 
 The Vehicle Routing Problem with Time Windows (VRPTW) is formally defined on a complete directed graph $\mathcal{G} = (\mathcal{V}, \mathcal{A})$. The vertex set $\mathcal{V} = \mathcal{N} \cup \{0, n+1\}$ comprises customer nodes $\mathcal{N} = \{1, 2, \dots, n\}$, origin depot node $0$, and destination depot node $n+1$. The physical depot is modeled as two separate nodes ($0$ and $n+1$) to represent route departure and return without self-loops. The arc set is $\mathcal{A} = \{(i, j) : i, j \in \mathcal{V}, i \neq j, i \neq n+1, j \neq 0\}$.
 
-Each customer $i \in \mathcal{N}$ has a non-negative demand $q_i > 0$, service duration $s_i \ge 0$, and service time window $[e_i, l_i]$, where $e_i$ and $l_i$ denote the earliest and latest allowable service start times, respectively. Depot nodes satisfy $q_0 = q_{n+1} = 0$, $s_0 = s_{n+1} = 0$, and $[e_0, l_{n+1}]$ defines the global planning horizon. Each arc $(i, j) \in \mathcal{A}$ has travel distance $c_{ij} \ge 0$ and travel time $t_{ij} \ge 0$. A homogeneous fleet of $K$ vehicles, denoted by $\mathcal{K} = \{1, \dots, K\}$, is stationed at the depot, with each vehicle possessing carrying capacity $Q$.
+Each customer $i \in \mathcal{N}$ has a positive demand $q_i > 0$, service duration $s_i \ge 0$, and service time window $[e_i, l_i]$, where $e_i$ and $l_i$ denote the earliest and latest allowable service start times, respectively. Depot nodes satisfy $q_0 = q_{n+1} = 0$, $s_0 = s_{n+1} = 0$, and $[e_0, l_{n+1}]$ defines the global planning horizon. Each arc $(i, j) \in \mathcal{A}$ has travel distance $c_{ij} \ge 0$ and travel time $t_{ij} \ge 0$. A homogeneous fleet of $K$ vehicles, denoted by $\mathcal{K} = \{1, \dots, K\}$, is stationed at the depot, with each vehicle possessing carrying capacity $Q$.
 
 \subsection{Mathematical Model and Decision Variables}
 The optimization model employs binary routing variables $x_{ij}^k \in \{0, 1\}$ ($1$ if vehicle $k \in \mathcal{K}$ traverses arc $(i, j) \in \mathcal{A}$, and $0$ otherwise) and continuous schedule variables $w_i^k \ge 0$ specifying the time at which vehicle $k \in \mathcal{K}$ begins service at node $i \in \mathcal{V}$. The primary objective is lexicographic: first minimizing the number of deployed vehicles ($\NV$), and secondarily minimizing total travel distance ($\TD$):
@@ -330,11 +330,11 @@ This section details the proposed Tri-Level Hybrid DDQN-ALNS framework. The arch
 \subsection{Tri-Level Architecture Overview}
 \label{sec:arch_overview}
 
-The framework decomposes the global routing search into three coordinated operational tiers, illustrated in Fig.~\ref{fig:architecture}. The framework orchestrates search across three coordinated tiers:
+The framework decomposes the global routing search into three coordinated operational tiers, illustrated in Fig.~\ref{fig:architecture}:
 \begin{enumerate}
-    \item Macro Decision Tier (Plateau Controller $\pi_{\text{macro}}$): formulated as an Aggregated semi-MDP over segments of length $\Delta_{\text{seg}} = 100$, where a Dueling Double DQN~\cite{mnih2015human,vanhasselt2016deep} with Prioritized Experience Replay~\cite{schaul2016prioritized} evaluates convergence velocity and transitions among 7 exploration/recombination regimes;
+    \item Macro Decision Tier (Plateau Controller $\pi_{\text{macro}}$): formulated as an aggregated semi-MDP over segments of length $\Delta_{\text{seg}} = 100$, where a Dueling Double DQN~\cite{mnih2015human,vanhasselt2016deep} with Prioritized Experience Replay~\cite{schaul2016prioritized} evaluates convergence velocity and transitions among 7 exploration/recombination regimes;
     \item Micro Selection Tier (Operator Controller $\pi_{\text{micro}}$ \& LAC): operates per iteration $t$, using a Micro Dueling DDQN with normalized Softmax-Entropy policy-concentration gating to select composite destroy--repair operator pairings conditioned on a 20-dimensional state vector, augmented by a Learned Acceptance Criterion (LAC) evaluating delayed downstream lookahead; and
-    \item Heuristic Search Tier (Granular ALNS \& Route-Pool Recombination): executes ruin-and-recreate operations with $O(1)$-per-query Savelsbergh forward-slack insertion checks on cached route profiles, restricts moves to the $k=15$ nearest customers, and periodically solves a time-limited Set Partitioning formulation over elite routes via HiGHS under a time limit.
+    \item Heuristic Search Tier (Granular ALNS \& Route-Pool Recombination): executes ruin-and-recreate operations with $O(1)$-per-query Savelsbergh forward-slack insertion checks on cached route profiles, restricts moves to the $k=15$ nearest customers, and periodically solves a time-limited Set Partitioning formulation over elite routes via HiGHS.
 \end{enumerate}
 
 \begin{figure*}[!t]
@@ -372,7 +372,7 @@ The framework decomposes the global routing search into three coordinated operat
     {\bfseries\color{cMacro}\normalsize Tier 1: Macro Plateau Controller $\bm{\pi_{\text{macro}}}$}\hfill{\scriptsize\color{cMacro!80}\textsf{[Semi-MDP, $\Delta_{\text{seg}}=100$]}}\\[1pt]
     {\color{cMacro!30}\rule{\linewidth}{0.35pt}}\\[1.5pt]
     $\bullet$ \textbf{Observation $\mathbf{s}_k^{\text{macro}} \in \mathbb{R}^{12}$}: Stagnation rate, temp $T/T_0$, route separation $rb$, capacity balance $lb$, tight-TW ratio $\tau_{\text{tight}}$, slack $\bar{s}$, pool occupancy $\rho_{\text{pool}}$\\
-    $\bullet$ \textbf{Network}: Dueling Double DQN ($13 \to 128 \to 128 \to 7$) with Prioritized Replay\\
+    $\bullet$ \textbf{Network}: Dueling Double DQN ($12 \to 128 \to 128 \to 7$) with Prioritized Replay\\
     $\bullet$ \textbf{7 Strategic Regimes ($a_0$--$a_6$)}: $a_0$: Default exploration; $a_1$: Intensify / deep cool; $a_2$: Thermal reheat; $a_3$: TW-Rescue; $a_4$: Set-Part Recomb; $a_5$: GEC route reduction; $a_6$: Infeasible descent (adaptive TW/cap penalty relaxation)
   };
 
@@ -387,7 +387,7 @@ The framework decomposes the global routing search into three coordinated operat
   \node[card={cHeur}{cHeurBg}, below=4.8mm of micro] (heur) {
     {\bfseries\color{cHeur}\normalsize Tier 3: Heuristic Execution Engine (ALNS)}\hfill{\scriptsize\color{cHeur!80}\textsf{[Execution Muscle]}}\\[1pt]
     {\color{cHeur!30}\rule{\linewidth}{0.35pt}}\\[1.5pt]
-    $\bullet$ \textbf{Composite Operators}: 13 Ruin (Shaw, Worst, Slack, GEC, Cluster) $\times$ 5 Recreate (Greedy, Regret-2/3/4, Deep-Insertion)\\
+    $\bullet$ \textbf{Composite Operators}: 13 Destroy (Random, Worst, Shaw, TW-urgency, route-based, neural) $\times$ 5 Repair (Greedy, 2-Regret, 3-Regret, TW-greedy, Slack-greedy)\\
     $\bullet$ \textbf{Spatial Guidance}: 3-layer GNN edge heatmap (16-NN message passing)\\
     $\bullet$ \textbf{Fast Feasibility}: $O(1)$ per insertion query (cached forward slack)\\
     $\bullet$ \textbf{Fleet Elimination}: Polynomial Generalized Ejection Chains (GEC)
@@ -401,8 +401,8 @@ The framework decomposes the global routing search into three coordinated operat
     {\color{cPool!30}\rule{\linewidth}{0.35pt}}\\[1.5pt]
     $\bullet$ \textbf{Deduplication}: Frozenset customer hash table guarantees 0 duplicate columns\\
     $\bullet$ \textbf{Slot A (75\% Quota)}: Cost-per-stop efficiency metric $c_r / |r|$\\
-    $\bullet$ \textbf{Slot B (25\% Quota)}: Short-route fragments for vehicle reduction\\
-    $\bullet$ \textbf{Eviction Policy}: FIFO displacement upon reaching capacity boundary
+    $\bullet$ \textbf{Slot B (25\% Quota)}: Longest routes for vehicle reduction\\
+    $\bullet$ \textbf{Trimming}: Re-rank both slots when the pool exceeds its limit
   };
 
   \node[rcard={cMIP}{cMIPBg}, right=18mm of micro] (highs) {
@@ -463,7 +463,7 @@ The framework decomposes the global routing search into three coordinated operat
 \subsection{Macro Level: Plateau Controller (Aggregated SMDP Formulation)}
 \label{sec:macro_controller}
 
-We formulate the macro search governance tier as a Semi-Markov Decision Process\cite{sutton1999between} over an Aggregated State Representation (Aggregated SMDP) defined by the tuple $(\mathcal{S}_{\text{macro}}, \mathcal{A}_{\text{macro}}, P_{\text{macro}}, R_{\text{macro}}, \gamma_{\text{macro}})$. Because the underlying combinatorial route pool and fine-grained trajectory history are projected into a 12-dimensional feature space $\mathbf{s}_k^{\text{macro}}$, the decision tier operates over a compact aggregated state representation with temporal options of fixed duration $\Delta_{\text{seg}} = 100$ low-level ALNS iterations. The controller acts only once the search has stagnated for a minimum number of iterations; before that, segments run in the default mode and are not used as macro transitions. The temporally extended transition kernel $P_{\text{macro}}(\mathbf{s}_{k+1}^{\text{macro}} \mid \mathbf{s}_k^{\text{macro}}, a_k)$ denotes the distribution of the next observation after the 100 underlying stochastic destroy--repair steps. The learner discounts per macro decision with $\gamma_{\text{macro}} = 0.95$, used both in the DDQN target and in the shaping term below, rather than with $\gamma^{\Delta_{\text{seg}}}$.
+We formulate the macro search governance tier as a Semi-Markov Decision Process~\cite{sutton1999between} over an Aggregated State Representation (Aggregated SMDP) defined by the tuple $(\mathcal{S}_{\text{macro}}, \mathcal{A}_{\text{macro}}, P_{\text{macro}}, R_{\text{macro}}, \gamma_{\text{macro}})$. Because the underlying combinatorial route pool and fine-grained trajectory history are projected into a 12-dimensional feature space $\mathbf{s}_k^{\text{macro}}$, the decision tier operates over a compact aggregated state representation with temporal options of fixed duration $\Delta_{\text{seg}} = 100$ low-level ALNS iterations. The controller acts only once the search has stagnated for a minimum number of iterations; before that, segments run in the default mode and are not used as macro transitions. The temporally extended transition kernel $P_{\text{macro}}(\mathbf{s}_{k+1}^{\text{macro}} \mid \mathbf{s}_k^{\text{macro}}, a_k)$ denotes the distribution of the next observation after the 100 underlying stochastic destroy--repair steps. The learner discounts per macro decision with $\gamma_{\text{macro}} = 0.95$, used both in the DDQN target and in the shaping term below, rather than with $\gamma^{\Delta_{\text{seg}}}$.
 
 The aggregated formulation is a modeling device, not a verified Markov model. The 12 features are a lossy summary of the full search state, which also includes the current routes, the route pool, the operator weights, the network parameters and the random-number state. Distinct search states therefore share an observation, and the next observation depends on components that the controller does not see, so $\mathbf{s}_k^{\text{macro}}$ is not in general a sufficient statistic and the macro process need not satisfy the Markov property. The controller is better described as a learned policy over a partially observed, state-aggregated process~\cite{li2006unified}. We provide no convergence guarantee and no bound on the approximation error. Such guarantees are not available in general for Q-learning over aggregated or partial observations, and the online DDQN additionally uses nonlinear function approximation, experience replay and target networks. The value of the controller is therefore assessed empirically through the ablation study (Section~\ref{sec:ablation_results}).
 
@@ -479,7 +479,7 @@ At the start of segment $k$, the macro controller observes a 12-dimensional stat
   \label{eq:macro_state}
 \end{align}
 
-where $\text{no\_imp}$ is the number of consecutive unimproved iterations, $T/T_0$ is the normalized annealing temperature, $rb \in [0, 1]$ and $lb \in [0, 1]$ measure spatial route separation and capacity balance, $\tau_{\text{tight}} = \frac{1}{n}\sum_{i=1}^n \mathbb{I}(l_i - e_i < 0.5 \cdot d_{\max})$ is the fraction of customers whose time-window width is below half the largest distance $d_{\max}$ of the instance, $\bar{s}$ is average forward time slack, $\rho_{\text{fill}}$ is average vehicle capacity utilization, and $\rho_{\text{pool}} = \min(|\mathcal{P}|/\mathcal{P}_{\max}, 1.0)$ tracks route pool fill ratio.
+where $\text{no\_imp}$ is the number of consecutive unimproved iterations, $T/T_0$ is the normalized annealing temperature, $rb \in [0, 1]$ and $lb \in [0, 1]$ measure spatial route separation and capacity balance, $\tau_{\text{tight}} = \frac{1}{n}\sum_{i=1}^n \mathbb{I}(l_i - e_i < 0.5 \cdot d_{\max})$ is the fraction of customers whose time-window width is below half the largest distance $d_{\max}$ of the instance, $\bar{s}$ is the average forward time slack, $\rho_{\text{fill}}$ is the average vehicle capacity utilization, and $\rho_{\text{pool}} = \min(|\mathcal{P}|/\mathcal{P}_{\max}, 1.0)$ tracks the route pool fill ratio.
 
 \subsubsection{Macro Action Space \& Search Regimes}
 The macro action space $\mathcal{A}_{\text{macro}}$ comprises 7 search modes. Each mode scales the destroy size, multiplies the temperature once per segment, biases the operator priors and sets the local-search passes. With (destroy scale, temperature factor) in parentheses, the modes are: $a_0$ (\textsf{\small DEFAULT}, 1.00, 1.00); $a_1$ (\textsf{\small INTENSIFY}, 0.70, 0.98); $a_2$ (\textsf{\small DIVERSIFY}, 1.35, 1.08), which also permits a one-vehicle increase in the current solution; $a_3$ (\textsf{\small TW\_RESCUE}, 1.10, 1.05), with priors favoring time-window urgency removal and time-window-aware repair; $a_4$ (\textsf{\small POOL\_RECOMBINE}, 0.90, 1.01), which may trigger Set Partitioning; $a_5$ (\textsf{\small ROUTE\_REDUCE}, 0.95, 1.02), with priors favoring route-elimination operators, a Generalized Ejection Chain attempt at every iteration, penalized acceptance, and possible recombination; and $a_6$ (\textsf{\small INFEASIBLE\_DESCENT}, 1.10, 1.05), which is available only during the first search phase described below and maps to \textsf{\small DEFAULT} afterwards. The segment length is 100 iterations, or 130 on instances with wide time windows.
@@ -499,7 +499,7 @@ To guide reinforcement learning exploration in alignment with the primary-second
   \end{split}
   \label{eq:segment_reward}
 \end{equation}
-where $\Psi_{\mathrm{NV}} = \sum_{j=1}^4 \beta_{\mathrm{NV}, j} \Delta X_j$ and \allowbreak $\Psi_{\mathrm{TD}} = \sum_{j=1}^4 \beta_{\mathrm{TD}, j} \Delta X_j$ linearly weight improvements across best-so-far and incumbent fleet size ($\Delta\NV$) and travel distance ($\Delta C$), with representative primary fleet coefficient $\beta_{\mathrm{NV}, 1} = 8.0$. Baseline computational penalty $\text{Base}$ penalizes intensive local search passes and unproductive stagnation, while $\text{Bonus}_{\mathrm{NV}}$ provides a discrete reward of $+15$ per vehicle removed from the best solution and $+5$ per vehicle removed from the current solution. All coefficients are listed in Supplementary Section~6.
+where $\Psi_{\mathrm{NV}} = \sum_{j=1}^4 \beta_{\mathrm{NV}, j} \Delta X_j$ and \allowbreak $\Psi_{\mathrm{TD}} = \sum_{j=1}^4 \beta_{\mathrm{TD}, j} \Delta X_j$ linearly weight improvements across best-so-far and incumbent fleet size ($\Delta\NV$) and travel distance ($\Delta C$), with a representative primary fleet coefficient $\beta_{\mathrm{NV}, 1} = 8.0$. The baseline term $\text{Base}$ penalizes intensive local search passes and unproductive stagnation, while $\text{Bonus}_{\mathrm{NV}}$ provides a discrete reward of $+15$ per vehicle removed from the best solution and $+5$ per vehicle removed from the current solution. All coefficients are listed in Supplementary Section~6.
 
 The presence of two parallel fleet-reward pathways in~\eqref{eq:segment_reward} addresses credit assignment across temporal scales: (i) Dense Continuous Guidance ($\lambda_{\text{fleet}} \Psi_{\mathrm{NV}}$) encourages moves that balance inter-route capacity utilization and narrow the vehicle count gap relative to the incumbent; and (ii) Sparse Milestone Reinforcement ($\text{Bonus}_{\mathrm{NV}}$) awards these amounts only when a vehicle is eliminated, preventing the sparse route collapse signal from being diluted across routine distance variations.
 
@@ -566,7 +566,7 @@ To adaptively balance learned neural predictions with exploration priors, we imp
   \mathcal{H}(\pi_{\theta}(\cdot \mid s)) = -\frac{1}{\ln |\mathcal{A}|} \sum_{a \in \mathcal{A}} \pi_{\theta}(a \mid s) \ln \pi_{\theta}(a \mid s) \in [0, 1]
   \label{eq:policy_entropy}
 \end{equation}
-We define the policy-concentration weight as $w_{\text{conf}}(s) = 1.0 - \mathcal{H}(\pi_{\theta}(\cdot \mid s))$. High concentration ($w_{\text{conf}} \to 1$) indicates that the Boltzmann policy is sharply peaked around a dominant operator pair, whereas low concentration ($w_{\text{conf}} \to 0$) signals an exploratory regime. 
+We define the policy-concentration weight as $w_{\text{conf}}(s) = 1.0 - \mathcal{H}(\pi_{\theta}(\cdot \mid s))$. High concentration ($w_{\text{conf}} \to 1$) indicates that the Boltzmann policy is sharply peaked around a dominant operator pair, whereas low concentration ($w_{\text{conf}} \to 0$) signals an exploratory regime.
 
 The action-selection score blends the Q-values with operator priors and the mean of a Thompson-sampling posterior through this gate, then adds a variance-aware bonus adapted from UCB \cite{auer2002finite} and UCB-V \cite{audibert2009exploration}:
 \begin{align}
@@ -595,9 +595,9 @@ To reduce search entrapment during deep cooling, the Learned Acceptance Criterio
 \end{aligned}
 \label{eq:lac_decision_rule}
 \end{equation}
-where $p_t = \phi_{\text{LAC}}(\mathbf{z}_t)$, $U \sim \operatorname{Uniform}(0, 1)$, and $\tau_{\text{acc}}(t) \in [0.40, 0.75]$ is an adaptive confidence threshold. 
+where $p_t = \phi_{\text{LAC}}(\mathbf{z}_t)$, $U \sim \operatorname{Uniform}(0, 1)$, and $\tau_{\text{acc}}(t) \in [0.40, 0.75]$ is an adaptive confidence threshold.
 
-The disjunctive operator ($\lor$) makes LAC an acceptance booster / rescue mechanism with two properties: (i) Preservation of SA-Approved Moves: any consulted move that standard Simulated Annealing would accept ($P_{\text{SA}} > U$) is also accepted by rule~\eqref{eq:lac_decision_rule}; and (ii) Predictive Rescue Transitions: when SA would reject a non-improving move ($P_{\text{SA}} \le U$), the move is still accepted if the classifier predicts a downstream incumbent improvement with probability $p_t \ge \tau_{\text{acc}}(t)$. Property (ii) adds transitions that SA rejects, so rule~\eqref{eq:lac_decision_rule} defines a different Markov transition kernel from SA, and the classical asymptotic convergence results for SA under logarithmic cooling~\cite{hajek1988cooling} do not carry over. We make no convergence claim for the modified kernel: the search uses geometric cooling within a finite budget, and the contribution of LAC is assessed empirically (Section~\ref{sec:ablation_results}). The supervision target is observational. The first $W_{\text{lac}} = 300$ consulted decisions use pure SA while the classifier collects training data; for every consulted move, including warm-up moves, the label records whether the global best travel distance improved within the next $H_{\text{lac}} = 80$ LAC decisions (not 80 ALNS iterations), irrespective of whether the move was accepted. The label therefore indicates a promising search context rather than the causal effect of accepting that particular move.
+The disjunctive operator ($\lor$) makes LAC an acceptance booster / rescue mechanism with two properties: (i) Preservation of SA-Approved Moves: any consulted move that standard Simulated Annealing would accept ($P_{\text{SA}} > U$) is also accepted by rule~\eqref{eq:lac_decision_rule}; and (ii) Predictive Rescue Transitions: when SA would reject a non-improving move ($P_{\text{SA}} \le U$), the move is still accepted if the classifier predicts a downstream incumbent improvement with probability $p_t \ge \tau_{\text{acc}}(t)$. Property (ii) adds transitions that SA rejects, so rule~\eqref{eq:lac_decision_rule} defines a different Markov transition kernel from SA, and the classical asymptotic convergence results for SA under logarithmic cooling~\cite{hajek1988cooling} do not carry over. We make no convergence claim for the modified kernel: the search uses geometric cooling within a finite budget, and the contribution of LAC is assessed empirically (Section~\ref{sec:ablation_results}). The supervision target is observational. The first $W_{\text{lac}} = 300$ consulted decisions use pure SA while the classifier collects training data; for every consulted move, including warmup moves, the label records whether the global best travel distance improved within the next $H_{\text{lac}} = 80$ LAC decisions (not 80 ALNS iterations), irrespective of whether the move was accepted. The label therefore indicates a promising search context rather than the causal effect of accepting that particular move.
 
 Because decision rule~\eqref{eq:lac_decision_rule} operates as an additive booster, it systematically increases the volume of accepted non-improving transitions during deep cooling. In our ablation and limitations analyses (Sections~\ref{sec:ablation_results} and~\ref{sec:disc_limitations}), we discuss the methodological implication of distinguishing state-conditioned lookahead intelligence from generic acceptance rate inflation.
 
@@ -606,7 +606,7 @@ The LAC input feature vector $\mathbf{z}_t \in \mathbb{R}^9$ comprises 9 normali
 \begin{align}
   \mathbf{z}_t = \Big[
     &\frac{\Delta C}{|C_{\text{cur}}|}, \; \frac{T}{T_0}, \; \frac{\text{no\_imp}}{\text{patience}}, \nonumber \\
-    &\operatorname{clip}(\Delta NV, -2, 2), \; \min\Big(\frac{t}{10000}, 1\Big), \nonumber \\
+    &\operatorname{clip}(\Delta\NV, -2, 2), \; \min\Big(\frac{t}{10000}, 1\Big), \nonumber \\
     &\tau_{\text{tight}}, \; \rho_{\text{fill}}, \; \bar{s}, \; \exp\left(-\frac{\max(\Delta C, 0)}{T}\right) \Big]
   \label{eq:lac_features}
 \end{align}
@@ -635,7 +635,7 @@ A candidate insertion of customer $u$ between positions $i$ and $i+1$ inducing a
   \Delta t_u = \max\bigl(0, e_u - (w_i + s_i + t_{i, u})\bigr) + t_{i, u} + s_u + t_{u, i+1} - t_{i, i+1}
   \label{eq:delta_t_insertion}
 \end{equation}
-where $w_i$ is the service start time at node $i$, $s$ denotes service durations, and $e_u$ is earliest ready time. The $O(1)$ bound applies to a single insertion query and holds only while the cached profile is valid. Building or refreshing the profile costs $O(m)$ for a route of length $m$ and is required after every accepted modification of that route; scanning all $m+1$ insertion positions of one customer is therefore $O(m)$ per route, and evaluating one customer against $K$ routes is $O(Km)$ before granular pruning. Moves that reverse or relocate a segment (2-opt, ejection chains) recompute arrival times along the modified segment, so their cost grows with the segment length, and only the suffix check after the segment uses the cached slack. We claim no $O(1)$ bound for complete moves or iterations.
+where $w_i$ is the service start time at node $i$, $s$ denotes service durations, and $e_u$ is the earliest ready time. The $O(1)$ bound applies to a single insertion query and holds only while the cached profile is valid. Building or refreshing the profile costs $O(m)$ for a route of length $m$ and is required after every accepted modification of that route; scanning all $m+1$ insertion positions of one customer is therefore $O(m)$ per route, and evaluating one customer against $K$ routes is $O(Km)$ before granular pruning. Moves that reverse or relocate a segment (2-opt, ejection chains) recompute arrival times along the modified segment, so their cost grows with the segment length, and only the suffix check after the segment uses the cached slack. We claim no $O(1)$ bound for complete moves or iterations.
 
 \subsubsection{Granular Correlated Neighborhood Search (GNS)}
 Following granular search principles \cite{toth2003granular}, inter-route operators restrict candidate evaluations to the $k=15$ nearest customers of each customer by travel distance, precomputed once per instance with the depot excluded. This bounds the candidate insertion search space to $O(k N)$ move queries per iteration.
@@ -679,7 +679,7 @@ During search stagnation, elite feasible routes accumulated in Route Pool $\math
   \text{s.t.} \quad &\sum_{r \in \mathcal{P} : i \in r} y_r = 1, \quad \forall i \in \mathcal{N} \label{eq:sp_cover} \\
   &y_r \in \{0, 1\}, \quad \forall r \in \mathcal{P} \label{eq:sp_binary}
 \end{align}
-where $c_r$ is route travel distance, $\bar{c}$ is pool mean route distance, and $\lambda_{\text{pen}} \in \{2.0, 5.0, 12.0, 30.0, 50.0\}$ is a penalty multiplier; the vehicle penalty $\lambda_{\text{pen}}\bar{c}$ has a floor of 200 in the implementation. At most 800 columns of the pool enter one model, and a vehicle ceiling constraint may be added. If exact partitioning fails, the solver falls back to a set-covering relaxation with duplicate customers removed afterwards. 
+where $c_r$ is route travel distance, $\bar{c}$ is pool mean route distance, and $\lambda_{\text{pen}} \in \{2.0, 5.0, 12.0, 30.0, 50.0\}$ is a penalty multiplier; the vehicle penalty $\lambda_{\text{pen}}\bar{c}$ has a floor of 200 in the implementation. At most 800 columns of the pool enter one model, and a vehicle ceiling constraint may be added. If exact partitioning fails, the solver falls back to a set-covering relaxation with duplicate customers removed afterwards.
 
 \vspace{1mm}
 \noindent Proposition 1 (Penalty Bound for Lexicographic Fleet Preservation): \textit{Let $\mathcal{Y}_{\text{SP}} \subseteq \{0, 1\}^{|\mathcal{P}|}$ be the set of feasible partitions over route pool $\mathcal{P}$. If $\lambda_{\text{pen}} \bar{c} > \sup_{\mathbf{y}_1, \mathbf{y}_2 \in \mathcal{Y}_{\text{SP}}} \left( \sum_{r \in \mathbf{y}_1} c_r - \sum_{r \in \mathbf{y}_2} c_r \right)$, any partition $\mathbf{y}_1$ with $\sum_{r} y_{1, r} < \sum_{r} y_{2, r}$ strictly achieves a lower objective value than $\mathbf{y}_2$, guaranteeing exact lexicographic fleet minimization priority over distance within the column subset $\mathcal{P}$.}
@@ -761,7 +761,7 @@ The test set did not, however, remain untouched by development. After the first 
 To eliminate experimental contamination and guarantee reproducibility, the protocol enforces four principles:
 \begin{enumerate}
     \item Strict Independent Cold-Starts: every individual solver execution is conducted within an isolated ephemeral directory (\textsf{\small ColdStartScope}), purged immediately upon task completion, with all neural networks (Macro DDQN, Micro DDQN, LAC) initialized with random weights from scratch at the beginning of each instance run;
-    \item Deterministic RNG Seeding: each worker process initializes isolated random seeds across Python's \textsf{\small random}, \textsf{\small numpy}, and PyTorch (\textsf{\small torch.manual\_seed} and \textsf{\small torch.cuda.manual\_seed\_all}) across 5 independent seeds ($\{42, 43, 44, 45, 46\}$); 
+    \item Deterministic RNG Seeding: each worker process seeds Python's \textsf{\small random}, \textsf{\small numpy}, and PyTorch (\textsf{\small torch.manual\_seed} and \textsf{\small torch.cuda.manual\_seed\_all}), using 5 independent seeds ($\{42, 43, 44, 45, 46\}$);
     \item Objective Hierarchy: fleet size is the primary endpoint, and distance is compared only between seed pairs with matched fleet size (Section~\ref{sec:statistics}); and
     \item Machine-Verifiable Configuration: all solver executions output JSON metadata containing \textsf{\small resolved\_components} to explicitly verify active modules at runtime.
 \end{enumerate} 
@@ -909,13 +909,13 @@ In commercial freight operations, capital depreciation, vehicle financing, insur
 \label{sec:disc_theory}
 Related derivations are in Supplementary Sections~1--4, and the full algorithm is in Supplementary Section~5.
 
-Property 1 (Lexicographic Consistency): \textit{Under scalar surrogate $F(s) = \mathcal{M} \cdot \NV(s) + \TD(s)$ with $\mathcal{M} > \max_{s} \TD(s) - \min_{s} \TD(s)$, $F(s_1) < F(s_2) \iff s_1 \prec s_2$.} With $\mathcal{M} = 10^5$ the condition holds for all evaluated instances, whose travel distances are below $10^5$; the property concerns the comparison of evaluated solutions and implies no optimality guarantee.
+Property 1 (Lexicographic Consistency): \textit{Under the scalar surrogate $F(s) = \mathcal{M} \cdot \NV(s) + \TD(s)$ with $\mathcal{M} > \max_{s} \TD(s) - \min_{s} \TD(s)$, $F(s_1) < F(s_2) \iff s_1 \prec s_2$.} With $\mathcal{M} = 10^5$ the condition holds for all evaluated instances, whose travel distances are below $10^5$; the property concerns the comparison of evaluated solutions and implies no optimality guarantee.
 
 Property 2 (Granular Candidate Space Reduction): \textit{Restricting each customer to its $k=15$ nearest customers reduces the candidate arc space from $N(N-1)$ to $kN$ arcs, a reduction of $\Gamma_{\text{prune}}(N) = 1 - k/(N-1)$.} This removes $84.85\%$, $92.46\%$ and $96.24\%$ of customer arcs at $N=100$, $200$ and $400$. This is arithmetic on the candidate lists and is separate from the GNN thresholds in Section~\ref{sec:gnn_guidance}.
 
-Design Principle 1 (Multi-Scale Penalty Grid): \textit{In Set Partitioning over Route Pool $\mathcal{P}$, geometric penalty schedule $\lambda_{\text{pen}} \in \{2.0, \dots, 50.0\}\bar{c}$ systematically shifts from distance preservation to vehicle consolidation.} At $\lambda_{\text{pen}}=50.0$, the vehicle penalty strictly dominates partition distance variance, enforcing fleet minimisation during HiGHS solves~\cite{huangfu2018parallelizing}.
+Design Principle 1 (Multi-Scale Penalty Grid): \textit{In Set Partitioning over Route Pool $\mathcal{P}$, the penalty schedule $\lambda_{\text{pen}} \in \{2.0, \dots, 50.0\}\bar{c}$ systematically shifts from distance preservation to vehicle consolidation.} At $\lambda_{\text{pen}}=50.0$, the vehicle penalty strictly dominates partition distance variance, enforcing fleet minimization during HiGHS solves~\cite{huangfu2018parallelizing}.
 
-Design Principle 2 (Downstream Lookahead via LAC): \textit{Unlike Simulated Annealing where non-improving acceptance vanishes ($P_{\text{SA}} \to 0$ as $T \to 0$), LAC evaluates structural transition promise using a delayed observational label ($H_{\text{lac}} = 80$ LAC decisions).} Retaining moves with predicted probability $p_t \ge \tau_{\text{acc}}$ is intended to aid plateau escape; this is an empirical design choice, not a convergence guarantee (Section~\ref{sec:lac}).
+Design Principle 2 (Downstream Lookahead via LAC): \textit{Unlike Simulated Annealing, where non-improving acceptance vanishes ($P_{\text{SA}} \to 0$ as $T \to 0$), LAC evaluates structural transition promise using a delayed observational label ($H_{\text{lac}} = 80$ LAC decisions).} Retaining moves with predicted probability $p_t \ge \tau_{\text{acc}}$ is intended to aid plateau escape; this is an empirical design choice, not a convergence guarantee (Section~\ref{sec:lac}).
 
 \subsection{Limitations and Threats to Validity}
 \label{sec:disc_limitations}
@@ -962,7 +962,7 @@ M.~M. Solomon, ``Algorithms for the vehicle routing and scheduling problems with
 P.~Toth and D.~Vigo, Eds., \emph{Vehicle Routing: Problems, Methods, and Applications}, 2nd~ed.\hskip 1em plus 0.5em minus 0.4em\relax Philadelphia, PA, USA: SIAM, 2014.
 
 \bibitem{braysy2005vehicle}
-O.~Br{\"a}ysy and M.~Gendreau, ``Vehicle routing problem with time windows, part i: Route construction and local search algorithms,'' \emph{Transportation Science}, vol.~39, no.~1, pp. 104--118, 2005.
+O.~Br{\"a}ysy and M.~Gendreau, ``Vehicle routing problem with time windows, part {I}: Route construction and local search algorithms,'' \emph{Transportation Science}, vol.~39, no.~1, pp. 104--118, 2005.
 
 \bibitem{pisinger2007general}
 D.~Pisinger and S.~Ropke, ``A general heuristic for vehicle routing problems,'' \emph{Computers \& Operations Research}, vol.~34, no.~8, pp. 2403--2435, 2007.
@@ -971,13 +971,13 @@ D.~Pisinger and S.~Ropke, ``A general heuristic for vehicle routing problems,'' 
 S.~Ropke and D.~Pisinger, ``An adaptive large neighborhood search heuristic for the pickup and delivery problem with time windows,'' \emph{Transportation Science}, vol.~40, no.~4, pp. 455--472, 2006.
 
 \bibitem{vinyals2015pointer}
-O.~Vinyals, M.~Fortunato, and N.~Jaitly, ``Pointer networks,'' in \emph{Advances in NeurIPS}, vol.~28, 2015, pp. 2692--2700.
+O.~Vinyals, M.~Fortunato, and N.~Jaitly, ``Pointer networks,'' in \emph{Advances in Neural Information Processing Systems}, vol.~28, 2015, pp. 2692--2700.
 
 \bibitem{kool2019attention}
 W.~Kool, H.~van Hoof, and M.~Welling, ``Attention, learn to solve routing problems!'' in \emph{International Conference on Learning Representations (ICLR)}, 2019.
 
 \bibitem{nazari2018reinforcement}
-M.~Nazari, A.~Oroojlooy, L.~V. Snyder, and M.~Tak{\'a}{\v{c}}, ``Reinforcement learning for solving the vehicle routing problem,'' in \emph{Advances in NeurIPS}, 2018, pp. 9861--9871.
+M.~Nazari, A.~Oroojlooy, L.~V. Snyder, and M.~Tak{\'a}{\v{c}}, ``Reinforcement learning for solving the vehicle routing problem,'' in \emph{Advances in Neural Information Processing Systems}, vol.~31, 2018, pp. 9861--9871.
 
 \bibitem{falkner2020learning}
 J.~K. Falkner and L.~Schmidt-Thieme, ``Learning to solve vehicle routing problems with time windows through joint attention,'' \emph{arXiv preprint arXiv:2006.09100}, 2020.
@@ -1031,7 +1031,7 @@ R.~Turke{\v{s}}, K.~S{\"o}rensen, and L.~M. Hvattum, ``Meta-analysis of metaheur
 I.~Bello, H.~Pham, Q.~V. Le, M.~Norouzi, and S.~Bengio, ``Neural combinatorial optimization with reinforcement learning,'' \emph{arXiv preprint arXiv:1611.09940}, 2016.
 
 \bibitem{khalil2017learning}
-E.~Khalil, H.~Dai, Y.~Zhang, B.~Dilkina, and L.~Song, ``Learning combinatorial optimization algorithms over graphs,'' in \emph{Advances in NeurIPS}, vol.~30, 2017, pp. 6348--6358.
+E.~Khalil, H.~Dai, Y.~Zhang, B.~Dilkina, and L.~Song, ``Learning combinatorial optimization algorithms over graphs,'' in \emph{Advances in Neural Information Processing Systems}, vol.~30, 2017, pp. 6348--6358.
 
 \bibitem{joshi2019efficient}
 C.~K. Joshi, T.~Laurent, and X.~Bresson, ``An efficient graph convolutional network technique for the travelling salesman problem,'' \emph{arXiv preprint arXiv:1906.01227}, 2019.
@@ -1043,7 +1043,7 @@ Y.~Bengio, A.~Lodi, and Y.~Prouvost, ``Machine learning for combinatorial optimi
 J.~Kallestad, R.~Hasibi, A.~Hemmati, and K.~S{\"o}rensen, ``A general deep reinforcement learning hyperheuristic framework for solving combinatorial optimization problems,'' \emph{European Journal of Operational Research}, vol.~309, no.~1, pp. 446--468, 2023.
 
 \bibitem{chen2019learning}
-X.~Chen and Y.~Tian, ``Learning to perform local rewriting for combinatorial optimization,'' in \emph{Advances in NeurIPS}, vol.~32, 2019, pp. 6281--6292.
+X.~Chen and Y.~Tian, ``Learning to perform local rewriting for combinatorial optimization,'' in \emph{Advances in Neural Information Processing Systems}, vol.~32, 2019, pp. 6281--6292.
 
 \bibitem{sutton1999between}
 R.~S. Sutton, D.~Precup, and S.~Singh, ``Between MDPs and semi-MDPs: A framework for temporal abstraction in reinforcement learning,'' \emph{Artificial Intelligence}, vol. 112, no.~1-2, pp. 181--211, 1999.
@@ -1052,13 +1052,13 @@ R.~S. Sutton, D.~Precup, and S.~Singh, ``Between MDPs and semi-MDPs: A framework
 V.~Mnih \emph{et~al.}, ``Human-level control through deep reinforcement learning,'' \emph{Nature}, vol.~518, no.~7540, pp. 529--533, 2015.
 
 \bibitem{vanhasselt2016deep}
-H.~van Hasselt, A.~Guez, and D.~Silver, ``Deep reinforcement learning with double q-learning,'' in \emph{Proc. 30th AAAI Conf. Artificial Intelligence}, 2016, pp. 2094--2100.
+H.~van Hasselt, A.~Guez, and D.~Silver, ``Deep reinforcement learning with double {Q}-learning,'' in \emph{Proc. 30th AAAI Conf. Artificial Intelligence}, 2016, pp. 2094--2100.
 
 \bibitem{schaul2016prioritized}
 T.~Schaul, J.~Quan, I.~Antonoglou, and D.~Silver, ``Prioritized experience replay,'' in \emph{International Conference on Learning Representations (ICLR)}, 2016.
 
 \bibitem{li2006unified}
-L.~Li, T.~J. Walsh, and M.~L. Littman, ``Towards a unified theory of state abstraction for {MDPs},'' in \emph{Proc. 9th Int. Symp. Artificial Intelligence and Mathematics (ISAIM)}, 2006.
+L.~Li, T.~J. Walsh, and M.~L. Littman, ``Towards a unified theory of state abstraction for {MDPs},'' in \emph{Proc. 9th Int. Symp. Artificial Intelligence and Mathematics (ISAIM)}, 2006, pp. 531--539.
 
 \bibitem{ng1999policy}
 A.~Y. Ng, D.~Harada, and S.~Russell, ``Policy invariance under reward transformations: Theory and application to reward shaping,'' in \emph{Proc. 16th ICML}, 1999, pp. 278--287.
