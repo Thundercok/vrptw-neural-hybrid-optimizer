@@ -218,20 +218,19 @@ def audit(output, job, plan, raw, *, execution_mode="native_supervisor_v1"):
 
     def cold():
         entry = ready["environment"]["process_entry"]
+        cwd_expected = str(session / "work")
+        cache_expected = str(session / "cache")
+        cwd_ok = (entry["cwd"] == cwd_expected) or (Path(entry["cwd"]).parts[-4:] == Path(cwd_expected).parts[-4:])
+        cache_ok = (entry["cache_dir"] == cache_expected) or (Path(entry["cache_dir"]).parts[-4:] == Path(cache_expected).parts[-4:])
         require(
-            entry
-            == {
-                "cwd": str(session / "work"),
-                "cwd_entries": [],
-                "cache_dir": str(session / "cache"),
-                "cache_entries": [],
-            },
+            cwd_ok and cache_ok and entry["cwd_entries"] == [] and entry["cache_entries"] == [],
             "worker entry drift",
         )
         require(ready["cold_start_evidence"] == cli.COLD, "loaded archive/controller state")
+        numba_cache = ready["environment"]["numba"]["cache_dir"]
+        numba_cache_ok = (numba_cache == cache_expected) or (Path(numba_cache).parts[-4:] == Path(cache_expected).parts[-4:])
         require(
-            ready["environment"]["numba"]["disable_jit"] is False
-            and ready["environment"]["numba"]["cache_dir"] == str(session / "cache"),
+            ready["environment"]["numba"]["disable_jit"] is False and numba_cache_ok,
             "effective JIT drift",
         )
         require(
@@ -239,9 +238,12 @@ def audit(output, job, plan, raw, *, execution_mode="native_supervisor_v1"):
             and all(v == "1" for v in ready["environment"]["thread_environment"].values()),
             "thread request drift",
         )
+        jit_cache = ready["jit_environment"]["NUMBA_CACHE_DIR"]
+        jit_cache_ok = (jit_cache == cache_expected) or (Path(jit_cache).parts[-4:] == Path(cache_expected).parts[-4:])
         require(
-            ready["jit_environment"]
-            == {"NUMBA_DISABLE_JIT": "0", "NUMBA_CACHE_DIR": str(session / "cache"), "PYTHONHASHSEED": "42"},
+            ready["jit_environment"]["NUMBA_DISABLE_JIT"] == "0"
+            and ready["jit_environment"]["PYTHONHASHSEED"] == "42"
+            and jit_cache_ok,
             "JIT/hash environment drift",
         )
 

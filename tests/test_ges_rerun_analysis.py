@@ -76,6 +76,8 @@ def test_a_stage_closes_only_when_a_later_one_starts(tmp_path):
     assert m.closed_stages(log, False) == set()
     log.write_text('{"stage_start": "primary_t300"}\n{"stage_start": "primary_t60"}\n')
     assert m.closed_stages(log, False) == {"primary_t300"}
+    log.write_text('{"stage_start": "anchor_start"}\n{"stage_start": "primary_t300"}\n')
+    assert m.closed_stages(log, False) == set()
     log.write_text('{"stage_start": "primary_t900"}\n')
     assert "primary_t900" not in m.closed_stages(log, False)
     assert "primary_t900" in m.closed_stages(log, True)

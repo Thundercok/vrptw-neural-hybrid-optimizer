@@ -58,7 +58,7 @@ def closed_stages(log_path: Path, finished: bool) -> set[str]:
     for line in log_path.read_text().splitlines():
         if line.startswith("{"):
             entry = json.loads(line)
-            if "stage_start" in entry:
+            if entry.get("stage_start") in STAGES:  # anchor_start runs before the analyzed stages
                 started.add(entry["stage_start"])
     latest = max((STAGES.index(s) for s in started), default=-1)
     closed = set(STAGES[:latest])

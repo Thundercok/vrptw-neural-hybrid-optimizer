@@ -33,7 +33,20 @@ $$\min_{y_r \in \{0, 1\}} \sum_{r \in \mathcal{R}} c_r y_r \quad \text{s.t.} \qu
 
 ## 2. Empirical Verification under Strict Cold-Starts
 
-All evaluations are executed under **strict independent cold-starts** starting from `build_greedy` in isolated temporary scopes, locking random seeds across $N_{\text{seeds}} = 10$. Significance is evaluated using two-sided non-parametric **Wilcoxon signed-rank tests** with rank-biserial correlation ($r_{\text{rb}}$) and Bonferroni correction:
+All evaluations are executed under **strict independent cold-starts** starting from `build_greedy` in isolated temporary directory scopes. Standalone solver runs never share archives or warm-start states.
+
+### Benchmark Protocols & Provenance
+
+1. **Fixed-Iteration Comparative Benchmark** ($I = 2000$, $N_{\text{seeds}} = 10$, seeds 42–51):
+   - Isolates search guidance and operator selection efficiency under matched iteration budgets.
+   - Raw per-instance runs are archived in `results/ultimate-publication-suite/combined_clean.csv`.
+   - Statistical significance is computed via two-sided non-parametric **Wilcoxon signed-rank tests** with rank-biserial correlation ($r_{\text{rb}}$) and Bonferroni multiple testing correction ($\alpha_{\text{adj}} = 0.0167$).
+
+2. **Equal Wall-Clock Anytime Benchmark** ($T \in \{10, 60, 300, 900\}\text{s}$, $N_{\text{seeds}} = 5$, seeds 42–46):
+   - Measures real-time optimization under strict elapsed-time deadlines, capturing runtime overheads (Numba JIT compilation, state encoding, MILP recombination).
+   - Codified in [`docs/resubmission_protocol.md`](docs/resubmission_protocol.md), with full closed-sweep records archived in `results/cutoff_clock_audit_20261029/run/records.csv` and analyzed via `scripts/analyze_revision.py`.
+
+### Representative Scale-Aware Comparison (Fixed-Iteration Benchmark)
 
 | Benchmark Scale | Instance | BKS NV | ALNS-Base ($\mu \pm \sigma$) | Hybrid-DDQN ($\mu \pm \sigma$) | Wilcoxon $p$-value | Effect Size ($r_{\text{rb}}$) | Statistical Verdict |
 | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :--- |
@@ -44,12 +57,12 @@ All evaluations are executed under **strict independent cold-starts** starting f
 | **Homberger ($N=400$)** | **`r2_4_1`** | 4 | $8.80 \pm 0.42$ | **$8.10 \pm 0.32$** | **$p = 0.0156^{*}$** | $+0.87$ | **Significant fleet reduction** ($-0.70$ veh) |
 | **Homberger ($N=400$)** | **`rc2_4_1`** | 10 | $12.80 \pm 0.42$ | $12.50 \pm 0.53$ | $p = 0.3750$ | $+0.33$ | Moderate gain, not significant |
 
-*(Significance levels: $^{*}p < 0.05$, $^{**}p < 0.01$. All runs strictly isolated with identical iteration budgets).*
+*(Significance: $^{*}p < 0.05$, $^{**}p < 0.01$. Note on Travel Distance fairness: TD comparisons are reported only when vehicle counts match ($NV = NV_{\text{BKS}}$ or $NV_{\text{solver}} = NV_{\text{baseline}}$); extra vehicles provide artificial routing capacity that distorts distance comparisons).*
 
 ### Key Empirical Findings
-1. **200-Customer Scale (NV-Flattening & TD Dominance)**: Both solvers hit the same vehicle count floor ($NV=20$). Hybrid-DDQN delivers consistency with a **$1.75\%$ to $4.07\%$ TD reduction** at matched NV ($0\%$ to $20\%$ degradation rate vs $30\%$ to $70\%$ for ALNS-Base).
-2. **400-Customer Scale (Suboptimal Graceful Degradation)**: DRL operator selection avoids deep local minima, achieving statistically significant fleet reductions over ALNS-Base on clustered and random instances (`c2_4_1`, `r2_4_1`).
-3. **Computational Trade-off**: Hybrid-DDQN is a quality-maximizing solver trading search budget for solution quality ($1.5\times$ to $4\times$ run-time on Solomon-100, $1.3\times$ to $4.6\times$ on Homberger-200).
+1. **200-Customer Scale (NV-Flattening & TD Dominance)**: Both solvers converge to the same vehicle count floor ($NV=20$). Hybrid-DDQN advantage is characterized by consistency ($0\%$ to $20\%$ degradation rate vs $30\%$ to $70\%$ for ALNS-Base) and travel distance reduction of **$1.75\%$ to $4.07\%$** at matched NV.
+2. **400-Customer Scale (Suboptimal Graceful Degradation)**: Deep reinforcement learning operator selection mitigates stagnation in severe local minima, achieving statistically significant fleet reductions over ALNS-Base on clustered (`c2_4_1`, $-0.80$ veh, $p=0.0078$) and random (`r2_4_1`, $-0.70$ veh, $p=0.0156$) instances.
+3. **Computational Trade-off**: Hybrid-DDQN is a solution-quality-maximizing metaheuristic that trades computational budget for routing improvements ($1.5\times$ to $4\times$ runtime on Solomon-100, $1.3\times$ to $4.6\times$ on Homberger-200).
 
 ---
 
@@ -67,23 +80,29 @@ vrptw-neural-hybrid-optimizer/
 │       ├── solvers.py                # ALNSSolver and HybridDDQNSolver implementations
 │       ├── gnn.py & train_gnn.py     # Graph Attention Network (GAT) edge candidate filter
 │       ├── benchmark_suite.py        # Independent cold-start task runner
+│       ├── sweep_statistics.py       # Registered bootstrap & paired statistical estimands
 │       ├── ortools_baseline.py       # Google OR-Tools constraint solver baseline
 │       └── pyvrp_baseline.py         # PyVRP modern ILS comparative baseline
 ├── scripts/
-│   ├── run_paper_benchmarks.py       # Multiprocessing benchmark suite for IEEE publication
+│   ├── run_paper_benchmarks.py       # Multi-seed benchmark suite runner
 │   ├── compute_paper_statistics.py   # Wilcoxon signed-rank + Binomial Sign + Bonferroni
+│   ├── analyze_revision.py           # Revision sweep analysis with missing-data bounds
 │   ├── generate_latex_tables.py      # Automated Table III, IV, V export for LaTeX
 │   ├── make_paper_tables.py          # Unified publication table formatter
 │   └── audit_paper_integrity.py      # Artifact hash & reproducibility verification
 ├── data/
-│   ├── reference/                    # Official SINTEF BKS reference files
-│   ├── solomon/                      # 56 Solomon (N=100) benchmark instances
-│   ├── homberger_200/                # Gehring & Homberger (N=200) instances
-│   └── homberger_400/                # Gehring & Homberger (N=400) instances
+│   ├── reference/                    # Official SINTEF BKS reference files (JSON)
+│   ├── Solomon/                      # 56 Solomon (N=100) benchmark instances
+│   └── Gehring_Homberger/            # Homberger 200- and 400-customer benchmark instances
+├── results/
+│   ├── ultimate-publication-suite/   # Recorded iteration-budgeted publication CSVs
+│   ├── cutoff_clock_audit_20261029/  # Closed wall-clock sweep records and audits
+│   └── revision_analysis_20261101/   # Processed revision statistics and bounds
 ├── docs/
-│   ├── manuscript.tex                # IEEE Access paper manuscript
-│   └── manuscript.pdf                # Compiled paper PDF
-└── tests/                            # 40+ unit and regression tests
+│   ├── manuscript.tex                # IEEE Access paper manuscript LaTeX source
+│   ├── manuscript.pdf                # Compiled paper PDF
+│   └── resubmission_protocol.md      # Protocol contract, baselines, and timing gates
+└── tests/                            # Comprehensive unit, integration, and regression tests
 ```
 
 ---
@@ -94,27 +113,47 @@ vrptw-neural-hybrid-optimizer/
 Requires Python 3.11 or 3.12 and [`uv`](https://github.com/astral-sh/uv). PDF compilation requires `pdflatex`.
 
 ```bash
-# 1. Install dependencies
+# 1. Install pinned dependencies in isolated virtualenv
 uv sync --extra dev
 
-# 2. Run test suite
-make test
+# 2. Run full test suite (117+ tests)
+uv run pytest
+```
 
-# 3. Fast smoke verification (5 representative instances, 3 seeds)
-python scripts/run_paper_benchmarks.py --mode quick --workers 4
+### Reproducing & Verifying Benchmark Statistics
 
-# 4. Full publication benchmark on Homberger-400
-python scripts/run_paper_benchmarks.py \
+To verify reported statistics and tables directly from the recorded benchmark outputs without requiring multi-hour recomputations:
+
+```bash
+# 1. Run revision analysis across the closed wall-clock sweep (74 instances, 4 cutoffs, 5 seeds)
+uv run python scripts/analyze_revision.py
+
+# 2. Inspect generated descriptive summaries and statistical bounds
+head -n 20 results/revision_analysis_20261101/descriptive.csv
+```
+
+### Executing Independent Cold-Start Benchmarks from Scratch
+
+To re-run the benchmark sweeps from scratch under strictly isolated environments:
+
+```bash
+# Fast smoke verification (representative instances, 3 seeds)
+uv run python scripts/run_paper_benchmarks.py --mode quick --workers 4
+
+# Full Homberger-400 evaluation (10 seeds, 2000 iterations per instance)
+uv run python scripts/run_paper_benchmarks.py \
     --mode homberger400 \
-    --workers 4 \
+    --solvers ALNS-Base Hybrid-DDQN \
+    --seeds 42 43 44 45 46 47 48 49 50 51 \
     --iterations 2000 \
-    --output-dir results/paper_run_400
+    --workers 4 \
+    --out-dir results/paper_run_400
 
-# 5. Compute non-parametric statistics and generate LaTeX tables
-python scripts/compute_paper_statistics.py \
+# Compute non-parametric statistics and generate LaTeX tables from the new run
+uv run python scripts/compute_paper_statistics.py \
     --csv results/paper_run_400/benchmark_homberger400_raw.csv \
     --out-md results/paper_run_400/stats_report.md
 
-python scripts/generate_latex_tables.py \
+uv run python scripts/generate_latex_tables.py \
     --csv results/paper_run_400/benchmark_homberger400_raw.csv
 ```

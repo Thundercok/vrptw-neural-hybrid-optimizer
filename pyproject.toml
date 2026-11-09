@@ -5,7 +5,7 @@ description = "Neural Hybrid DDQN-ALNS with GNN Edge-Heatmap Guidance for VRPTW"
 readme = "README.md"
 requires-python = ">=3.11,<3.13"
 dependencies = [
-    "numpy>=1.26,<2.4",  # numba ceiling; V2 validated under numpy 2.3.5
+    "numpy<2.5",  # numba ceiling; V2 validated under numpy 2.3.5
     "pandas>=2.2",
     "scipy>=1.13",
     "numba>=0.60",

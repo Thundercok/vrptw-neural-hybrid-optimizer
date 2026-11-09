@@ -1101,7 +1101,7 @@ poster = [
 requires-dist = [
     { name = "matplotlib", specifier = ">=3.8" },
     { name = "numba", specifier = ">=0.60" },
-    { name = "numpy", specifier = ">=1.26,<2.4" },
+    { name = "numpy", specifier = "<2.5" },
     { name = "ortools", specifier = ">=9.15.6755" },
     { name = "pandas", specifier = ">=2.2" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0" },
