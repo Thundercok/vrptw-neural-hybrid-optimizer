@@ -7,7 +7,7 @@
 
 A hybrid **Deep Reinforcement Learning (Dueling DDQN)** and **Adaptive Large Neighborhood Search (ALNS)** solver with exact **MILP Set-Partitioning** post-optimization for the Vehicle Routing Problem with Time Windows ($\text{VRPTW}$). Constraint feasibility checks and route cost evaluations are compiled to native machine code via **Numba JIT** kernels.
 
-[Paper Manuscript](docs/manuscript.pdf) | [LaTeX Source](docs/manuscript.tex) | [Poster](posters/Poster_VRPTW_NCKHSV_2026.pdf) | [Official BKS Reference](data/reference/sintef_official_bks.json)
+[Paper Manuscript](docs/manuscript.pdf) | [LaTeX Source](docs/manuscript.tex) | [Poster](posters/Poster_VRPTW_NCKHSV_2026.pdf) | [Official BKS Reference](data/reference/sintef_official_bks.json) | [Evidence & Verification Index](docs/evidence_index.md)
 
 ---
 
@@ -42,9 +42,10 @@ All evaluations are executed under **strict independent cold-starts** starting f
    - Raw per-instance runs are archived in `results/ultimate-publication-suite/combined_clean.csv`.
    - Statistical significance is computed via two-sided non-parametric **Wilcoxon signed-rank tests** with rank-biserial correlation ($r_{\text{rb}}$) and Bonferroni multiple testing correction ($\alpha_{\text{adj}} = 0.0167$).
 
-2. **Equal Wall-Clock Anytime Benchmark** ($T \in \{10, 60, 300, 900\}\text{s}$, $N_{\text{seeds}} = 5$, seeds 42–46):
-   - Measures real-time optimization under strict elapsed-time deadlines, capturing runtime overheads (Numba JIT compilation, state encoding, MILP recombination).
-   - Codified in [`docs/resubmission_protocol.md`](docs/resubmission_protocol.md), with full closed-sweep records archived in `results/cutoff_clock_audit_20261029/run/records.csv` and analyzed via `scripts/analyze_revision.py`.
+2. **Archived Anytime Benchmark Data**:
+   - The committed anytime observations are stored in [`results/extended_anytime_300s/anytime_raw.csv`](results/extended_anytime_300s/anytime_raw.csv).
+   - The checked-in artifact is the 300-second dataset; it should not be described as a completed 900-second sweep.
+   - The later resubmission evaluation contract is a preparation draft, not a completed replication. See [`docs/resubmission_protocol.md`](docs/resubmission_protocol.md) and the [Evidence & Verification Index](docs/evidence_index.md) for scope and limitations.
 
 ### Representative Scale-Aware Comparison (Fixed-Iteration Benchmark)
 
@@ -70,7 +71,6 @@ All evaluations are executed under **strict independent cold-starts** starting f
 
 ```text
 vrptw-neural-hybrid-optimizer/
-├── configs/                          # Experiment configs and parameter sweeps
 ├── src/
 │   └── vrptw/
 │       ├── numba_kernels.py          # @njit O(1) TW forward slack & capacity feasibility
@@ -96,8 +96,10 @@ vrptw-neural-hybrid-optimizer/
 │   └── Gehring_Homberger/            # Homberger 200- and 400-customer benchmark instances
 ├── results/
 │   ├── ultimate-publication-suite/   # Recorded iteration-budgeted publication CSVs
-│   ├── cutoff_clock_audit_20261029/  # Closed wall-clock sweep records and audits
-│   └── revision_analysis_20261101/   # Processed revision statistics and bounds
+│   ├── extended_anytime_300s/        # Archived anytime observations (through 300s)
+│   ├── phase2_loco_ablations/        # Archived component ablations
+│   ├── loco_200/                     # Archived 200-customer LOCO records
+│   └── task5_loco_gec/               # Archived GEC ablation records
 ├── docs/
 │   ├── manuscript.tex                # IEEE Access paper manuscript LaTeX source
 │   ├── manuscript.pdf                # Compiled paper PDF
@@ -122,15 +124,13 @@ uv run pytest
 
 ### Reproducing & Verifying Benchmark Statistics
 
-To verify reported statistics and tables directly from the recorded benchmark outputs without requiring multi-hour recomputations:
+To check selected manuscript tables and claims against the benchmark artifacts currently committed to the repository:
 
 ```bash
-# 1. Run revision analysis across the closed wall-clock sweep (74 instances, 4 cutoffs, 5 seeds)
-uv run python scripts/analyze_revision.py
-
-# 2. Inspect generated descriptive summaries and statistical bounds
-head -n 20 results/revision_analysis_20261101/descriptive.csv
+uv run python scripts/audit_paper_integrity.py
 ```
+
+For the exact input files and the limits of this audit, see the [Evidence & Verification Index](docs/evidence_index.md). The separate `scripts/analyze_revision.py` workflow expects additional sweep inputs that are not included in the current checkout.
 
 ### Executing Independent Cold-Start Benchmarks from Scratch
 
