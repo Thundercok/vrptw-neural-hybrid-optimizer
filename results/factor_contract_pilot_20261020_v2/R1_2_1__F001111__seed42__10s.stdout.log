@@ -1,0 +1,2 @@
+[phase_transition_log] {'phase1_best_nv': None, 'phase1_best_td': None, 'phase1_final_lambda': None, 'early_stop_triggered_iter': None, 'phase2_final_nv': 21, 'phase2_final_td': 5354.495362573979}
+[F001111] r1_2_1 -> NV=21, TD=5354.495362573979 in 10.37s

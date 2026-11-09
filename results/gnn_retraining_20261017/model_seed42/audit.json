@@ -1,0 +1,782 @@
+{
+  "status": "passed",
+  "test_instances_scored": 0,
+  "manifest_sha256": "8eb73a263102615f2ea3cab0dc9b76f0f5e6e90e475e5c8aa7fbb1a03f25b7d9",
+  "source_sha256": "948698b77671d6bbff31763f626f437e9594b64d948c545f14082d2974da437a",
+  "checkpoint_sha256": "365de53beba09097d1176a8b102ced8d6d97311f5a3ac82186b116d3290e1b97",
+  "strict_tensor_count": 53,
+  "best_epoch": 71,
+  "first_epoch": {
+    "epoch": 1.0,
+    "train_loss": 1.3857160955667496,
+    "validation_loss": 0.9410937080780665
+  },
+  "last_epoch": {
+    "epoch": 150.0,
+    "train_loss": 0.34945715839664143,
+    "validation_loss": 0.4952054147919019
+  },
+  "best_validation_loss": 0.4555501366655032,
+  "recomputed_validation_loss": 0.4555501366655032,
+  "validation_thresholds": {
+    "0.003": {
+      "edge_recall_micro": 0.999002493765586,
+      "edge_retention_micro": 0.34084824387011264,
+      "edge_precision_micro": 0.0194715557802232
+    },
+    "0.01": {
+      "edge_recall_micro": 0.999002493765586,
+      "edge_retention_micro": 0.2959973492379059,
+      "edge_precision_micro": 0.02242197644740966
+    },
+    "0.05": {
+      "edge_recall_micro": 0.9945137157107232,
+      "edge_retention_micro": 0.23270709078860172,
+      "edge_precision_micro": 0.028392020617675956
+    }
+  },
+  "validation_instances": [
+    {
+      "name": "SYN_VALIDATION_C_100_000",
+      "customers": 100,
+      "full_negative_loss": 0.45681899785995483,
+      "positive_edges": 108,
+      "candidate_edges": 10100,
+      "thresholds": {
+        "0.003": {
+          "retained_edges": 3404,
+          "retained_positive_edges": 108
+        },
+        "0.01": {
+          "retained_edges": 2995,
+          "retained_positive_edges": 108
+        },
+        "0.05": {
+          "retained_edges": 2412,
+          "retained_positive_edges": 108
+        }
+      }
+    },
+    {
+      "name": "SYN_VALIDATION_C_100_001",
+      "customers": 100,
+      "full_negative_loss": 0.4681394696235657,
+      "positive_edges": 110,
+      "candidate_edges": 10100,
+      "thresholds": {
+        "0.003": {
+          "retained_edges": 3273,
+          "retained_positive_edges": 110
+        },
+        "0.01": {
+          "retained_edges": 2914,
+          "retained_positive_edges": 110
+        },
+        "0.05": {
+          "retained_edges": 2398,
+          "retained_positive_edges": 109
+        }
+      }
+    },
+    {
+      "name": "SYN_VALIDATION_R_100_000",
+      "customers": 100,
+      "full_negative_loss": 0.48332884907722473,
+      "positive_edges": 115,
+      "candidate_edges": 10100,
+      "thresholds": {
+        "0.003": {
+          "retained_edges": 3121,
+          "retained_positive_edges": 115
+        },
+        "0.01": {
+          "retained_edges": 2685,
+          "retained_positive_edges": 115
+        },
+        "0.05": {
+          "retained_edges": 2108,
+          "retained_positive_edges": 113
+        }
+      }
+    },
+    {
+      "name": "SYN_VALIDATION_R_100_001",
+      "customers": 100,
+      "full_negative_loss": 0.4132113754749298,
+      "positive_edges": 112,
+      "candidate_edges": 10100,
+      "thresholds": {
+        "0.003": {
+          "retained_edges": 2967,
+          "retained_positive_edges": 112
+        },
+        "0.01": {
+          "retained_edges": 2577,
+          "retained_positive_edges": 112
+        },
+        "0.05": {
+          "retained_edges": 2031,
+          "retained_positive_edges": 112
+        }
+      }
+    },
+    {
+      "name": "SYN_VALIDATION_RC_100_000",
+      "customers": 100,
+      "full_negative_loss": 0.4556448757648468,
+      "positive_edges": 110,
+      "candidate_edges": 10100,
+      "thresholds": {
+        "0.003": {
+          "retained_edges": 3663,
+          "retained_positive_edges": 110
+        },
+        "0.01": {
+          "retained_edges": 3217,
+          "retained_positive_edges": 110
+        },
+        "0.05": {
+          "retained_edges": 2583,
+          "retained_positive_edges": 110
+        }
+      }
+    },
+    {
+      "name": "SYN_VALIDATION_RC_100_001",
+      "customers": 100,
+      "full_negative_loss": 0.486526757478714,
+      "positive_edges": 108,
+      "candidate_edges": 10100,
+      "thresholds": {
+        "0.003": {
+          "retained_edges": 3571,
+          "retained_positive_edges": 108
+        },
+        "0.01": {
+          "retained_edges": 3069,
+          "retained_positive_edges": 108
+        },
+        "0.05": {
+          "retained_edges": 2404,
+          "retained_positive_edges": 107
+        }
+      }
+    },
+    {
+      "name": "SYN_VALIDATION_C_200_000",
+      "customers": 200,
+      "full_negative_loss": 0.5388879179954529,
+      "positive_edges": 224,
+      "candidate_edges": 40200,
+      "thresholds": {
+        "0.003": {
+          "retained_edges": 16031,
+          "retained_positive_edges": 224
+        },
+        "0.01": {
+          "retained_edges": 13809,
+          "retained_positive_edges": 224
+        },
+        "0.05": {
+          "retained_edges": 10693,
+          "retained_positive_edges": 223
+        }
+      }
+    },
+    {
+      "name": "SYN_VALIDATION_C_200_001",
+      "customers": 200,
+      "full_negative_loss": 0.4846687614917755,
+      "positive_edges": 220,
+      "candidate_edges": 40200,
+      "thresholds": {
+        "0.003": {
+          "retained_edges": 13880,
+          "retained_positive_edges": 219
+        },
+        "0.01": {
+          "retained_edges": 12381,
+          "retained_positive_edges": 219
+        },
+        "0.05": {
+          "retained_edges": 10055,
+          "retained_positive_edges": 219
+        }
+      }
+    },
+    {
+      "name": "SYN_VALIDATION_R_200_000",
+      "customers": 200,
+      "full_negative_loss": 0.3223641514778137,
+      "positive_edges": 218,
+      "candidate_edges": 40200,
+      "thresholds": {
+        "0.003": {
+          "retained_edges": 11328,
+          "retained_positive_edges": 218
+        },
+        "0.01": {
+          "retained_edges": 9745,
+          "retained_positive_edges": 218
+        },
+        "0.05": {
+          "retained_edges": 7548,
+          "retained_positive_edges": 218
+        }
+      }
+    },
+    {
+      "name": "SYN_VALIDATION_R_200_001",
+      "customers": 200,
+      "full_negative_loss": 0.5469263195991516,
+      "positive_edges": 231,
+      "candidate_edges": 40200,
+      "thresholds": {
+        "0.003": {
+          "retained_edges": 12137,
+          "retained_positive_edges": 230
+        },
+        "0.01": {
+          "retained_edges": 10384,
+          "retained_positive_edges": 230
+        },
+        "0.05": {
+          "retained_edges": 8063,
+          "retained_positive_edges": 226
+        }
+      }
+    },
+    {
+      "name": "SYN_VALIDATION_RC_200_000",
+      "customers": 200,
+      "full_negative_loss": 0.39263007044792175,
+      "positive_edges": 227,
+      "candidate_edges": 40200,
+      "thresholds": {
+        "0.003": {
+          "retained_edges": 13107,
+          "retained_positive_edges": 227
+        },
+        "0.01": {
+          "retained_edges": 11385,
+          "retained_positive_edges": 227
+        },
+        "0.05": {
+          "retained_edges": 8901,
+          "retained_positive_edges": 227
+        }
+      }
+    },
+    {
+      "name": "SYN_VALIDATION_RC_200_001",
+      "customers": 200,
+      "full_negative_loss": 0.4174540936946869,
+      "positive_edges": 222,
+      "candidate_edges": 40200,
+      "thresholds": {
+        "0.003": {
+          "retained_edges": 16386,
+          "retained_positive_edges": 222
+        },
+        "0.01": {
+          "retained_edges": 14171,
+          "retained_positive_edges": 222
+        },
+        "0.05": {
+          "retained_edges": 11035,
+          "retained_positive_edges": 222
+        }
+      }
+    }
+  ],
+  "teacher_instances": [
+    {
+      "name": "SYN_TRAIN_C_100_000",
+      "split": "train",
+      "customers": 100,
+      "runtime_sec": 10.009624875034206,
+      "nv": 10,
+      "td": 819.6819662078378
+    },
+    {
+      "name": "SYN_TRAIN_C_100_001",
+      "split": "train",
+      "customers": 100,
+      "runtime_sec": 10.013529708958231,
+      "nv": 12,
+      "td": 1288.4593549283795
+    },
+    {
+      "name": "SYN_TRAIN_C_100_002",
+      "split": "train",
+      "customers": 100,
+      "runtime_sec": 10.005155666964129,
+      "nv": 12,
+      "td": 1026.1397054172394
+    },
+    {
+      "name": "SYN_TRAIN_C_100_003",
+      "split": "train",
+      "customers": 100,
+      "runtime_sec": 10.008651458076201,
+      "nv": 10,
+      "td": 1087.298816361063
+    },
+    {
+      "name": "SYN_TRAIN_C_100_004",
+      "split": "train",
+      "customers": 100,
+      "runtime_sec": 10.015931958914734,
+      "nv": 9,
+      "td": 1113.1441842815861
+    },
+    {
+      "name": "SYN_TRAIN_C_100_005",
+      "split": "train",
+      "customers": 100,
+      "runtime_sec": 10.005910874926485,
+      "nv": 9,
+      "td": 1002.0972592369245
+    },
+    {
+      "name": "SYN_TRAIN_C_100_006",
+      "split": "train",
+      "customers": 100,
+      "runtime_sec": 10.007001749938354,
+      "nv": 13,
+      "td": 1262.7743546891716
+    },
+    {
+      "name": "SYN_TRAIN_C_100_007",
+      "split": "train",
+      "customers": 100,
+      "runtime_sec": 10.00662950007245,
+      "nv": 10,
+      "td": 1009.1656683439918
+    },
+    {
+      "name": "SYN_TRAIN_R_100_000",
+      "split": "train",
+      "customers": 100,
+      "runtime_sec": 10.02085916697979,
+      "nv": 14,
+      "td": 1815.5383111192168
+    },
+    {
+      "name": "SYN_TRAIN_R_100_001",
+      "split": "train",
+      "customers": 100,
+      "runtime_sec": 10.007028624997474,
+      "nv": 13,
+      "td": 1721.0754423061826
+    },
+    {
+      "name": "SYN_TRAIN_R_100_002",
+      "split": "train",
+      "customers": 100,
+      "runtime_sec": 10.00905912509188,
+      "nv": 13,
+      "td": 1875.8686631040084
+    },
+    {
+      "name": "SYN_TRAIN_R_100_003",
+      "split": "train",
+      "customers": 100,
+      "runtime_sec": 10.005631084088236,
+      "nv": 12,
+      "td": 1756.7360274857529
+    },
+    {
+      "name": "SYN_TRAIN_R_100_004",
+      "split": "train",
+      "customers": 100,
+      "runtime_sec": 10.007550416979939,
+      "nv": 14,
+      "td": 1866.617961563614
+    },
+    {
+      "name": "SYN_TRAIN_R_100_005",
+      "split": "train",
+      "customers": 100,
+      "runtime_sec": 10.006563790957443,
+      "nv": 13,
+      "td": 1739.2211068927963
+    },
+    {
+      "name": "SYN_TRAIN_R_100_006",
+      "split": "train",
+      "customers": 100,
+      "runtime_sec": 10.013056625030003,
+      "nv": 12,
+      "td": 1686.225505334943
+    },
+    {
+      "name": "SYN_TRAIN_R_100_007",
+      "split": "train",
+      "customers": 100,
+      "runtime_sec": 10.018148207920603,
+      "nv": 12,
+      "td": 1778.4022634277726
+    },
+    {
+      "name": "SYN_TRAIN_RC_100_000",
+      "split": "train",
+      "customers": 100,
+      "runtime_sec": 10.00690058292821,
+      "nv": 9,
+      "td": 1391.9139966011255
+    },
+    {
+      "name": "SYN_TRAIN_RC_100_001",
+      "split": "train",
+      "customers": 100,
+      "runtime_sec": 9.95157204195857,
+      "nv": 10,
+      "td": 1353.1347520393867
+    },
+    {
+      "name": "SYN_TRAIN_RC_100_002",
+      "split": "train",
+      "customers": 100,
+      "runtime_sec": 10.003166416077875,
+      "nv": 11,
+      "td": 1482.4502155870568
+    },
+    {
+      "name": "SYN_TRAIN_RC_100_003",
+      "split": "train",
+      "customers": 100,
+      "runtime_sec": 10.007755832979456,
+      "nv": 13,
+      "td": 1535.6575761198137
+    },
+    {
+      "name": "SYN_TRAIN_RC_100_004",
+      "split": "train",
+      "customers": 100,
+      "runtime_sec": 10.00833025004249,
+      "nv": 9,
+      "td": 1370.3171577482397
+    },
+    {
+      "name": "SYN_TRAIN_RC_100_005",
+      "split": "train",
+      "customers": 100,
+      "runtime_sec": 10.013701874995604,
+      "nv": 10,
+      "td": 1307.8967033230206
+    },
+    {
+      "name": "SYN_TRAIN_RC_100_006",
+      "split": "train",
+      "customers": 100,
+      "runtime_sec": 10.006994499941356,
+      "nv": 15,
+      "td": 1936.4739921188884
+    },
+    {
+      "name": "SYN_TRAIN_RC_100_007",
+      "split": "train",
+      "customers": 100,
+      "runtime_sec": 10.008263499941677,
+      "nv": 14,
+      "td": 1597.452810582956
+    },
+    {
+      "name": "SYN_TRAIN_C_200_000",
+      "split": "train",
+      "customers": 200,
+      "runtime_sec": 10.061795249930583,
+      "nv": 21,
+      "td": 1916.7443082543289
+    },
+    {
+      "name": "SYN_TRAIN_C_200_001",
+      "split": "train",
+      "customers": 200,
+      "runtime_sec": 10.01510195794981,
+      "nv": 17,
+      "td": 1730.14178080492
+    },
+    {
+      "name": "SYN_TRAIN_C_200_002",
+      "split": "train",
+      "customers": 200,
+      "runtime_sec": 10.020051624975167,
+      "nv": 21,
+      "td": 1512.0441375103833
+    },
+    {
+      "name": "SYN_TRAIN_C_200_003",
+      "split": "train",
+      "customers": 200,
+      "runtime_sec": 10.005693500046618,
+      "nv": 19,
+      "td": 2068.921795993898
+    },
+    {
+      "name": "SYN_TRAIN_C_200_004",
+      "split": "train",
+      "customers": 200,
+      "runtime_sec": 10.036383709055372,
+      "nv": 30,
+      "td": 2602.4166816886914
+    },
+    {
+      "name": "SYN_TRAIN_C_200_005",
+      "split": "train",
+      "customers": 200,
+      "runtime_sec": 10.060269125038758,
+      "nv": 27,
+      "td": 2671.963647617044
+    },
+    {
+      "name": "SYN_TRAIN_C_200_006",
+      "split": "train",
+      "customers": 200,
+      "runtime_sec": 10.016134624951519,
+      "nv": 15,
+      "td": 1424.0408625803827
+    },
+    {
+      "name": "SYN_TRAIN_C_200_007",
+      "split": "train",
+      "customers": 200,
+      "runtime_sec": 10.057930207927711,
+      "nv": 27,
+      "td": 2448.8233375791797
+    },
+    {
+      "name": "SYN_TRAIN_R_200_000",
+      "split": "train",
+      "customers": 200,
+      "runtime_sec": 10.049643417005427,
+      "nv": 18,
+      "td": 2863.125394072101
+    },
+    {
+      "name": "SYN_TRAIN_R_200_001",
+      "split": "train",
+      "customers": 200,
+      "runtime_sec": 10.0031316250097,
+      "nv": 24,
+      "td": 2933.3263646723085
+    },
+    {
+      "name": "SYN_TRAIN_R_200_002",
+      "split": "train",
+      "customers": 200,
+      "runtime_sec": 10.019256124971434,
+      "nv": 21,
+      "td": 2744.362163389006
+    },
+    {
+      "name": "SYN_TRAIN_R_200_003",
+      "split": "train",
+      "customers": 200,
+      "runtime_sec": 10.00493254198227,
+      "nv": 26,
+      "td": 3091.8231619405788
+    },
+    {
+      "name": "SYN_TRAIN_R_200_004",
+      "split": "train",
+      "customers": 200,
+      "runtime_sec": 10.032844958011992,
+      "nv": 23,
+      "td": 2933.4002256084714
+    },
+    {
+      "name": "SYN_TRAIN_R_200_005",
+      "split": "train",
+      "customers": 200,
+      "runtime_sec": 10.01212216692511,
+      "nv": 21,
+      "td": 2746.823009805316
+    },
+    {
+      "name": "SYN_TRAIN_R_200_006",
+      "split": "train",
+      "customers": 200,
+      "runtime_sec": 10.010748750064522,
+      "nv": 16,
+      "td": 2639.678832849484
+    },
+    {
+      "name": "SYN_TRAIN_R_200_007",
+      "split": "train",
+      "customers": 200,
+      "runtime_sec": 10.021825750009157,
+      "nv": 24,
+      "td": 3069.487802316916
+    },
+    {
+      "name": "SYN_TRAIN_RC_200_000",
+      "split": "train",
+      "customers": 200,
+      "runtime_sec": 10.017021832987666,
+      "nv": 18,
+      "td": 2327.227019425822
+    },
+    {
+      "name": "SYN_TRAIN_RC_200_001",
+      "split": "train",
+      "customers": 200,
+      "runtime_sec": 10.010009584017098,
+      "nv": 22,
+      "td": 2789.062093234896
+    },
+    {
+      "name": "SYN_TRAIN_RC_200_002",
+      "split": "train",
+      "customers": 200,
+      "runtime_sec": 10.008384624961764,
+      "nv": 19,
+      "td": 2372.563995059145
+    },
+    {
+      "name": "SYN_TRAIN_RC_200_003",
+      "split": "train",
+      "customers": 200,
+      "runtime_sec": 10.038374624913558,
+      "nv": 21,
+      "td": 2592.603710317449
+    },
+    {
+      "name": "SYN_TRAIN_RC_200_004",
+      "split": "train",
+      "customers": 200,
+      "runtime_sec": 10.008435750030912,
+      "nv": 19,
+      "td": 2469.434619462345
+    },
+    {
+      "name": "SYN_TRAIN_RC_200_005",
+      "split": "train",
+      "customers": 200,
+      "runtime_sec": 10.008698874968104,
+      "nv": 22,
+      "td": 2594.8962443866963
+    },
+    {
+      "name": "SYN_TRAIN_RC_200_006",
+      "split": "train",
+      "customers": 200,
+      "runtime_sec": 10.014418041100726,
+      "nv": 20,
+      "td": 2509.9611799857157
+    },
+    {
+      "name": "SYN_TRAIN_RC_200_007",
+      "split": "train",
+      "customers": 200,
+      "runtime_sec": 10.003681499976665,
+      "nv": 24,
+      "td": 3269.9930089421446
+    },
+    {
+      "name": "SYN_VALIDATION_C_100_000",
+      "split": "validation",
+      "customers": 100,
+      "runtime_sec": 10.003383875009604,
+      "nv": 8,
+      "td": 1156.3765598289713
+    },
+    {
+      "name": "SYN_VALIDATION_C_100_001",
+      "split": "validation",
+      "customers": 100,
+      "runtime_sec": 10.012633000034839,
+      "nv": 10,
+      "td": 1194.2512485587483
+    },
+    {
+      "name": "SYN_VALIDATION_R_100_000",
+      "split": "validation",
+      "customers": 100,
+      "runtime_sec": 10.005684292060323,
+      "nv": 15,
+      "td": 1820.550750407585
+    },
+    {
+      "name": "SYN_VALIDATION_R_100_001",
+      "split": "validation",
+      "customers": 100,
+      "runtime_sec": 10.003880166099407,
+      "nv": 12,
+      "td": 1578.2773509656577
+    },
+    {
+      "name": "SYN_VALIDATION_RC_100_000",
+      "split": "validation",
+      "customers": 100,
+      "runtime_sec": 10.004328749957494,
+      "nv": 10,
+      "td": 1336.221695582487
+    },
+    {
+      "name": "SYN_VALIDATION_RC_100_001",
+      "split": "validation",
+      "customers": 100,
+      "runtime_sec": 10.004242792027071,
+      "nv": 8,
+      "td": 1474.2395263053256
+    },
+    {
+      "name": "SYN_VALIDATION_C_200_000",
+      "split": "validation",
+      "customers": 200,
+      "runtime_sec": 10.01698762504384,
+      "nv": 24,
+      "td": 1883.4652027478342
+    },
+    {
+      "name": "SYN_VALIDATION_C_200_001",
+      "split": "validation",
+      "customers": 200,
+      "runtime_sec": 10.008046292001382,
+      "nv": 20,
+      "td": 1799.5356399620025
+    },
+    {
+      "name": "SYN_VALIDATION_R_200_000",
+      "split": "validation",
+      "customers": 200,
+      "runtime_sec": 10.00613845908083,
+      "nv": 18,
+      "td": 2649.413129306866
+    },
+    {
+      "name": "SYN_VALIDATION_R_200_001",
+      "split": "validation",
+      "customers": 200,
+      "runtime_sec": 10.008100792067125,
+      "nv": 31,
+      "td": 3744.2270457930654
+    },
+    {
+      "name": "SYN_VALIDATION_RC_200_000",
+      "split": "validation",
+      "customers": 200,
+      "runtime_sec": 10.03446754196193,
+      "nv": 27,
+      "td": 2888.721400849277
+    },
+    {
+      "name": "SYN_VALIDATION_RC_200_001",
+      "split": "validation",
+      "customers": 200,
+      "runtime_sec": 10.576862208894454,
+      "nv": 22,
+      "td": 2362.4989956181776
+    }
+  ],
+  "limitations": [
+    "One training seed; synthetic training/validation only at sizes 100 and 200.",
+    "Thresholds are existing solver settings, not tuned by this audit.",
+    "Teacher-edge recall is not optimal-edge recall or evidence of better routing.",
+    "Training loss samples contrastive negatives; validation uses all negatives.",
+    "Wall-clock teacher labels are frozen artifacts, not guaranteed bit-reproducible regenerations.",
+    "No test-label generation, test inference, or test-based checkpoint selection."
+  ]
+}

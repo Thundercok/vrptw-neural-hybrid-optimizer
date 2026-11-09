@@ -1,1 +1,5 @@
 *.csv text eol=lf
+results/supervisor_pilot_20261020/** -text
+results/return_timing_confirmation_20261020/** -text
+results/factor_contract_pilot_20261020_v2/** -text
+results/gnn_retraining_20261017/** -text

@@ -1,0 +1,72 @@
+{
+  "command": [
+    "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/.venv/bin/python",
+    "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/scripts/benchmark.py",
+    "--instance",
+    "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/results/factor_contract_pilot_20261020_v2/inputs/RC2_4_1.TXT",
+    "--seed",
+    "42",
+    "--time-limit",
+    "10",
+    "--budget-mode",
+    "wall-clock",
+    "--ablation",
+    "F101111",
+    "--output-json",
+    "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/results/factor_contract_pilot_20261020_v2/RC2_4_1__F101111__seed42__10s.json",
+    "--gnn-model",
+    "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/results/factor_contract_pilot_20261020_v2/gnn_checkpoint.pt"
+  ],
+  "cwd": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/results/factor_contract_pilot_20261020_v2/jobs/RC2_4_1__F101111__seed42__10s/work",
+  "environment": {
+    "NUMBA_NUM_THREADS": "1",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1",
+    "NUMBA_CACHE_DIR": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/results/factor_contract_pilot_20261020_v2/jobs/RC2_4_1__F101111__seed42__10s/cache",
+    "NUMBA_DISABLE_JIT": "0",
+    "PYTHONHASHSEED": "42"
+  },
+  "work_entries_before": [],
+  "cache_entries_before": [],
+  "host_load_before": [
+    5.083984375,
+    6.26708984375,
+    5.40380859375
+  ],
+  "returncode": 0,
+  "timed_out": false,
+  "child_wall_sec_end_to_end": 20.137195707997307,
+  "child_cpu_sec": 16.96965500000001,
+  "host_load_after": [
+    7.2890625,
+    6.751953125,
+    5.6005859375
+  ],
+  "cache_files_after": {
+    "vrptw_48657ad716316237b1c4ef89baa5e0afc774616f/core._route_cost-87.py312.1.nbc": "df7a9126715a311d71df80aa8fe55b25a2c168dd55871d34b6d72d8012d1e811",
+    "vrptw_48657ad716316237b1c4ef89baa5e0afc774616f/core._route_cost-87.py312.nbi": "461aa8d2d0e2424e4d7b28196a9d44f3533288f1e268243c5931d90bea1e8ea3",
+    "vrptw_48657ad716316237b1c4ef89baa5e0afc774616f/core._route_ok-117.py312.1.nbc": "e4c5d187ac3fe8f5a3ce610b5da5824b3f2738663956d2594a83b82f9b9c7b62",
+    "vrptw_48657ad716316237b1c4ef89baa5e0afc774616f/core._route_ok-117.py312.nbi": "8f41d58fde2c74299e8fd05e39155bc63e005acdb08ef750551c1935e0085d43",
+    "vrptw_48657ad716316237b1c4ef89baa5e0afc774616f/core._route_violations-95.py312.1.nbc": "d24817d077ec7d04ceddbd5fc877c42239ef69c1abc49d49c179a78bffc0f72b",
+    "vrptw_48657ad716316237b1c4ef89baa5e0afc774616f/core._route_violations-95.py312.nbi": "2904600d274bbbd76be01b25df1e84e27bdc85b4f7dc7c6db32e58b922d0ca4f",
+    "vrptw_48657ad716316237b1c4ef89baa5e0afc774616f/heuristics._best_insert_in_route_numba-175.py312.1.nbc": "9b808c334b537a18df7efdc58f3dbbf79879bb18ee0c948c14a02a739633544e",
+    "vrptw_48657ad716316237b1c4ef89baa5e0afc774616f/heuristics._best_insert_in_route_numba-175.py312.nbi": "5a807deacaf7602b0714ff8417a7cae0c63f82b646ed2446230087d8d4ada551",
+    "vrptw_48657ad716316237b1c4ef89baa5e0afc774616f/heuristics._best_insert_position_numba-136.py312.1.nbc": "f8ead51bed33995ead0ff4e16327abbd29fafc53fec747414249ee5f1fa214fa",
+    "vrptw_48657ad716316237b1c4ef89baa5e0afc774616f/heuristics._best_insert_position_numba-136.py312.nbi": "83c51bbdd31e770a48e78989263e9a18f233680ccebaeba976d29e4c6368c966",
+    "vrptw_48657ad716316237b1c4ef89baa5e0afc774616f/heuristics._insert_costs_column_numba-335.py312.1.nbc": "9ae9f15f258ff5cc215ebd2fbffc0d27b550a1800b84ebe743cdb4724c0a75f7",
+    "vrptw_48657ad716316237b1c4ef89baa5e0afc774616f/heuristics._insert_costs_column_numba-335.py312.nbi": "b77130c5acd27e2a590b0f4c0d8bbd1f5eaf8db7c7d072f93dc0e6aa0776891a",
+    "vrptw_48657ad716316237b1c4ef89baa5e0afc774616f/heuristics._insert_costs_matrix_numba-275.py312.1.nbc": "8ea0c6b40f95247595c2ef54ef807d2e2754fc75045cef1f8510ae3d58e4df4b",
+    "vrptw_48657ad716316237b1c4ef89baa5e0afc774616f/heuristics._insert_costs_matrix_numba-275.py312.nbi": "8573044e69fb42d6a934f0cd8b37e06753fbcbf66861839d7c48a0795cb13038",
+    "vrptw_48657ad716316237b1c4ef89baa5e0afc774616f/heuristics._insert_feasible_numba-98.py312.1.nbc": "e654383fa130b18f90d715c83d81f0614b3084ae292358cff7df5f21e3bd19e2",
+    "vrptw_48657ad716316237b1c4ef89baa5e0afc774616f/heuristics._insert_feasible_numba-98.py312.nbi": "542f9a3b05eeb2488989b5051217518cc508bfe0dbd70f98a4d7fb3bb53096b3",
+    "vrptw_48657ad716316237b1c4ef89baa5e0afc774616f/heuristics._route_timing_numba-9.py312.1.nbc": "f1a7ce686df90380213e11e3f8c938a776b1be6484712a4e9982b35c4dcd3801",
+    "vrptw_48657ad716316237b1c4ef89baa5e0afc774616f/heuristics._route_timing_numba-9.py312.nbi": "a9c84b22f3f0bb7b482023bc19887f376f69e2763aba97e8af6675c3c6fdd7f7",
+    "vrptw_48657ad716316237b1c4ef89baa5e0afc774616f/numba_kernels._compute_route_forward_slack_numba-20.py312.1.nbc": "54590adf5e60c946c36237c07fa9cfde1b014c64e0d53d62c8781541fa314b48",
+    "vrptw_48657ad716316237b1c4ef89baa5e0afc774616f/numba_kernels._compute_route_forward_slack_numba-20.py312.nbi": "d1664217383e60f85b220d64d8c86578b13bf7d06fbcb91667698eaf3ef900b5",
+    "vrptw_48657ad716316237b1c4ef89baa5e0afc774616f/numba_kernels._two_opt_best_numba-63.py312.1.nbc": "8e7355edd5632b3d6348768df6ee6ebfba263284154d0632bfaccb26c6b77bac",
+    "vrptw_48657ad716316237b1c4ef89baa5e0afc774616f/numba_kernels._two_opt_best_numba-63.py312.nbi": "049ed1cd6198f46c45143bda809fcc4e7d766e38ebc5adb6f5fab4ecb6dc4eea",
+    "vrptw_48657ad716316237b1c4ef89baa5e0afc774616f/operators._fts_best_insert_position_numba-789.py312.1.nbc": "47365d8b4115152ca242f4eebdfb4b862731d1fbda3b5e87faba42bf9d8b51e6",
+    "vrptw_48657ad716316237b1c4ef89baa5e0afc774616f/operators._fts_best_insert_position_numba-789.py312.nbi": "87b63a47a05484da04052885c5013bdfae821be1535cdbda32e234cb62aaeb11"
+  }
+}

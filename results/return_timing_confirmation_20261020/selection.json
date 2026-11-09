@@ -1,0 +1,118 @@
+{
+  "jobs": [
+    {
+      "run": "RC2_4_1__F111011__seed42__10s__confirmation",
+      "instance": "data/Gehring_Homberger/homberger_400_customer_instances/RC2_4_1.TXT",
+      "seed": 42,
+      "ablation": "F111011",
+      "time_limit": 10,
+      "profiled": false,
+      "block": 0,
+      "position": 1,
+      "source_run": "RC2_4_1__F111011__seed42__10s",
+      "phase_traced": false
+    },
+    {
+      "run": "RC2_4_1__F011111__seed42__10s__confirmation",
+      "instance": "data/Gehring_Homberger/homberger_400_customer_instances/RC2_4_1.TXT",
+      "seed": 42,
+      "ablation": "F011111",
+      "time_limit": 10,
+      "profiled": false,
+      "block": 0,
+      "position": 2,
+      "source_run": "RC2_4_1__F011111__seed42__10s",
+      "phase_traced": false
+    },
+    {
+      "run": "R1_2_1__F101111__seed42__10s__confirmation",
+      "instance": "data/Gehring_Homberger/homberger_200_customer_instances/R1_2_1.TXT",
+      "seed": 42,
+      "ablation": "F101111",
+      "time_limit": 10,
+      "profiled": false,
+      "block": 1,
+      "position": 3,
+      "source_run": "R1_2_1__F101111__seed42__10s",
+      "phase_traced": false
+    },
+    {
+      "run": "R1_2_1__F111111__seed42__10s__confirmation",
+      "instance": "data/Gehring_Homberger/homberger_200_customer_instances/R1_2_1.TXT",
+      "seed": 42,
+      "ablation": "F111111",
+      "time_limit": 10,
+      "profiled": false,
+      "block": 1,
+      "position": 5,
+      "source_run": "R1_2_1__F111111__seed42__10s",
+      "phase_traced": false
+    },
+    {
+      "run": "R1_2_1__F000000__seed42__10s__confirmation",
+      "instance": "data/Gehring_Homberger/homberger_200_customer_instances/R1_2_1.TXT",
+      "seed": 42,
+      "ablation": "F000000",
+      "time_limit": 10,
+      "profiled": false,
+      "block": 1,
+      "position": 6,
+      "source_run": "R1_2_1__F000000__seed42__10s",
+      "phase_traced": false
+    },
+    {
+      "run": "c101__F110111__seed42__10s__confirmation",
+      "instance": "data/Solomon/c101.txt",
+      "seed": 42,
+      "ablation": "F110111",
+      "time_limit": 10,
+      "profiled": false,
+      "block": 2,
+      "position": 3,
+      "source_run": "c101__F110111__seed42__10s",
+      "phase_traced": false
+    },
+    {
+      "run": "c101__F111111__seed42__10s__confirmation",
+      "instance": "data/Solomon/c101.txt",
+      "seed": 42,
+      "ablation": "F111111",
+      "time_limit": 10,
+      "profiled": false,
+      "block": 2,
+      "position": 4,
+      "source_run": "c101__F111111__seed42__10s",
+      "phase_traced": false
+    },
+    {
+      "run": "c101__F000000__seed42__10s__confirmation",
+      "instance": "data/Solomon/c101.txt",
+      "seed": 42,
+      "ablation": "F000000",
+      "time_limit": 10,
+      "profiled": false,
+      "block": 2,
+      "position": 5,
+      "source_run": "c101__F000000__seed42__10s",
+      "phase_traced": false
+    },
+    {
+      "run": "c101__F111011__seed42__10s__confirmation",
+      "instance": "data/Solomon/c101.txt",
+      "seed": 42,
+      "ablation": "F111011",
+      "time_limit": 10,
+      "profiled": false,
+      "block": 2,
+      "position": 7,
+      "source_run": "c101__F111011__seed42__10s",
+      "phase_traced": false
+    }
+  ],
+  "files": {
+    "selection_plan.json": "e5f4994c9d3efc1b8427cf95079aa8f73accdfc7ab0aea880b11ab7ef154e02b",
+    "selection_summary.csv": "a2813bddf611946b1cc94980825f520f50f0f7f210f9b8d9000b61a23313f5ae",
+    "selection_audit.json": "a27161b846b5dd2b89ed4d51d96636ba6f062b68f33821b12fc0f92133d57772"
+  },
+  "instrumented": false
+}

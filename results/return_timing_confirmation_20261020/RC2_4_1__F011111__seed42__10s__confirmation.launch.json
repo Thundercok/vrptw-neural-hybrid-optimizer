@@ -1,0 +1,72 @@
+{
+  "command": [
+    "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/.venv/bin/python",
+    "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/scripts/benchmark.py",
+    "--instance",
+    "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/results/return_timing_confirmation_20261020/inputs/RC2_4_1.TXT",
+    "--seed",
+    "42",
+    "--time-limit",
+    "10",
+    "--budget-mode",
+    "wall-clock",
+    "--ablation",
+    "F011111",
+    "--output-json",
+    "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/results/return_timing_confirmation_20261020/RC2_4_1__F011111__seed42__10s__confirmation.json",
+    "--gnn-model",
+    "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/results/return_timing_confirmation_20261020/gnn_checkpoint.pt"
+  ],
+  "cwd": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/results/return_timing_confirmation_20261020/jobs/RC2_4_1__F011111__seed42__10s__confirmation/work",
+  "environment": {
+    "NUMBA_NUM_THREADS": "1",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1",
+    "NUMBA_CACHE_DIR": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/results/return_timing_confirmation_20261020/jobs/RC2_4_1__F011111__seed42__10s__confirmation/cache",
+    "NUMBA_DISABLE_JIT": "0",
+    "PYTHONHASHSEED": "42"
+  },
+  "work_entries_before": [],
+  "cache_entries_before": [],
+  "host_load_before": [
+    6.17333984375,
+    7.0146484375,
+    6.404296875
+  ],
+  "returncode": 0,
+  "timed_out": false,
+  "child_wall_sec_end_to_end": 20.62569116684608,
+  "child_cpu_sec": 17.556469,
+  "host_load_after": [
+    7.3515625,
+    7.23681640625,
+    6.49853515625
+  ],
+  "cache_files_after": {
+    "vrptw_48657ad716316237b1c4ef89baa5e0afc774616f/core._route_cost-87.py312.1.nbc": "df7a9126715a311d71df80aa8fe55b25a2c168dd55871d34b6d72d8012d1e811",
+    "vrptw_48657ad716316237b1c4ef89baa5e0afc774616f/core._route_cost-87.py312.nbi": "461aa8d2d0e2424e4d7b28196a9d44f3533288f1e268243c5931d90bea1e8ea3",
+    "vrptw_48657ad716316237b1c4ef89baa5e0afc774616f/core._route_ok-117.py312.1.nbc": "e4c5d187ac3fe8f5a3ce610b5da5824b3f2738663956d2594a83b82f9b9c7b62",
+    "vrptw_48657ad716316237b1c4ef89baa5e0afc774616f/core._route_ok-117.py312.nbi": "8f41d58fde2c74299e8fd05e39155bc63e005acdb08ef750551c1935e0085d43",
+    "vrptw_48657ad716316237b1c4ef89baa5e0afc774616f/core._route_violations-95.py312.1.nbc": "d24817d077ec7d04ceddbd5fc877c42239ef69c1abc49d49c179a78bffc0f72b",
+    "vrptw_48657ad716316237b1c4ef89baa5e0afc774616f/core._route_violations-95.py312.nbi": "2904600d274bbbd76be01b25df1e84e27bdc85b4f7dc7c6db32e58b922d0ca4f",
+    "vrptw_48657ad716316237b1c4ef89baa5e0afc774616f/heuristics._best_insert_in_route_numba-175.py312.1.nbc": "4b643d137537334051d54904c1f62fac2dd24916e31252821eadfcd3d5e84465",
+    "vrptw_48657ad716316237b1c4ef89baa5e0afc774616f/heuristics._best_insert_in_route_numba-175.py312.nbi": "5a807deacaf7602b0714ff8417a7cae0c63f82b646ed2446230087d8d4ada551",
+    "vrptw_48657ad716316237b1c4ef89baa5e0afc774616f/heuristics._best_insert_in_route_pruned_numba-230.py312.1.nbc": "be02521845ca49f9e847e91beba2f18fe99f5175d1fd8be929cc33358869c06b",
+    "vrptw_48657ad716316237b1c4ef89baa5e0afc774616f/heuristics._best_insert_in_route_pruned_numba-230.py312.nbi": "df03a3df0198234c328c25289554d0938c6bdbb0d320acebf5cfa61b128b005c",
+    "vrptw_48657ad716316237b1c4ef89baa5e0afc774616f/heuristics._best_insert_position_numba-136.py312.1.nbc": "4cd60449e6d4f822f1cd9f48d54d5c944720c9be418243a5e0e31cfcf8d85229",
+    "vrptw_48657ad716316237b1c4ef89baa5e0afc774616f/heuristics._best_insert_position_numba-136.py312.nbi": "83c51bbdd31e770a48e78989263e9a18f233680ccebaeba976d29e4c6368c966",
+    "vrptw_48657ad716316237b1c4ef89baa5e0afc774616f/heuristics._insert_costs_matrix_numba-275.py312.1.nbc": "76f52b87ada881832bc72f54f348115f5c060eba8261d40e2455eb6793dcc5ab",
+    "vrptw_48657ad716316237b1c4ef89baa5e0afc774616f/heuristics._insert_costs_matrix_numba-275.py312.nbi": "8573044e69fb42d6a934f0cd8b37e06753fbcbf66861839d7c48a0795cb13038",
+    "vrptw_48657ad716316237b1c4ef89baa5e0afc774616f/heuristics._insert_feasible_numba-98.py312.1.nbc": "e654383fa130b18f90d715c83d81f0614b3084ae292358cff7df5f21e3bd19e2",
+    "vrptw_48657ad716316237b1c4ef89baa5e0afc774616f/heuristics._insert_feasible_numba-98.py312.nbi": "542f9a3b05eeb2488989b5051217518cc508bfe0dbd70f98a4d7fb3bb53096b3",
+    "vrptw_48657ad716316237b1c4ef89baa5e0afc774616f/heuristics._route_timing_numba-9.py312.1.nbc": "7374907942544653fa6dc275fecd040dacb517236bf9ff5f31469c51cce7099e",
+    "vrptw_48657ad716316237b1c4ef89baa5e0afc774616f/heuristics._route_timing_numba-9.py312.nbi": "a9c84b22f3f0bb7b482023bc19887f376f69e2763aba97e8af6675c3c6fdd7f7",
+    "vrptw_48657ad716316237b1c4ef89baa5e0afc774616f/numba_kernels._compute_route_forward_slack_numba-20.py312.1.nbc": "64221428d12837d13c8e043c73f0ead9919acfb624dbb5631797a63e0f8914b6",
+    "vrptw_48657ad716316237b1c4ef89baa5e0afc774616f/numba_kernels._compute_route_forward_slack_numba-20.py312.nbi": "d1664217383e60f85b220d64d8c86578b13bf7d06fbcb91667698eaf3ef900b5",
+    "vrptw_48657ad716316237b1c4ef89baa5e0afc774616f/numba_kernels._two_opt_best_numba-63.py312.1.nbc": "2a2fe2759d33f6b51d03ecbf58b58e379c19b20c44627c29804cb45ebc628354",
+    "vrptw_48657ad716316237b1c4ef89baa5e0afc774616f/numba_kernels._two_opt_best_numba-63.py312.nbi": "049ed1cd6198f46c45143bda809fcc4e7d766e38ebc5adb6f5fab4ecb6dc4eea",
+    "vrptw_48657ad716316237b1c4ef89baa5e0afc774616f/operators._fts_best_insert_position_numba-789.py312.1.nbc": "21b4048e8e2895cd79bd262af471f889ce630d5ef836f28b417c8eaaabe2d74e",
+    "vrptw_48657ad716316237b1c4ef89baa5e0afc774616f/operators._fts_best_insert_position_numba-789.py312.nbi": "87b63a47a05484da04052885c5013bdfae821be1535cdbda32e234cb62aaeb11"
+  }
+}

@@ -1,0 +1,875 @@
+{
+  "previous_source_sha256": "0da5e64f306e9e8b992430b755901eb2d7d09861bae865be29ef3cf17ad69f32",
+  "source_sha256": "86bf7c352c4b506057cf9501629735d2a49c2acb1670a3bcee0736f8e1bb30b1",
+  "changed_source": [
+    "scripts/benchmark.py"
+  ],
+  "identical_jobs_inputs_model_budget_environment": true,
+  "config_representation_changes": [
+    {
+      "run": "RC2_4_1__F001111__seed42__10s",
+      "config": "requested_config",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "RC2_4_1__F001111__seed42__10s",
+      "config": "effective_config",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "RC2_4_1__F001111__seed42__10s",
+      "config": "macro",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "RC2_4_1__F001111__seed42__10s",
+      "config": "micro",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "RC2_4_1__F001111__seed42__10s",
+      "config": "lac",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "RC2_4_1__F001111__seed42__10s",
+      "config": "route_pool",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "RC2_4_1__F111011__seed42__10s",
+      "config": "requested_config",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "RC2_4_1__F111011__seed42__10s",
+      "config": "effective_config",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "RC2_4_1__F111011__seed42__10s",
+      "config": "macro",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "RC2_4_1__F111011__seed42__10s",
+      "config": "micro",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "RC2_4_1__F111011__seed42__10s",
+      "config": "lac",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "RC2_4_1__F111011__seed42__10s",
+      "config": "route_pool",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "RC2_4_1__F011111__seed42__10s",
+      "config": "requested_config",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "RC2_4_1__F011111__seed42__10s",
+      "config": "effective_config",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "RC2_4_1__F011111__seed42__10s",
+      "config": "macro",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "RC2_4_1__F011111__seed42__10s",
+      "config": "micro",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "RC2_4_1__F011111__seed42__10s",
+      "config": "lac",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "RC2_4_1__F011111__seed42__10s",
+      "config": "route_pool",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "RC2_4_1__F110000__seed42__10s",
+      "config": "requested_config",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "RC2_4_1__F110000__seed42__10s",
+      "config": "effective_config",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "RC2_4_1__F110000__seed42__10s",
+      "config": "macro",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "RC2_4_1__F110000__seed42__10s",
+      "config": "micro",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "RC2_4_1__F110000__seed42__10s",
+      "config": "lac",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "RC2_4_1__F110000__seed42__10s",
+      "config": "route_pool",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "RC2_4_1__F101111__seed42__10s",
+      "config": "requested_config",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "RC2_4_1__F101111__seed42__10s",
+      "config": "effective_config",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "RC2_4_1__F101111__seed42__10s",
+      "config": "macro",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "RC2_4_1__F101111__seed42__10s",
+      "config": "micro",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "RC2_4_1__F101111__seed42__10s",
+      "config": "lac",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "RC2_4_1__F101111__seed42__10s",
+      "config": "route_pool",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "RC2_4_1__F110111__seed42__10s",
+      "config": "requested_config",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "RC2_4_1__F110111__seed42__10s",
+      "config": "effective_config",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "RC2_4_1__F110111__seed42__10s",
+      "config": "macro",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "RC2_4_1__F110111__seed42__10s",
+      "config": "micro",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "RC2_4_1__F110111__seed42__10s",
+      "config": "lac",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "RC2_4_1__F110111__seed42__10s",
+      "config": "route_pool",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "RC2_4_1__F111111__seed42__10s",
+      "config": "requested_config",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "RC2_4_1__F111111__seed42__10s",
+      "config": "effective_config",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "RC2_4_1__F111111__seed42__10s",
+      "config": "macro",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "RC2_4_1__F111111__seed42__10s",
+      "config": "micro",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "RC2_4_1__F111111__seed42__10s",
+      "config": "lac",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "RC2_4_1__F111111__seed42__10s",
+      "config": "route_pool",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "RC2_4_1__F000000__seed42__10s",
+      "config": "requested_config",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "RC2_4_1__F000000__seed42__10s",
+      "config": "effective_config",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "RC2_4_1__F000000__seed42__10s",
+      "config": "macro",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "RC2_4_1__F000000__seed42__10s",
+      "config": "micro",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "RC2_4_1__F000000__seed42__10s",
+      "config": "lac",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "RC2_4_1__F000000__seed42__10s",
+      "config": "route_pool",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "R1_2_1__F111011__seed42__10s",
+      "config": "requested_config",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "R1_2_1__F111011__seed42__10s",
+      "config": "effective_config",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "R1_2_1__F111011__seed42__10s",
+      "config": "macro",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "R1_2_1__F111011__seed42__10s",
+      "config": "micro",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "R1_2_1__F111011__seed42__10s",
+      "config": "lac",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "R1_2_1__F111011__seed42__10s",
+      "config": "route_pool",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "R1_2_1__F011111__seed42__10s",
+      "config": "requested_config",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "R1_2_1__F011111__seed42__10s",
+      "config": "effective_config",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "R1_2_1__F011111__seed42__10s",
+      "config": "macro",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "R1_2_1__F011111__seed42__10s",
+      "config": "micro",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "R1_2_1__F011111__seed42__10s",
+      "config": "lac",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "R1_2_1__F011111__seed42__10s",
+      "config": "route_pool",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "R1_2_1__F110000__seed42__10s",
+      "config": "requested_config",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "R1_2_1__F110000__seed42__10s",
+      "config": "effective_config",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "R1_2_1__F110000__seed42__10s",
+      "config": "macro",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "R1_2_1__F110000__seed42__10s",
+      "config": "micro",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "R1_2_1__F110000__seed42__10s",
+      "config": "lac",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "R1_2_1__F110000__seed42__10s",
+      "config": "route_pool",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "R1_2_1__F101111__seed42__10s",
+      "config": "requested_config",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "R1_2_1__F101111__seed42__10s",
+      "config": "effective_config",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "R1_2_1__F101111__seed42__10s",
+      "config": "macro",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "R1_2_1__F101111__seed42__10s",
+      "config": "micro",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "R1_2_1__F101111__seed42__10s",
+      "config": "lac",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "R1_2_1__F101111__seed42__10s",
+      "config": "route_pool",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "R1_2_1__F110111__seed42__10s",
+      "config": "requested_config",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "R1_2_1__F110111__seed42__10s",
+      "config": "effective_config",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "R1_2_1__F110111__seed42__10s",
+      "config": "macro",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "R1_2_1__F110111__seed42__10s",
+      "config": "micro",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "R1_2_1__F110111__seed42__10s",
+      "config": "lac",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "R1_2_1__F110111__seed42__10s",
+      "config": "route_pool",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "R1_2_1__F111111__seed42__10s",
+      "config": "requested_config",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "R1_2_1__F111111__seed42__10s",
+      "config": "effective_config",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "R1_2_1__F111111__seed42__10s",
+      "config": "macro",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "R1_2_1__F111111__seed42__10s",
+      "config": "micro",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "R1_2_1__F111111__seed42__10s",
+      "config": "lac",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "R1_2_1__F111111__seed42__10s",
+      "config": "route_pool",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "R1_2_1__F000000__seed42__10s",
+      "config": "requested_config",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "R1_2_1__F000000__seed42__10s",
+      "config": "effective_config",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "R1_2_1__F000000__seed42__10s",
+      "config": "macro",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "R1_2_1__F000000__seed42__10s",
+      "config": "micro",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "R1_2_1__F000000__seed42__10s",
+      "config": "lac",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "R1_2_1__F000000__seed42__10s",
+      "config": "route_pool",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "R1_2_1__F001111__seed42__10s",
+      "config": "requested_config",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "R1_2_1__F001111__seed42__10s",
+      "config": "effective_config",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "R1_2_1__F001111__seed42__10s",
+      "config": "macro",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "R1_2_1__F001111__seed42__10s",
+      "config": "micro",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "R1_2_1__F001111__seed42__10s",
+      "config": "lac",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "R1_2_1__F001111__seed42__10s",
+      "config": "route_pool",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "c101__F011111__seed42__10s",
+      "config": "requested_config",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "c101__F011111__seed42__10s",
+      "config": "effective_config",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "c101__F011111__seed42__10s",
+      "config": "macro",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "c101__F011111__seed42__10s",
+      "config": "micro",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "c101__F011111__seed42__10s",
+      "config": "lac",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "c101__F011111__seed42__10s",
+      "config": "route_pool",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "c101__F110000__seed42__10s",
+      "config": "requested_config",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "c101__F110000__seed42__10s",
+      "config": "effective_config",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "c101__F110000__seed42__10s",
+      "config": "macro",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "c101__F110000__seed42__10s",
+      "config": "micro",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "c101__F110000__seed42__10s",
+      "config": "lac",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "c101__F110000__seed42__10s",
+      "config": "route_pool",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "c101__F101111__seed42__10s",
+      "config": "requested_config",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "c101__F101111__seed42__10s",
+      "config": "effective_config",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "c101__F101111__seed42__10s",
+      "config": "macro",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "c101__F101111__seed42__10s",
+      "config": "micro",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "c101__F101111__seed42__10s",
+      "config": "lac",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "c101__F101111__seed42__10s",
+      "config": "route_pool",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "c101__F110111__seed42__10s",
+      "config": "requested_config",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "c101__F110111__seed42__10s",
+      "config": "effective_config",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "c101__F110111__seed42__10s",
+      "config": "macro",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "c101__F110111__seed42__10s",
+      "config": "micro",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "c101__F110111__seed42__10s",
+      "config": "lac",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "c101__F110111__seed42__10s",
+      "config": "route_pool",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "c101__F111111__seed42__10s",
+      "config": "requested_config",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "c101__F111111__seed42__10s",
+      "config": "effective_config",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "c101__F111111__seed42__10s",
+      "config": "macro",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "c101__F111111__seed42__10s",
+      "config": "micro",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "c101__F111111__seed42__10s",
+      "config": "lac",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "c101__F111111__seed42__10s",
+      "config": "route_pool",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "c101__F000000__seed42__10s",
+      "config": "requested_config",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "c101__F000000__seed42__10s",
+      "config": "effective_config",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "c101__F000000__seed42__10s",
+      "config": "macro",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "c101__F000000__seed42__10s",
+      "config": "micro",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "c101__F000000__seed42__10s",
+      "config": "lac",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "c101__F000000__seed42__10s",
+      "config": "route_pool",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "c101__F001111__seed42__10s",
+      "config": "requested_config",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "c101__F001111__seed42__10s",
+      "config": "effective_config",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "c101__F001111__seed42__10s",
+      "config": "macro",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "c101__F001111__seed42__10s",
+      "config": "micro",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "c101__F001111__seed42__10s",
+      "config": "lac",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "c101__F001111__seed42__10s",
+      "config": "route_pool",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "c101__F111011__seed42__10s",
+      "config": "requested_config",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "c101__F111011__seed42__10s",
+      "config": "effective_config",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "c101__F111011__seed42__10s",
+      "config": "macro",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "c101__F111011__seed42__10s",
+      "config": "micro",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "c101__F111011__seed42__10s",
+      "config": "lac",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    },
+    {
+      "run": "c101__F111011__seed42__10s",
+      "config": "route_pool",
+      "before": "./data/Solomon",
+      "after": "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/data/Solomon"
+    }
+  ],
+  "unexpected_changes": []
+}

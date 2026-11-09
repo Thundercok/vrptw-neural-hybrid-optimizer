@@ -1,0 +1,18 @@
+[
+  "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/.venv/bin/python",
+  "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/scripts/benchmark_supervised.py",
+  "--instance",
+  "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/results/supervisor_pilot_20261020/inputs/R1_2_1.TXT",
+  "--ablation",
+  "F111111",
+  "--seed",
+  "42",
+  "--time-limit",
+  "10",
+  "--session-dir",
+  "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/results/supervisor_pilot_20261020/R1_2_1__F111111__seed42__10s__supervised/session",
+  "--output-json",
+  "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/results/supervisor_pilot_20261020/R1_2_1__F111111__seed42__10s__supervised/result.json",
+  "--gnn-model",
+  "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/results/supervisor_pilot_20261020/gnn_checkpoint.pt"
+]

@@ -1,0 +1,16 @@
+[
+  "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/.venv/bin/python",
+  "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/scripts/benchmark.py",
+  "--instance",
+  "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/results/gnn_retraining_20261017/instances/train/SYN_TRAIN_C_200_001.txt",
+  "--ablation",
+  "alns",
+  "--seed",
+  "42",
+  "--time-limit",
+  "10.0",
+  "--budget-mode",
+  "wall-clock",
+  "--output-json",
+  "/Users/thundercock2/Documents/Github/vrptw-neural-hybrid-solver/VRPTW-Research-Optimization/results/gnn_retraining_20261017/targets/train/SYN_TRAIN_C_200_001.json"
+]

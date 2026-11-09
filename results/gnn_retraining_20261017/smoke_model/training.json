@@ -1,0 +1,34 @@
+{
+  "status": "completed",
+  "smoke_only": true,
+  "seed": 42,
+  "epochs": 1,
+  "learning_rate": 0.001,
+  "device": "cpu",
+  "torch_threads": 1,
+  "python": "3.12.6",
+  "torch": "2.11.0",
+  "numpy": "2.2.6",
+  "manifest_sha256": "8eb73a263102615f2ea3cab0dc9b76f0f5e6e90e475e5c8aa7fbb1a03f25b7d9",
+  "source_sha256": "948698b77671d6bbff31763f626f437e9594b64d948c545f14082d2974da437a",
+  "target_hashes": {
+    "smoke_targets/train/SYN_TRAIN_C_100_000.json": "0977ae3805c79f5f7783020644445d1d5518e9b15389d5d971e2728dd2b7e2f7",
+    "smoke_targets/validation/SYN_VALIDATION_C_100_000.json": "a37851d9e5bea42246d11f777eb0b1bcc84faf5c431f45d36639144dde28a522"
+  },
+  "teacher": {
+    "ablation": "alns",
+    "seed": 42,
+    "time_limit": 1.0,
+    "source_sha256": "948698b77671d6bbff31763f626f437e9594b64d948c545f14082d2974da437a"
+  },
+  "training_instances": [
+    "SYN_TRAIN_C_100_000"
+  ],
+  "validation_instances": [
+    "SYN_VALIDATION_C_100_000"
+  ],
+  "selection": "minimum full-negative validation loss; no test labels or test loss",
+  "best_epoch": 1,
+  "best_validation_loss": 1.6731430292129517,
+  "checkpoint_sha256": "1cd48aa4f7c63b226bf383523841b72cdcb40d9b00e0637df001c6e659b4cf0b"
+}

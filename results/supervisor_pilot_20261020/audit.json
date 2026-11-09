@@ -1,0 +1,104 @@
+{
+  "status": "passed",
+  "complete": true,
+  "source_sha256": "386195f8b5896380aee3670a5eb72e0fda7d72a15dcb4e22082558bb47e551b2",
+  "verified_runs": [
+    {
+      "run": "R1_2_1__F101111__seed42__10s__supervised",
+      "result_sha256": "85e84e461dbc60cf245f9601cbd68771de10252068ed77ed92650c09eadc638b",
+      "provenance_ok": true,
+      "binding_ok": true,
+      "cold_ok": true,
+      "clock_ok": true,
+      "certification_ok": true,
+      "cleanup_ok": true,
+      "budget_ok": true,
+      "errors": []
+    },
+    {
+      "run": "R1_2_1__F111111__seed42__10s__supervised",
+      "result_sha256": "60b577dfbaf2a2189a2eb05101e7ec9595aee8f7d18188ab8f784721f452177a",
+      "provenance_ok": true,
+      "binding_ok": true,
+      "cold_ok": true,
+      "clock_ok": true,
+      "certification_ok": true,
+      "cleanup_ok": true,
+      "budget_ok": true,
+      "errors": []
+    },
+    {
+      "run": "R1_2_1__F000000__seed42__10s__supervised",
+      "result_sha256": "fca4d5b97b847565249df8e832cd7eb9ea15e15906a86606ec19aa779a47a37f",
+      "provenance_ok": true,
+      "binding_ok": true,
+      "cold_ok": true,
+      "clock_ok": true,
+      "certification_ok": true,
+      "cleanup_ok": true,
+      "budget_ok": true,
+      "errors": []
+    },
+    {
+      "run": "c101__F000000__seed42__10s__supervised",
+      "result_sha256": "a809a2fa75ddf16a9f758f8cd771d72e8f7e288528f751b3bea1524d2eb61f9a",
+      "provenance_ok": true,
+      "binding_ok": true,
+      "cold_ok": true,
+      "clock_ok": true,
+      "certification_ok": true,
+      "cleanup_ok": true,
+      "budget_ok": true,
+      "errors": []
+    },
+    {
+      "run": "c101__F111011__seed42__10s__supervised",
+      "result_sha256": "65d9ffe06c044afcb8077d986a961a9cf5fddc9cfb98fd36cba32a92e0bab266",
+      "provenance_ok": true,
+      "binding_ok": true,
+      "cold_ok": true,
+      "clock_ok": true,
+      "certification_ok": true,
+      "cleanup_ok": true,
+      "budget_ok": true,
+      "errors": []
+    },
+    {
+      "run": "c101__alns__seed42__10s__supervised",
+      "result_sha256": "a33d427455d45fb365b3486c24858fd01505aacd8c38b0856f78a08ed735adf9",
+      "provenance_ok": true,
+      "binding_ok": true,
+      "cold_ok": true,
+      "clock_ok": true,
+      "certification_ok": true,
+      "cleanup_ok": true,
+      "budget_ok": true,
+      "errors": []
+    },
+    {
+      "run": "RC2_4_1__F111111__seed42__10s__supervised",
+      "result_sha256": "cbf471edb835f25c227b6a4ccc2722b230a8563e83d39eda2124add90aea81ad",
+      "provenance_ok": true,
+      "binding_ok": true,
+      "cold_ok": true,
+      "clock_ok": true,
+      "certification_ok": true,
+      "cleanup_ok": true,
+      "budget_ok": true,
+      "errors": []
+    },
+    {
+      "run": "RC2_4_1__alns__seed42__10s__supervised",
+      "result_sha256": "954a742809a9839d21fcb65ace7d7e7f73191111cbbc20e1c0bd00725bf02238",
+      "provenance_ok": true,
+      "binding_ok": true,
+      "cold_ok": true,
+      "clock_ok": true,
+      "certification_ok": true,
+      "cleanup_ok": true,
+      "budget_ok": true,
+      "errors": []
+    }
+  ],
+  "limits": "Native supervisor engineering pilot; no quality, ranking, hard-real-time or causal before/after claim"
+}
