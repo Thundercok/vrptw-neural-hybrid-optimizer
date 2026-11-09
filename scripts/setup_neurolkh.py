@@ -39,7 +39,14 @@ def main():
     if (root / "assets.json").exists():
         parser.error("Build manifest exists; use a new root for a new build")
     (root / "SRC/OBJ").mkdir(exist_ok=True)
-    command = ["make", "-B", "-C", "SRC", "-j2"]
+    command = [
+        "make",
+        "-B",
+        "-C",
+        "SRC",
+        "-j2",
+        "CFLAGS=-O3 -Wall -IINCLUDE -DTWO_LEVEL_TREE -g -fcommon",
+    ]
     with (root / "build.stdout.log").open("w") as stdout, (root / "build.stderr.log").open("w") as stderr:
         try:
             subprocess.run(command, cwd=root, stdout=stdout, stderr=stderr, check=True)
