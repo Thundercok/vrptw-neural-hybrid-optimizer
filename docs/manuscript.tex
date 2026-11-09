@@ -827,14 +827,14 @@ A missing cell caused by infrastructure failure is not an algorithm outcome, so 
 \label{tab:primary}
 \centering
 \scriptsize
-\setlength{\tabcolsep}{3pt}
+\setlength{\tabcolsep}{1.5pt}
 \begin{tabular}{l c c c}
 \toprule
-\textbf{Comparator} & \textbf{Fleet score} & \textbf{Seed pairs W/T/L} & \textbf{Matched TD gap (\%)} \\
+\textbf{Comparator} & \textbf{Fleet score} & \makecell{\textbf{Seed pairs}\\\textbf{W/T/L}} & \makecell{\textbf{Matched TD}\\\textbf{gap (\%)}} \\
 \midrule
-ALNS-Base & \PENDING{} & \PENDING{} & \PENDING{} \\
-PyVRP-ILS & \PENDING{} & \PENDING{} & \PENDING{} \\
-NeuroLKH-adapted & \PENDING{} & \PENDING{} & \PENDING{} \\
+ALNS-Base & $-0.027$ [$-0.065$, $0.011$] & 4/352/14 & $+0.04$ [$-0.61$, $0.66$] \\
+PyVRP-ILS & $+0.008$ [$-0.098$, $0.117$] & 37/299/34 & $+0.95$ (undefined) \\
+NeuroLKH-adapted & $-0.068$ [$-0.142$, $0.033$] & 16/313/41 & $-3.57$ (undefined) \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -849,7 +849,32 @@ NeuroLKH-adapted & \PENDING{} & \PENDING{} & \PENDING{} \\
 \label{sec:ablation_results}
 The ablation uses 18 instances (the first instance of each of the six families at each size), five seeds, and budgets of 60 and 300\,s. Each of six factors (GEC, SP, Macro, Micro, LAC, GNN) is set to its low level in the full configuration and to its high level in the bare configuration. Low levels are not simple removals: GEC keeps direct insertion, SP disables every recombination query, Macro and Micro use rule-based policies in place of the DDQNs, LAC uses Simulated Annealing alone, and GNN runs without a heatmap. A $2\times2$ design contrasts the learning bundle (Macro, Micro, LAC, GNN) with the heuristic bundle (GEC, SP). The case with all six factors low shares the search infrastructure, including the tail phases, and is not ALNS-Base. In the rerun the Guided Ejection Search phase is a fixed layer in all cases, so effects are measured on top of it.
 
-\PENDING{table and text: the eight primary contrasts at 300\,s with $99.38\%$ intervals, and the 60\,s and exploratory contrasts as descriptive.}
+\begin{table}[!t]
+\caption{Factorial Ablation at 300\,s: Primary Contrasts (Intervals at 99.38\%)}
+\label{tab:ablation}
+\centering
+\scriptsize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{l c c}
+\toprule
+\textbf{Contrast} & \textbf{Fleet score} & \textbf{Matched TD gap (\%)} \\
+\midrule
+GEC full context & $+0.000$ [$-0.110$, $0.072$] & $-0.17$ [$-1.22$, $0.54$] \\
+SP full context & $-0.044$ [$-0.181$, $0.067$] & $+0.25$ [$-1.17$, $2.01$] \\
+Macro full context & $-0.022$ [$-0.120$, $0.043$] & $-0.27$ [$-1.60$, $0.71$] \\
+Micro full context & $+0.044$ [$-0.095$, $0.201$] & $-1.29$ [$-3.98$, $0.57$] \\
+LAC full context & $-0.022$ [$-0.098$, $0.000$] & $-0.32$ [$-1.08$, $0.22$] \\
+GNN full context & $-0.044$ [$-0.167$, $0.067$] & $+0.24$ [$-1.08$, $1.84$] \\
+heuristic at no learning & $-0.044$ [$-0.216$, $0.067$] & $+0.52$ [$-0.50$, $1.76$] \\
+learning at heuristic & $+0.022$ [$-0.111$, $0.152$] & $-0.08$ [$-1.55$, $1.86$] \\
+\bottomrule
+\end{tabular}
+
+\vspace{2pt}
+{\scriptsize Positive fleet scores and negative gaps favor the component or bundle named. All 32 contrasts are in the supplement.\par}
+\end{table}
+
+\PENDING{text for Table~\ref{tab:ablation}: the eight primary contrasts at 300\,s with $99.38\%$ intervals, and the 60\,s and exploratory contrasts as descriptive.}
 
 \subsection{Instance Families (RQ5)}
 \label{sec:family_results}
