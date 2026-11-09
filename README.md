@@ -5,7 +5,7 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Status](https://img.shields.io/badge/status-research%20reproducible-purple.svg)](docs/manuscript.pdf)
 
-A hybrid **Deep Reinforcement Learning (Dueling DDQN)** and **Adaptive Large Neighborhood Search (ALNS)** solver with exact **MILP Set-Partitioning** post-optimization for the Vehicle Routing Problem with Time Windows ($\text{VRPTW}$). Constraint feasibility checks and route cost evaluations are compiled to native machine code via **Numba JIT** kernels.
+A hybrid **Deep Reinforcement Learning (Dueling DDQN)** and **Adaptive Large Neighborhood Search (ALNS)** solver with time-limited **MILP set partitioning** (HiGHS) for the Vehicle Routing Problem with Time Windows ($\text{VRPTW}$). Constraint feasibility checks and route cost evaluations are compiled to native machine code via **Numba JIT** kernels.
 
 [Paper Manuscript](docs/manuscript.pdf) | [LaTeX Source](docs/manuscript.tex) | [Poster](posters/Poster_VRPTW_NCKHSV_2026.pdf) | [Official BKS Reference](data/reference/sintef_official_bks.json) | [Evidence & Verification Index](docs/evidence_index.md)
 
@@ -26,44 +26,36 @@ $$\tilde{E}_u = \max\left(e_u, E_i + s_i + t_{iu}\right) \le l_u \quad \wedge \q
 ### Dueling DDQN Operator Selection & Set-Partitioning
 At iteration $t$, the agent observes search telemetry $s_t \in \mathbb{R}^d$ and selects a composite destroy-repair operator pair $a_t = (d_{\text{op}}, r_{\text{op}}) \in \mathcal{A}_{\text{ops}}$ using a Dueling Double Deep Q-Network:
 $$Q(s_t, a_t; \theta, \alpha, \beta) = V(s_t; \theta, \beta) + \left( A(s_t, a_t; \theta, \alpha) - \frac{1}{|\mathcal{A}_{\text{ops}}|} \sum_{a' \in \mathcal{A}_{\text{ops}}} A(s_t, a'; \theta, \alpha) \right)$$
-Unique feasible routes generated during the search are hashed into an elite pool $\mathcal{R}$, periodically refined via an exact MILP Set-Partitioning model:
+Unique feasible routes generated during the search are hashed into an elite pool $\mathcal{R}$, periodically recombined by a set-partitioning MILP, solved by HiGHS under a per-query time limit:
 $$\min_{y_r \in \{0, 1\}} \sum_{r \in \mathcal{R}} c_r y_r \quad \text{s.t.} \quad \sum_{r \in \mathcal{R}} a_{ir} y_r = 1 \quad \forall i \in \mathcal{V}_c$$
 
 ---
 
-## 2. Empirical Verification under Strict Cold-Starts
+## 2. Evaluation
 
-All evaluations are executed under **strict independent cold-starts** starting from `build_greedy` in isolated temporary directory scopes. Standalone solver runs never share archives or warm-start states.
+### Current results: wall-clock rerun (November 2026)
 
-### Benchmark Protocols & Provenance
+The revised manuscript reports one rerun in which every solver had the same wall-clock cutoff (10, 60 and 300 s) on 74 instances (56 Solomon-100, 12 Homberger-200, 6 Homberger-400) with five seeds. All solvers ran on the same machine, and all cases of an instance, seed and cutoff ran together. A run counts only if its solution was certified feasible on the original instance before the cutoff. The learned controllers start from random weights in every run, with nothing carried over between runs; only the GNN edge model is a frozen pretrained checkpoint. The analysis plan, and the rule for adopting the Guided Ejection Search phase, were fixed before any result was read.
 
-1. **Fixed-Iteration Comparative Benchmark** ($I = 2000$, $N_{\text{seeds}} = 10$, seeds 42–51):
-   - Isolates search guidance and operator selection efficiency under matched iteration budgets.
-   - Raw per-instance runs are archived in `results/ultimate-publication-suite/combined_clean.csv`.
-   - Statistical significance is computed via two-sided non-parametric **Wilcoxon signed-rank tests** with rank-biserial correlation ($r_{\text{rb}}$) and Bonferroni multiple testing correction ($\alpha_{\text{adj}} = 0.0167$).
+Primary comparisons at 300 s. The fleet score is the mean over seed pairs of sign(NV of the comparator − NV of the proposed configuration), so a positive score favors the proposed configuration. Intervals are 98.33% (three comparisons). Wins/ties/losses count seed pairs from the proposed configuration's side. The distance gap is computed only where fleets matched, and a negative gap favors the proposed configuration.
 
-2. **Archived Anytime Benchmark Data**:
-   - The committed anytime observations are stored in [`results/extended_anytime_300s/anytime_raw.csv`](results/extended_anytime_300s/anytime_raw.csv).
-   - The checked-in artifact is the 300-second dataset; it should not be described as a completed 900-second sweep.
-   - The later resubmission evaluation contract is a preparation draft, not a completed replication. See [`docs/resubmission_protocol.md`](docs/resubmission_protocol.md) and the [Evidence & Verification Index](docs/evidence_index.md) for scope and limitations.
+| Comparator | Fleet score [98.33% interval] | Wins/ties/losses | Distance gap where fleets matched (%) |
+| :--- | :---: | :---: | :---: |
+| ALNS-Base | −0.027 [−0.065, 0.011] | 4/352/14 | +0.04 [−0.61, 0.66] |
+| PyVRP-ILS 0.14.1 | +0.008 [−0.098, 0.117] | 37/299/34 | +0.95 (interval undefined) |
+| NeuroLKH, adapted | −0.068 [−0.142, 0.033] | 16/313/41 | −3.57 (interval undefined) |
 
-### Representative Scale-Aware Comparison (Fixed-Iteration Benchmark)
+- **At 300 s, the proposed configuration did not differ detectably from any of the three comparators on fleet size.** Every interval contains zero.
+- **Guided Ejection Search.** This classical route-minimization phase was added after test results had been seen, so its inclusion was not an independent test. A rule fixed in advance kept it: its fleet score against the same configuration without it was +0.062 [0.001, 0.123] at 98.75%. Leaving out the blocks that ran under high machine load gives [−0.014, 0.123].
+- **Ablation.** On 18 instances, none of the eight primary factorial contrasts at 300 s excluded zero (99.38% intervals), so the ablation does not establish a benefit of the learned components at that budget.
+- **Short budgets (descriptive, unadjusted 95% intervals).** At 10 s the proposed configuration used more vehicles than PyVRP-ILS (−0.522 [−0.654, −0.354]) and NeuroLKH-adapted (−0.573 [−0.690, −0.372]). At 60 s it did not differ detectably from either.
+- **900 s.** This stage was not completed when this section was written, and no 900 s result is reported.
 
-| Benchmark Scale | Instance | BKS NV | ALNS-Base ($\mu \pm \sigma$) | Hybrid-DDQN ($\mu \pm \sigma$) | Wilcoxon $p$-value | Effect Size ($r_{\text{rb}}$) | Statistical Verdict |
-| :--- | :--- | :---: | :---: | :---: | :---: | :---: | :--- |
-| **Solomon ($N=100$)** | `RC101` | 14 | $15.00 \pm 0.00$ | $15.00 \pm 0.00$ | — | $0.00$ | Zero-gap fleet saturation |
-| **Homberger ($N=200$)** | `c1_2_1` | 20 | $20.00 \pm 0.00$ | $20.00 \pm 0.00$ | — | $0.00$ | NV-Floor reached; **$-2.84\%$ TD** ($p < 0.05$) |
-| **Homberger ($N=200$)** | `r1_2_1` | 20 | $20.00 \pm 0.00$ | $20.00 \pm 0.00$ | — | $0.00$ | NV-Floor reached; **$-3.15\%$ TD** ($p < 0.05$) |
-| **Homberger ($N=400$)** | **`c2_4_1`** | 10 | $13.00 \pm 0.00$ | **$12.20 \pm 0.42$** | **$p = 0.0078^{**}$** | $+1.00$ | **Significant fleet reduction** ($-0.80$ veh) |
-| **Homberger ($N=400$)** | **`r2_4_1`** | 4 | $8.80 \pm 0.42$ | **$8.10 \pm 0.32$** | **$p = 0.0156^{*}$** | $+0.87$ | **Significant fleet reduction** ($-0.70$ veh) |
-| **Homberger ($N=400$)** | **`rc2_4_1`** | 10 | $12.80 \pm 0.42$ | $12.50 \pm 0.53$ | $p = 0.3750$ | $+0.33$ | Moderate gain, not significant |
+The analysis code is [`scripts/analyze_ges_rerun.py`](scripts/analyze_ges_rerun.py). The rerun's records are not yet in this repository.
 
-*(Significance: $^{*}p < 0.05$, $^{**}p < 0.01$. Note on Travel Distance fairness: TD comparisons are reported only when vehicle counts match ($NV = NV_{\text{BKS}}$ or $NV_{\text{solver}} = NV_{\text{baseline}}$); extra vehicles provide artificial routing capacity that distorts distance comparisons).*
+### Withdrawn results
 
-### Key Empirical Findings
-1. **200-Customer Scale (NV-Flattening & TD Dominance)**: Both solvers converge to the same vehicle count floor ($NV=20$). Hybrid-DDQN advantage is characterized by consistency ($0\%$ to $20\%$ degradation rate vs $30\%$ to $70\%$ for ALNS-Base) and travel distance reduction of **$1.75\%$ to $4.07\%$** at matched NV.
-2. **400-Customer Scale (Suboptimal Graceful Degradation)**: Deep reinforcement learning operator selection mitigates stagnation in severe local minima, achieving statistically significant fleet reductions over ALNS-Base on clustered (`c2_4_1`, $-0.80$ veh, $p=0.0078$) and random (`r2_4_1`, $-0.70$ veh, $p=0.0156$) instances.
-3. **Computational Trade-off**: Hybrid-DDQN is a solution-quality-maximizing metaheuristic that trades computational budget for routing improvements ($1.5\times$ to $4\times$ runtime on Solomon-100, $1.3\times$ to $4.6\times$ on Homberger-200).
+Earlier versions of this README and of the manuscript reported comparisons at a fixed budget of 2000 iterations, with Wilcoxon tests, and claimed significant fleet reductions on some Homberger-400 instances. A fixed iteration count does not give solvers equal computing time, so the revised manuscript withdraws those results. They should not be cited or compared with the rerun. The raw files remain in `results/ultimate-publication-suite/` and `results/extended_anytime_300s/` for the record.
 
 ---
 
@@ -130,15 +122,17 @@ To verify reported statistics and tables directly from the recorded benchmark ou
 # 1. Run paper integrity auditor (checks all tables and empirical claims)
 uv run python scripts/audit_paper_integrity.py
 
-# 2. Run revision analysis across the closed wall-clock sweep (74 instances, 4 cutoffs, 5 seeds)
-uv run python scripts/analyze_revision.py
+# 2. Analysis of the November 2026 wall-clock rerun (needs the rerun records, not yet published)
+uv run python scripts/analyze_ges_rerun.py
 ```
+
+`scripts/analyze_revision.py` analyzes an earlier wall-clock sweep, whose cells ran at different machine speeds. The manuscript does not use it for any claim.
 
 For the exact input files, scope distinctions, and audit limits, see the [Evidence & Verification Index](docs/evidence_index.md).
 
-### Executing Independent Cold-Start Benchmarks from Scratch
+### Legacy fixed-iteration benchmarks
 
-To re-run the benchmark sweeps from scratch under strictly isolated environments:
+These commands reproduce the withdrawn fixed-iteration results. They are kept for the record and are not the paper's evaluation protocol.
 
 ```bash
 # Fast smoke verification (representative instances, 3 seeds)
