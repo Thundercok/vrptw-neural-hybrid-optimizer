@@ -14,20 +14,20 @@ noise = re.compile(r"^(https://mail\.google|\d+/\d+/\d+, .*Gmail)")
 
 
 def concerns(after, count):
-    start = next(i for i, l in enumerate(lines) if l.startswith(after)) + 1
+    start = next(i for i, line in enumerate(lines) if line.startswith(after)) + 1
     items, cur = [], None
-    for l in lines[start:]:
-        if noise.match(l):
+    for line in lines[start:]:
+        if noise.match(line):
             continue
-        if l.startswith("Additional Questions"):
+        if line.startswith("Additional Questions"):
             break
-        m = re.match(r"^(\d+)\. (.*)", l)
+        m = re.match(r"^(\d+)\. (.*)", line)
         if m and int(m.group(1)) == len(items) + (1 if cur is None else 2):
             if cur is not None:
                 items.append(cur)
             cur = m.group(2)
         elif cur is not None:
-            cur = cur + l if cur.endswith("-") else cur + " " + l
+            cur = cur + line if cur.endswith("-") else cur + " " + line
     items.append(cur)
     assert len(items) == count, (after, len(items))
     return [i.replace(r"\(O(1)\)", "O(1)") for i in items]

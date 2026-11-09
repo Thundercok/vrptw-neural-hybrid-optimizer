@@ -70,9 +70,12 @@ class FakeLac:
 
 def test_lac_activity_separates_warmup_and_classifier_approvals():
     m = load("measure_component_cost")
-    lac = FakeLac()
+    class ReplacedAfterWrapping(FakeLac):
+        pass
+
     activity = m.LacActivity()
-    activity.wrap(lac)
+    activity.wrap(ReplacedAfterWrapping)
+    lac = ReplacedAfterWrapping()  # solve() builds a new instance after instrumentation
     for _ in range(4):
         lac.decide(None, 1.0, tau=0.5, sa_probability=0.0)
     assert activity.counts == {"consulted": 4, "warmup": 1, "classifier_approved": 1, "accepted": 2}

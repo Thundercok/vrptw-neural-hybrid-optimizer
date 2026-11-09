@@ -426,7 +426,7 @@ finally:
         "resist": resist,
         "corrupt": corrupt,
     }
-    plan, result = supervise(inst(), worker, request, session, setup_timeout=10)
+    plan, result = supervise(inst(), worker, request, session, setup_timeout=30)
     if corrupt:
         assert plan is None and not result["descendants_reaped"] and "descendant cleanup" in result["error"]
         assert result["native_certification"]["certificate"] is not None

@@ -56,12 +56,13 @@ class LacActivity:
     def __init__(self):
         self.counts = Counter()
 
-    def wrap(self, lac):
-        original = lac.decide
+    def wrap(self, lac_class):
+        """Patch the class: solve() replaces solver.lac with a new instance, so patching the instance loses every count."""
+        original = lac_class.decide
 
         @wraps(original)
-        def decide(feats, cur_best_cost, tau=None, *, sa_probability=None):
-            accepted, p = original(feats, cur_best_cost, tau=tau, sa_probability=sa_probability)
+        def decide(lac, feats, cur_best_cost, tau=None, *, sa_probability=None):
+            accepted, p = original(lac, feats, cur_best_cost, tau=tau, sa_probability=sa_probability)
             self.counts["consulted"] += 1
             if lac.step < lac.cfg.lac_warmup:
                 self.counts["warmup"] += 1
@@ -70,17 +71,18 @@ class LacActivity:
             self.counts["accepted"] += bool(accepted)
             return accepted, p
 
-        lac.decide = decide
+        lac_class.decide = decide
 
 
 def instrument(solver, repair_list, timers: Timers, activity: LacActivity):
+    lac_class = type(solver.lac)
     for owner, key, name in (
         (solver.ctrl, "act", "macro_inference"),
         (solver.ctrl, "train_step", "macro_training"),
         (solver.op_ctrl, "act", "micro_inference"),
         (solver.op_ctrl, "train_step", "micro_training"),
-        (solver.lac, "decide", "lac_inference"),
-        (solver.lac, "_train", "lac_training"),
+        (lac_class, "decide", "lac_inference"),
+        (lac_class, "_train", "lac_training"),
         (solver, "_destroy", "destroy"),
         (solver, "_local_search", "local_search"),
         (solver, "_try_gec_route_reduction", "gec"),
@@ -91,7 +93,7 @@ def instrument(solver, repair_list, timers: Timers, activity: LacActivity):
     ):
         if hasattr(owner, key):
             timers.patch(owner, key, name)
-    activity.wrap(solver.lac)
+    activity.wrap(lac_class)
     for i, operator in enumerate(repair_list):
         repair_list[i] = timers.wrap(operator, "repair")
 

@@ -25,6 +25,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 sys.path.insert(0, str(ROOT / "scripts"))
 import analyze_revision as revision  # noqa: E402
+
 from vrptw import sweep_statistics as stats  # noqa: E402
 
 RUN = ROOT / "results/ges_sweep_20261102"

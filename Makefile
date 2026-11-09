@@ -19,7 +19,7 @@ $(RESEARCH_TARGETS): research-%:
 	PYTHONPATH=./src uv run python scripts/research_pipeline.py --stage $*
 
 test:
-	PYTHONPATH=./src uv run --extra dev pytest tests/ -v
+	PYTHONPATH=./src uv run --all-extras pytest tests/ -v
 
 # Solver commands
 train-gnn:
