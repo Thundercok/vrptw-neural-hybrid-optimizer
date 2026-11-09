@@ -41,7 +41,18 @@ def main():
     (root / "SRC/OBJ").mkdir(exist_ok=True)
     command = ["make", "-B", "-C", "SRC", "-j2"]
     with (root / "build.stdout.log").open("w") as stdout, (root / "build.stderr.log").open("w") as stderr:
-        subprocess.run(command, cwd=root, stdout=stdout, stderr=stderr, check=True)
+        try:
+            subprocess.run(command, cwd=root, stdout=stdout, stderr=stderr, check=True)
+        except subprocess.CalledProcessError as exc:
+            stdout.flush()
+            stderr.flush()
+            sys.stderr.write("=== NeuroLKH build.stdout.log ===\n")
+            if (root / "build.stdout.log").exists():
+                sys.stderr.write((root / "build.stdout.log").read_text())
+            sys.stderr.write("=== NeuroLKH build.stderr.log ===\n")
+            if (root / "build.stderr.log").exists():
+                sys.stderr.write((root / "build.stderr.log").read_text())
+            raise exc
     compiler = subprocess.check_output(["cc", "--version"], text=True)
     manifest = {
         "identity": asset_identity(root),
