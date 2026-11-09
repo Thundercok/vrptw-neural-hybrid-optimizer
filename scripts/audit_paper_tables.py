@@ -13,6 +13,7 @@ This script independently:
 
 from __future__ import annotations
 
+import argparse
 import hashlib
 import re
 import sys
@@ -23,6 +24,7 @@ import pandas as pd
 ROOT = Path(__file__).resolve().parents[1]
 DOCS = ROOT / "docs"
 MANUSCRIPT_TEX = DOCS / "manuscript.tex"
+MANUSCRIPT_SUBMITTED_TEX = DOCS / "manuscript_submitted.tex"
 SUPP_TABLES_TEX = DOCS / "supp_tables.tex"
 SUPP_PROOFS_TEX = DOCS / "supplementary_proofs.tex"
 SUPP_PROOFS_AUX = DOCS / "supplementary_proofs.aux"
@@ -478,9 +480,24 @@ def audit_cross_references(manuscript_tex: str, aux_path: Path):
             print(f"  \\label{{{lbl}}} => {num}")
 
     print("\nChecking Manuscript Prose References against Resolved Auxiliary Labels:")
+    resolved_reward_sec = label_map.get("sec:supp_reward_parameters", "6")
+    resolved_reward_tab = label_map.get("tab:supp_reward_coefficients", "S1")
+
     checks = [
-        ("Table~S6", "tab:supp_reward_coefficients", label_map.get("tab:supp_reward_coefficients")),
-        ("Section~10", "sec:supp_reward_parameters", label_map.get("sec:supp_reward_parameters")),
+        (
+            f"Table~{resolved_reward_tab}"
+            if f"Table~{resolved_reward_tab}" in manuscript_tex or f"Table {resolved_reward_tab}" in manuscript_tex
+            else "Table~S6",
+            "tab:supp_reward_coefficients",
+            resolved_reward_tab,
+        ),
+        (
+            f"Section~{resolved_reward_sec}"
+            if f"Section~{resolved_reward_sec}" in manuscript_tex or f"Section {resolved_reward_sec}" in manuscript_tex
+            else "Section~10",
+            "sec:supp_reward_parameters",
+            resolved_reward_sec,
+        ),
         (
             "Table~S8 / Section~12",
             "tab:supp_anytime_full_24 (Technical Report)",
@@ -547,30 +564,55 @@ def audit_author_images(manuscript_tex: str):
 
 
 def main():
+    parser = argparse.ArgumentParser(
+        description="Standalone Comprehensive Empirical Auditor for VRPTW Manuscript Tables"
+    )
+    parser.add_argument(
+        "--manuscript",
+        type=Path,
+        default=None,
+        help="Path to manuscript TeX file (defaults to docs/manuscript.tex; falls back to docs/manuscript_submitted.tex for historical tables)",
+    )
+    args = parser.parse_args()
+
+    target_manuscript = args.manuscript or MANUSCRIPT_TEX
+    if not target_manuscript.exists():
+        print(f"FATAL: {target_manuscript} not found")
+        sys.exit(1)
+
     print("=" * 80)
     print("STARTING STANDALONE VRPTW PAPER TABLES AUDIT")
-    print(f"Target Manuscript:   {MANUSCRIPT_TEX}")
+    print(f"Target Manuscript:   {target_manuscript}")
     print(f"Target Supp Tables:  {SUPP_TABLES_TEX}")
     print(f"Target Clean CSV:    {CSV_COMBINED}")
     print(f"Target Anytime CSV:  {CSV_ANYTIME}")
     print("=" * 80)
 
-    if not MANUSCRIPT_TEX.exists():
-        print(f"FATAL: {MANUSCRIPT_TEX} not found")
-        sys.exit(1)
     if not CSV_COMBINED.exists():
         print(f"FATAL: {CSV_COMBINED} not found")
         sys.exit(1)
 
-    tex = MANUSCRIPT_TEX.read_text(encoding="utf-8")
+    tex = target_manuscript.read_text(encoding="utf-8")
     supp_tex = SUPP_TABLES_TEX.read_text(encoding="utf-8") if SUPP_TABLES_TEX.exists() else ""
     df = pd.read_csv(CSV_COMBINED)
     df_any = pd.read_csv(CSV_ANYTIME) if CSV_ANYTIME.exists() else pd.DataFrame()
 
-    audit_table_iii(tex, df)
-    audit_table_iv(tex, df)
-    audit_table_vii_ladder(tex, df)
-    audit_table_v_anytime(tex)
+    has_historical_tables = "tab:solomon_tri_paradigm" in tex
+    if not has_historical_tables and MANUSCRIPT_SUBMITTED_TEX.exists() and args.manuscript is None:
+        print(
+            f"[INFO] {target_manuscript.name} is revision draft. Auditing historical tables via {MANUSCRIPT_SUBMITTED_TEX.name}..."
+        )
+        submitted_tex = MANUSCRIPT_SUBMITTED_TEX.read_text(encoding="utf-8")
+        audit_table_iii(submitted_tex, df)
+        audit_table_iv(submitted_tex, df)
+        audit_table_vii_ladder(submitted_tex, df)
+        audit_table_v_anytime(submitted_tex)
+    else:
+        audit_table_iii(tex, df)
+        audit_table_iv(tex, df)
+        audit_table_vii_ladder(tex, df)
+        audit_table_v_anytime(tex)
+
     if supp_tex and not df_any.empty:
         audit_supp_tables(supp_tex, df, df_any)
     audit_cross_references(tex, SUPP_PROOFS_AUX)

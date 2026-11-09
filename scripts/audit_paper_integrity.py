@@ -19,6 +19,8 @@ and audits literature citation attributions.
 
 from __future__ import annotations
 
+import argparse
+import json
 import re
 import sys
 from dataclasses import dataclass
@@ -33,6 +35,7 @@ ROOT = Path(__file__).resolve().parents[1]
 DOCS = ROOT / "docs"
 
 MANUSCRIPT_TEX = DOCS / "manuscript.tex"
+MANUSCRIPT_SUBMITTED_TEX = DOCS / "manuscript_submitted.tex"
 SUPP_TABLES_TEX = DOCS / "supp_tables.tex"
 SUPP_PROOFS_TEX = DOCS / "supplementary_proofs.tex"
 SUPP_PROOFS_AUX = DOCS / "supplementary_proofs.aux"
@@ -44,6 +47,7 @@ CSV_LOCO_100 = ROOT / "results" / "phase2_loco_ablations" / "ablation_raw.csv"
 CSV_LOCO_200 = ROOT / "results" / "loco_200" / "loco_200_raw.csv"
 CSV_LOCO_GEC = ROOT / "results" / "task5_loco_gec" / "loco_gec_raw.csv"
 BKS_JSON = ROOT / "data" / "reference" / "sintef_official_bks.json"
+REVISION_JSON = ROOT / "results" / "revision_analysis_20261101" / "results.json"
 
 # Color formatting
 RESET = "\033[0m"
@@ -68,15 +72,14 @@ class AuditRecord:
 
 
 class PaperAuditor:
-    def __init__(self) -> None:
+    def __init__(self, manuscript_path: Path | None = None) -> None:
         self.records: list[AuditRecord] = []
+        self.manuscript_path = manuscript_path or MANUSCRIPT_TEX
         self.load_ground_truth()
         self.load_tex_files()
 
     def load_ground_truth(self) -> None:
         # Load BKS
-        import json
-
         with open(BKS_JSON) as f:
             bks_data = json.load(f)
         bks_data = bks_data.get("instances", bks_data)
@@ -116,7 +119,11 @@ class PaperAuditor:
         self.df_anytime = pd.read_csv(CSV_ANYTIME)
 
     def load_tex_files(self) -> None:
-        self.manuscript_text = MANUSCRIPT_TEX.read_text(encoding="utf-8")
+        self.manuscript_text = self.manuscript_path.read_text(encoding="utf-8")
+        if "tab:solomon_tri_paradigm" not in self.manuscript_text and MANUSCRIPT_SUBMITTED_TEX.exists():
+            self.historical_manuscript_text = MANUSCRIPT_SUBMITTED_TEX.read_text(encoding="utf-8")
+        else:
+            self.historical_manuscript_text = self.manuscript_text
         self.supp_tables_text = SUPP_TABLES_TEX.read_text(encoding="utf-8") if SUPP_TABLES_TEX.exists() else ""
         self.supp_proofs_text = SUPP_PROOFS_TEX.read_text(encoding="utf-8") if SUPP_PROOFS_TEX.exists() else ""
 
@@ -160,10 +167,12 @@ class PaperAuditor:
         sol_nv["Fam"] = [get_family(i) for i in sol_nv.index]
         sol_td["Fam"] = [get_family(i) for i in sol_td.index]
 
-        # Extract Table III from manuscript.tex
-        m = re.search(r"\\label\{tab:solomon_tri_paradigm\}(.*?)\\end\{tabular\*\}", self.manuscript_text, re.DOTALL)
+        # Extract Table III from manuscript
+        m = re.search(
+            r"\\label\{tab:solomon_tri_paradigm\}(.*?)\\end\{tabular\*\}", self.historical_manuscript_text, re.DOTALL
+        )
         if not m:
-            print(f"{RED}[FAIL] Could not locate tab:solomon_tri_paradigm in manuscript.tex{RESET}")
+            print(f"{RED}[FAIL] Could not locate tab:solomon_tri_paradigm in manuscript{RESET}")
             return
         tbl_text = m.group(1)
 
@@ -181,7 +190,7 @@ class PaperAuditor:
         }
 
         # Parse BKS row
-        bks_match = re.search(r"BKS Baseline.*?&(.*?)\\\\\\", tbl_text)
+        bks_match = re.search(r"BKS Baseline.*?&(.*?)\\\\", tbl_text)
         if bks_match:
             tokens = [t.strip().replace("\\textbf{", "").replace("}", "") for t in bks_match.group(1).split("&")]
             idx = 0
@@ -195,7 +204,7 @@ class PaperAuditor:
                 idx += 2
 
         # Parse ALNS-Base row
-        alns_match = re.search(r"ALNS-Base.*?&(.*?)\\\\\\", tbl_text)
+        alns_match = re.search(r"ALNS-Base.*?&(.*?)\\\\", tbl_text)
         if alns_match:
             tokens = [
                 t.strip().replace("\\textbf{", "").replace("}", "").replace("\\%", "%")
@@ -223,7 +232,7 @@ class PaperAuditor:
             )
 
         # Parse Tri-Level (Ours) row -> GNN-Hybrid-DDQN
-        ours_match = re.search(r"Tri-Level Hybrid DDQN-ALNS \(Ours\).*?&(.*?)\\\\\\", tbl_text)
+        ours_match = re.search(r"Tri-Level Hybrid DDQN-ALNS \(Ours\).*?&(.*?)\\\\", tbl_text)
         if ours_match:
             tokens = [
                 t.strip().replace("\\textbf{", "").replace("}", "").replace("\\%", "%")
@@ -265,16 +274,18 @@ class PaperAuditor:
     def audit_table_iv(self) -> None:
         table_name = "Table IV (Homberger 200 & 400)"
         m = re.search(
-            r"\\label\{tab:homberger_scale_benchmark\}(.*?)\\end\{tabular\*\}", self.manuscript_text, re.DOTALL
+            r"\\label\{tab:homberger_scale_benchmark\}(.*?)\\end\{tabular\*\}",
+            self.historical_manuscript_text,
+            re.DOTALL,
         )
         if not m:
-            print(f"{RED}[FAIL] Could not locate tab:homberger_scale_benchmark in manuscript.tex{RESET}")
+            print(f"{RED}[FAIL] Could not locate tab:homberger_scale_benchmark in manuscript{RESET}")
             return
         tbl_text = m.group(1)
 
         for inst in self.h200_insts + self.h400_insts:
             inst_escaped = inst.replace("_", r"\_")
-            pattern = re.compile(rf"{re.escape(inst_escaped)}\s*\(\d+-c\)\s*&(.*?)\\\\\\", re.MULTILINE)
+            pattern = re.compile(rf"{re.escape(inst_escaped)}\s*\(\d+-c\)\s*&(.*?)\\\\", re.MULTILINE)
             row_match = pattern.search(tbl_text)
             if not row_match:
                 self.records.append(
@@ -298,6 +309,8 @@ class PaperAuditor:
                 .replace(r"$^\dagger$", "")
                 .replace(r"^\dagger", "")
                 .replace("$", "")
+                .replace(r"\%", "")
+                .replace("%", "")
                 for t in row_match.group(1).split("&")
             ]
             tokens = [t for t in raw_tokens]
@@ -342,9 +355,11 @@ class PaperAuditor:
     # -----------------------------------------------------------------------
     def audit_table_v(self) -> None:
         table_name = "Table V (Anytime Wall-Clock)"
-        m = re.search(r"\\label\{tab:anytime_wallclock\}(.*?)\\end\{tabular\*\}", self.manuscript_text, re.DOTALL)
+        m = re.search(
+            r"\\label\{tab:anytime_wallclock\}(.*?)\\end\{tabular\*\}", self.historical_manuscript_text, re.DOTALL
+        )
         if not m:
-            print(f"{RED}[FAIL] Could not locate tab:anytime_wallclock in manuscript.tex{RESET}")
+            print(f"{RED}[FAIL] Could not locate tab:anytime_wallclock in manuscript{RESET}")
             return
         tbl_text = m.group(1)
 
@@ -360,7 +375,7 @@ class PaperAuditor:
             pattern = re.compile(
                 rf"\\multirow\{{3\}}\{{\*\}}\{{\\textbf\{{{re.escape(inst_escaped)}\}}\}}\s*&\s*ALNS-Base\s*&(.*?)\\\\\s*"
                 rf"&\s*\\textbf\{{Tri-Level Hybrid \(Ours\)\}}\s*&(.*?)\\\\\s*"
-                rf"&\s*\\textit\{{Lexicographic Delta\}}\s*&(.*?)\\\\\\",
+                rf"&\s*\\textit\{{Lexicographic Delta\}}\s*&(.*?)\\\\",
                 re.DOTALL,
             )
             block_match = pattern.search(tbl_text)
@@ -406,9 +421,13 @@ class PaperAuditor:
     # -----------------------------------------------------------------------
     def audit_table_vi(self) -> None:
         table_name = "Table VI (LOCO Ablation)"
-        m = re.search(r"\\label\{tab:loco_ablation_matrix\}(.*?)\\end\{tabular\*\}", self.manuscript_text, re.DOTALL)
+        m = re.search(
+            r"\\label\{tab:loco_ablation_matrix\}(.*?)\\end\{tabular\*\}",
+            self.historical_manuscript_text,
+            re.DOTALL,
+        )
         if not m:
-            print(f"{RED}[FAIL] Could not locate tab:loco_ablation_matrix in manuscript.tex{RESET}")
+            print(f"{RED}[FAIL] Could not locate tab:loco_ablation_matrix in manuscript{RESET}")
             return
         tbl_text = m.group(1)
 
@@ -481,22 +500,27 @@ class PaperAuditor:
 
         insts = ["C101", "R101", "RC101", "c1_2_1", "r1_2_1", "rc1_2_1"]
         for key, exp_data in loco_expected.items():
-            pattern = re.compile(rf".*{re.escape(key)}.*&([^\\]+)\\\\\\", re.MULTILINE)
-            row_match = pattern.search(tbl_text)
-            if not row_match:
+            matched_line = None
+            for line in tbl_text.splitlines():
+                if key in line and "&" in line:
+                    matched_line = line
+                    break
+            if not matched_line:
                 self.records.append(
                     AuditRecord(table_name, key, "Row Found", "Present", "Missing", None, "FAIL", "LOCO row missing")
                 )
                 continue
 
+            clean_row = matched_line.rstrip("\\ \t")
+            cells = [c.strip() for c in clean_row.split("&")]
             raw_tokens = [
-                t.strip()
-                .replace("\\textbf{", "")
+                t.replace(r"\textbf{", "")
                 .replace("}", "")
                 .replace(r"$^\dagger$", "")
                 .replace(r"^\dagger", "")
                 .replace("$", "")
-                for t in row_match.group(1).split("&")
+                .strip()
+                for t in cells[1:]
             ]
             idx = 0
             for inst in insts:
@@ -510,9 +534,13 @@ class PaperAuditor:
     # -----------------------------------------------------------------------
     def audit_table_vii(self) -> None:
         table_name = "Table VII (Constructive Ladder)"
-        m = re.search(r"\\label\{tab:constructive_ladder\}(.*?)\\end\{tabular\*\}", self.manuscript_text, re.DOTALL)
+        m = re.search(
+            r"\\label\{tab:constructive_ladder\}(.*?)\\end\{tabular\*\}",
+            self.historical_manuscript_text,
+            re.DOTALL,
+        )
         if not m:
-            print(f"{RED}[FAIL] Could not locate tab:constructive_ladder in manuscript.tex{RESET}")
+            print(f"{RED}[FAIL] Could not locate tab:constructive_ladder in manuscript{RESET}")
             return
         tbl_text = m.group(1)
 
@@ -525,7 +553,7 @@ class PaperAuditor:
         ]
 
         for i, (code, col) in enumerate(arms):
-            pattern = re.compile(rf"\\textbf\{{{code}\}}.*?&(.*?)\\\\\\", re.MULTILINE)
+            pattern = re.compile(rf"\\textbf\{{{code}\}}.*?&(.*?)\\\\", re.MULTILINE)
             row_match = pattern.search(tbl_text)
             if not row_match:
                 self.records.append(
@@ -590,7 +618,7 @@ class PaperAuditor:
             inst_escaped = inst.replace("_", r"\_")
             pattern = re.compile(
                 rf"\\multirow\{{2\}}\{{\*\}}\{{\\textbf\{{{re.escape(inst_escaped)}\}}\}}\s*&\s*ALNS-Base\s*&(.*?)\\\\\s*"
-                rf"&\s*\\textbf\{{Hybrid \(Ours\)\}}\s*&(.*?)\\\\\\",
+                rf"&\s*\\textbf\{{Hybrid \(Ours\)\}}\s*&(.*?)\\\\",
                 re.DOTALL,
             )
             block_match = pattern.search(tbl_text)
@@ -631,7 +659,7 @@ class PaperAuditor:
         matched_count = int(matched_mask.sum())
         exp_matched_str = f"{matched_count}/74"
 
-        m = re.search(r"N_\{?\\text\{matched\}\}?=(\d+)/74", self.manuscript_text)
+        m = re.search(r"N_\{?\\text\{matched\}\}?=(\d+)/74", self.historical_manuscript_text)
         fnd_matched_str = f"{m.group(1)}/74" if m else "Missing"
         self.add_check(table_name, "Matched Fleet Fraction", "N_matched/74", exp_matched_str, fnd_matched_str)
 
@@ -647,11 +675,11 @@ class PaperAuditor:
         ties = int((diff_td.abs() <= 1e-4).sum())
         losses = int((diff_td > 1e-4).sum())
 
-        m_td = re.search(r"(-?\d+\.\d+)\\%?\s*travel distance reduction", self.manuscript_text)
+        m_td = re.search(r"\$?(-?\d+\.\d+)(?:\\%|%|\$)*\s*travel distance reduction", self.historical_manuscript_text)
         fnd_td = float(m_td.group(1)) if m_td else "Missing"
         self.add_check(table_name, "Matched Mean TD Reduction", "Percentage", mean_pct_reduction, fnd_td, tol=0.05)
 
-        m_wtl = re.search(r"(\d+)\s*Win\s*/\s*(\d+)\s*Tie\s*/\s*(\d+)\s*Loss", self.manuscript_text)
+        m_wtl = re.search(r"(\d+)\s*Win\s*/\s*(\d+)\s*Tie\s*/\s*(\d+)\s*Loss", self.historical_manuscript_text)
         if m_wtl:
             fnd_wtl = f"{m_wtl.group(1)} Win / {m_wtl.group(2)} Tie / {m_wtl.group(3)} Loss"
         else:
@@ -661,7 +689,16 @@ class PaperAuditor:
 
         # Wilcoxon on matched fleet
         w_stat, p_val = wilcoxon(gnn_td.loc[matched_insts], alns_td.loc[matched_insts], zero_method="pratt")
-        m_pval = re.search(r"Wilcoxon\s*\$p\s*=\s*(\d+\.\d+)\s*\\times\s*10\^\{-?(\d+)\}\$", self.manuscript_text)
+        m_pval = re.search(
+            r"\(?\$?p\s*=\s*(\d+\.\d+)\s*\\times\s*10\^\{-?(\d+)\}\$?\)?\s*under Pratt", self.historical_manuscript_text
+        ) or re.search(
+            r"Wilcoxon\s*\$p\s*=\s*(\d+\.\d+)\s*\\times\s*10\^\{-?(\d+)\}\$", self.historical_manuscript_text
+        )
+        if m_pval:
+            fnd_p = float(m_pval.group(1)) * (10 ** -int(m_pval.group(2)))
+        else:
+            fnd_p = "Missing"
+        self.add_check(table_name, "Matched Wilcoxon p-value", "p-val", p_val, fnd_p, tol=1e-8)
         if m_pval:
             fnd_p = float(m_pval.group(1)) * (10 ** -int(m_pval.group(2)))
         else:
@@ -737,14 +774,85 @@ class PaperAuditor:
             )
         )
 
+    # -----------------------------------------------------------------------
+    # Table V (Revision) Audit: First Sweep at 300s in manuscript.tex
+    # -----------------------------------------------------------------------
+    def audit_table_first_sweep(self) -> None:
+        table_name = "Table V (First Sweep at 300s in manuscript.tex)"
+        if not REVISION_JSON.exists():
+            return
+        m = re.search(r"\\label\{tab:first_sweep\}(.*?)\\end\{tabular\}", self.manuscript_text, re.DOTALL)
+        if not m:
+            return
+        tbl_text = m.group(1)
+
+        with open(REVISION_JSON) as f:
+            rev_data = json.load(f)
+
+        comparators = {
+            "ALNS-Base": None,
+            "PyVRP-ILS": None,
+            "NeuroLKH-adapted": None,
+        }
+        for d in rev_data:
+            if d.get("cutoff_sec") == 300 and d.get("scope") == "all_74" and d.get("gap_mode") == "drop_pair":
+                ctrl = d.get("control")
+                if ctrl in comparators:
+                    comparators[ctrl] = d
+
+        for ctrl, d in comparators.items():
+            if not d:
+                continue
+            matched_line = None
+            for line in tbl_text.splitlines():
+                if ctrl in line and "&" in line:
+                    matched_line = line
+                    break
+            if not matched_line:
+                self.records.append(
+                    AuditRecord(
+                        table_name,
+                        ctrl,
+                        "Row Found",
+                        "Present",
+                        "Missing",
+                        None,
+                        "FAIL",
+                        f"Comparator {ctrl} missing",
+                    )
+                )
+                continue
+            clean_row = matched_line.rstrip("\\ \t")
+            cells = [c.strip() for c in clean_row.split("&")]
+
+            # Audit seed pairs
+            exp_pairs = f"{d['seed_wins']}/{d['seed_ties']}/{d['seed_losses']}"
+            fnd_pairs = cells[2]
+            self.add_check(table_name, ctrl, "Seed Pairs W/T/L", exp_pairs, fnd_pairs)
+
+            # Audit instance W/T/L
+            iw = d.get("mean_nv_instance_wtl", {})
+            exp_insts = f"{iw.get('win')}/{iw.get('tie')}/{iw.get('loss')}"
+            fnd_insts = cells[3]
+            self.add_check(table_name, ctrl, "Instance W/T/L", exp_insts, fnd_insts)
+
+            # Audit fleet score point
+            fs_pt_m = re.search(r"([+-]?\d+\.\d+)", cells[1])
+            if fs_pt_m:
+                fnd_fs_pt = float(fs_pt_m.group(1))
+                self.add_check(table_name, ctrl, "Fleet Score Point", d["fleet_score"], fnd_fs_pt, tol=0.005)
+
     def run_all(self) -> bool:
-        self.audit_table_iii()
-        self.audit_table_iv()
-        self.audit_table_v()
-        self.audit_table_vi()
-        self.audit_table_vii()
-        self.audit_table_s2()
-        self.audit_text_claims()
+        if "tab:solomon_tri_paradigm" in self.historical_manuscript_text:
+            self.audit_table_iii()
+            self.audit_table_iv()
+            self.audit_table_v()
+            self.audit_table_vi()
+            self.audit_table_vii()
+            self.audit_table_s2()
+            self.audit_text_claims()
+        if "tab:first_sweep" in self.manuscript_text:
+            self.audit_table_first_sweep()
         self.audit_cross_references()
         self.audit_literature_attributions()
         return self.report()
@@ -813,7 +921,15 @@ class PaperAuditor:
 
 
 def main() -> None:
-    auditor = PaperAuditor()
+    parser = argparse.ArgumentParser(description="Standalone Comprehensive Paper Integrity Auditor")
+    parser.add_argument(
+        "--manuscript",
+        type=Path,
+        default=None,
+        help="Path to manuscript TeX file (defaults to docs/manuscript.tex with fallback to docs/manuscript_submitted.tex for historical suite)",
+    )
+    args = parser.parse_args()
+    auditor = PaperAuditor(manuscript_path=args.manuscript)
     success = auditor.run_all()
     sys.exit(0 if success else 1)
 

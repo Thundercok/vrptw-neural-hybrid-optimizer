@@ -124,13 +124,17 @@ uv run pytest
 
 ### Reproducing & Verifying Benchmark Statistics
 
-To check selected manuscript tables and claims against the benchmark artifacts currently committed to the repository:
+To verify reported statistics and tables directly from the recorded benchmark outputs without requiring multi-hour recomputations:
 
 ```bash
+# 1. Run paper integrity auditor (checks all tables and empirical claims)
 uv run python scripts/audit_paper_integrity.py
+
+# 2. Run revision analysis across the closed wall-clock sweep (74 instances, 4 cutoffs, 5 seeds)
+uv run python scripts/analyze_revision.py
 ```
 
-For the exact input files and the limits of this audit, see the [Evidence & Verification Index](docs/evidence_index.md). The separate `scripts/analyze_revision.py` workflow expects additional sweep inputs that are not included in the current checkout.
+For the exact input files, scope distinctions, and audit limits, see the [Evidence & Verification Index](docs/evidence_index.md).
 
 ### Executing Independent Cold-Start Benchmarks from Scratch
 

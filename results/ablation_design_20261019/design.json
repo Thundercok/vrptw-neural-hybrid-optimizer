@@ -1,0 +1,150 @@
+{
+  "status": "design_frozen_not_executable",
+  "launch_ready": false,
+  "solver_calls": 0,
+  "chosen_design": "anchored16_plus_bundle_2x2",
+  "factors": [
+    "GEC",
+    "SP",
+    "Macro",
+    "Micro",
+    "LAC",
+    "GNN"
+  ],
+  "seeds": [
+    42,
+    43,
+    44,
+    45,
+    46
+  ],
+  "primary_cutoffs_sec": [
+    10,
+    60,
+    300,
+    900
+  ],
+  "ablation_cutoffs_sec": [
+    60,
+    300
+  ],
+  "primary_cutoff_for_inference_sec": 300,
+  "primary_cases": [
+    "F111111",
+    "ALNS-Base",
+    "PyVRP-ILS",
+    "NeuroLKH-adapted"
+  ],
+  "primary_comparisons": [
+    {
+      "treatment": "F111111",
+      "comparator": "ALNS-Base"
+    },
+    {
+      "treatment": "F111111",
+      "comparator": "PyVRP-ILS"
+    },
+    {
+      "treatment": "F111111",
+      "comparator": "NeuroLKH-adapted"
+    }
+  ],
+  "input_count": 74,
+  "ablation_instances": [
+    "C101",
+    "C1_2_1",
+    "C1_4_1",
+    "C201",
+    "C2_2_1",
+    "C2_4_1",
+    "R101",
+    "R1_2_1",
+    "R1_4_1",
+    "R201",
+    "R2_2_1",
+    "R2_4_1",
+    "RC101",
+    "RC1_2_1",
+    "RC1_4_1",
+    "RC201",
+    "RC2_2_1",
+    "RC2_4_1"
+  ],
+  "geometry_groups_by_size": {
+    "100": 4,
+    "200": 4,
+    "400": 4
+  },
+  "manifest_sha256": "8eb73a263102615f2ea3cab0dc9b76f0f5e6e90e475e5c8aa7fbb1a03f25b7d9",
+  "gnn_checkpoint": "results/gnn_retraining_20261017/model_seed42/best.pt",
+  "gnn_checkpoint_sha256": "365de53beba09097d1176a8b102ced8d6d97311f5a3ac82186b116d3290e1b97",
+  "lac_policy": "sa_or_predictive_v1",
+  "order_seed": 20261019,
+  "budget": {
+    "physical_jobs": 8620,
+    "nominal_solve_seconds": 2365600,
+    "nominal_solve_hours": 657.1111111111111,
+    "excludes": "Imports, model loading, process start/cleanup, audits, failed pilots, host contention and overruns; not an elapsed-time forecast."
+  },
+  "design_options": {
+    "anchored16": {
+      "cells": 16,
+      "rank": 14,
+      "columns": 22,
+      "all_pairwise_identified": false,
+      "nominal_combined_solve_seconds": 2365600,
+      "nominal_combined_hours": 657.1111111111111,
+      "caveat": "Rank concerns the intercept/main/two-factor model only; it does not rule out higher-order interaction aliasing or prove a causal effect."
+    },
+    "half32": {
+      "cells": 32,
+      "rank": 22,
+      "columns": 22,
+      "all_pairwise_identified": true,
+      "nominal_combined_solve_seconds": 2884000,
+      "nominal_combined_hours": 801.1111111111111,
+      "caveat": "Rank concerns the intercept/main/two-factor model only; it does not rule out higher-order interaction aliasing or prove a causal effect."
+    },
+    "half32_plus_loco": {
+      "cells": 38,
+      "rank": 22,
+      "columns": 22,
+      "all_pairwise_identified": true,
+      "nominal_combined_solve_seconds": 3078400,
+      "nominal_combined_hours": 855.1111111111111,
+      "caveat": "Rank concerns the intercept/main/two-factor model only; it does not rule out higher-order interaction aliasing or prove a causal effect."
+    },
+    "full64": {
+      "cells": 64,
+      "rank": 22,
+      "columns": 22,
+      "all_pairwise_identified": true,
+      "nominal_combined_solve_seconds": 3920800,
+      "nominal_combined_hours": 1089.111111111111,
+      "caveat": "Rank concerns the intercept/main/two-factor model only; it does not rule out higher-order interaction aliasing or prove a causal effect."
+    }
+  },
+  "open_gates": [
+    "alns_aliases",
+    "sp_off_leak",
+    "macro_confound",
+    "gec_scope",
+    "split_off_leak",
+    "controller_composition",
+    "explicit_gnn",
+    "new_source_cutoff_validation",
+    "baseline_precision_and_representativeness",
+    "statistics_implementation_validation",
+    "compute_plan_acceptance"
+  ],
+  "parameter_selection": "No choices based on pilot objective values; proposed horizons/seeds are protocol settings, not an approved compute allocation.",
+  "statistics": {
+    "primary_endpoint": "Mean over instances of mean paired-seed feasibility-then-fleet win score (+1 treatment win, -1 loss, 0 tie; both failures separately counted).",
+    "distance": "Secondary original-TD gaps only at valid paired-seed matched fleets; report exact denominator. Never compare TD across different fleets.",
+    "resampling": "10000 approximate paired cluster-bootstrap replicates, RNG seed 20261019: resample geometry groups within each size, keep all members; resample five seed labels jointly across every algorithm/cutoff in each replicate; retain original size-stratum weights.",
+    "multiplicity": "Primary 300s comparisons: 3 simultaneous Bonferroni percentile intervals; ablation 300s: separate family of 8. Other horizons/contrasts descriptive. No p-values computed here.",
+    "limitations": "Only 4 geometry groups per size and 5 seed labels: approximate intervals, no power/coverage guarantee. Undefined matched-TD bootstrap draws are retained as undefined; suppress that interval if any draw lacks a denominator. All-failure ties are not quality ties."
+  },
+  "failure_policy": "Retain every declared cell. No-solution/known algorithm failures count in availability and paired fleet score. Input/source/config/model integrity errors invalidate protocol inference, never become ordinary solver losses. Pre-cutoff certification and return latency are separate gates; no score-based reruns or cutoff-prefix reuse.",
+  "execution_policy": "No executor/commands in this artifact. Fresh process and empty archive per independent cutoff; solve-scope construction/inference/online updates/certification charged; setup/model-load/end-to-end recorded separately; sequential one-thread-requested blocks, no sleep padding. Each future child requests its own initially empty NUMBA_CACHE_DIR; compilation after solve entry is charged; operational validation must include this policy."
+}

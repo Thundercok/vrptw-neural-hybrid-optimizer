@@ -1,0 +1,152 @@
+[
+  {
+    "id": "GEC_bare",
+    "factor": "GEC",
+    "weights": {
+      "F100000": 1,
+      "F000000": -1
+    },
+    "role": "exploratory"
+  },
+  {
+    "id": "GEC_full_context",
+    "factor": "GEC",
+    "weights": {
+      "F111111": 1,
+      "F011111": -1
+    },
+    "role": "primary_ablation_300s"
+  },
+  {
+    "id": "SP_bare",
+    "factor": "SP",
+    "weights": {
+      "F010000": 1,
+      "F000000": -1
+    },
+    "role": "exploratory"
+  },
+  {
+    "id": "SP_full_context",
+    "factor": "SP",
+    "weights": {
+      "F111111": 1,
+      "F101111": -1
+    },
+    "role": "primary_ablation_300s"
+  },
+  {
+    "id": "Macro_bare",
+    "factor": "Macro",
+    "weights": {
+      "F001000": 1,
+      "F000000": -1
+    },
+    "role": "exploratory"
+  },
+  {
+    "id": "Macro_full_context",
+    "factor": "Macro",
+    "weights": {
+      "F111111": 1,
+      "F110111": -1
+    },
+    "role": "primary_ablation_300s"
+  },
+  {
+    "id": "Micro_bare",
+    "factor": "Micro",
+    "weights": {
+      "F000100": 1,
+      "F000000": -1
+    },
+    "role": "exploratory"
+  },
+  {
+    "id": "Micro_full_context",
+    "factor": "Micro",
+    "weights": {
+      "F111111": 1,
+      "F111011": -1
+    },
+    "role": "primary_ablation_300s"
+  },
+  {
+    "id": "LAC_bare",
+    "factor": "LAC",
+    "weights": {
+      "F000010": 1,
+      "F000000": -1
+    },
+    "role": "exploratory"
+  },
+  {
+    "id": "LAC_full_context",
+    "factor": "LAC",
+    "weights": {
+      "F111111": 1,
+      "F111101": -1
+    },
+    "role": "primary_ablation_300s"
+  },
+  {
+    "id": "GNN_bare",
+    "factor": "GNN",
+    "weights": {
+      "F000001": 1,
+      "F000000": -1
+    },
+    "role": "exploratory"
+  },
+  {
+    "id": "GNN_full_context",
+    "factor": "GNN",
+    "weights": {
+      "F111111": 1,
+      "F111110": -1
+    },
+    "role": "primary_ablation_300s"
+  },
+  {
+    "id": "heuristic_at_no_learning",
+    "weights": {
+      "F110000": 1,
+      "F000000": -1
+    },
+    "role": "primary_ablation_300s"
+  },
+  {
+    "id": "learning_at_heuristic",
+    "weights": {
+      "F111111": 1,
+      "F110000": -1
+    },
+    "role": "primary_ablation_300s"
+  },
+  {
+    "id": "learning_at_no_heuristic",
+    "weights": {
+      "F001111": 1,
+      "F000000": -1
+    },
+    "role": "exploratory"
+  },
+  {
+    "id": "heuristic_at_learning",
+    "weights": {
+      "F111111": 1,
+      "F001111": -1
+    },
+    "role": "exploratory"
+  },
+  {
+    "id": "heuristic_learning_bundle_interaction",
+    "role": "exploratory_complete_NV_only",
+    "weights": {
+      "F111111": 1,
+      "F110000": -1,
+      "F001111": -1,
+      "F000000": 1
+    }
+  }
+]

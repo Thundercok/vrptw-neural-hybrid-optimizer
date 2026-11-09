@@ -1,0 +1,10 @@
+{
+  "cases.csv": "b17f7a9a1ed92f15abfdce536e8c51ad7de4c6257f1cfd7ce0d34656711cce24",
+  "contrasts.json": "f88ef714555fa5fac20a9ca39496068a45f7126de99820cb0360f6ea4e745d5a",
+  "design.json": "b851a40264398dccda23b5da6fef8cd4c35c049e4dcf705f16f7918450748352",
+  "input_identity.json": "add5068e7daa3c45a30edfa3ca0cbba0b07482b018661afdfb7cbbdb7342d7e4",
+  "jobs.jsonl": "8c4f0418e6a0d5646f0182ed4fbd25c0819e3446befed3bb3c9cd27f5ed36331",
+  "source_identity.json": "1e6c5341c4e57f2c8173b6c67ad4ea69ded0012201c4ccc37ad9a53bb4efc1bb",
+  "source_snapshot.zip": "a8460c1a0e38914899490ec68a6524da153fd3a78f01c1e52d714c1ad451fde7",
+  "switch_audit.json": "eb80cdb609731b1e7a77e4cacc937134da4fd4f6023a86a652df68f8a26abc1d"
+}
