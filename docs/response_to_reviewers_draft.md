@@ -266,8 +266,8 @@ Action: Sections V-E and VI-A.
   the forward-slack condition corrected.
 - References corrected against Crossref or the publishers; one reference that could not be found
   was replaced.
-- The data-availability statement now names the public repository and the published rerun
-  records. "Archived on Zenodo" was removed, because no such archive exists.
+- The data-availability statement now names the public repository and the published records of
+  the rerun and of the Micro test. "Archived on Zenodo" was removed, because no such archive exists.
 - Disclosed: a solver rule reads the instance family from its name, the earlier hybrid read the
   best-known fleet, and machine speed varied in the earlier sweep.
 
