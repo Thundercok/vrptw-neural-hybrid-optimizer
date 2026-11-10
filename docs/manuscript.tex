@@ -14,7 +14,9 @@
 \usepackage{graphicx}
 \graphicspath{{figures/}{./}}
 \usepackage{tikz}
-\usetikzlibrary{positioning, arrows.meta}
+\usetikzlibrary{positioning, arrows.meta, fit, calc}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
 \definecolor{accessblue}{cmyk}{1,0.3,0,0.2}
 \definecolor{greycolor}{cmyk}{0,0,0,0.8}
 \definecolor{grey}{cmyk}{0,0,0,0.1}
@@ -22,7 +24,11 @@
 
 % Architecture diagram palette
 \definecolor{cMacro}{RGB}{20, 65, 115}
-\definecolor{cMacroBg}{RGB}{242, 247, 253}
+\definecolor{cMacroBg}{RGB}{226, 236, 248}
+% Series colors for Fig.~\ref{fig:budget} (validated for color-vision deficiency)
+\definecolor{cSerA}{HTML}{2A78D6}
+\definecolor{cSerB}{HTML}{EB6834}
+\definecolor{cSerC}{HTML}{1BAF7A}
 \definecolor{cMicro}{RGB}{15, 95, 85}
 \definecolor{cMicroBg}{RGB}{240, 249, 247}
 \definecolor{cHeur}{RGB}{110, 25, 75}
@@ -188,9 +194,9 @@
 \setlength{\realabstractwidth}{\titlewidth}
 \addtolength{\realabstractwidth}{-9.27pt}
 \let\abstractwidth\realabstractwidth
-% TODO(human): revise the abstract: , name the GES phase, replace the PENDING with the 300 s and ablation results; at most 250 words.
+
 \begin{abstract}
-The Vehicle Routing Problem with Time Windows (VRPTW) is commonly solved under a lexicographic objective: minimize the number of vehicles ($\NV$) first, then total travel distance ($\TD$). Adaptive Large Neighborhood Search (ALNS) is an established metaheuristic for this problem, and recent work adds learned control to such search. This paper presents Tri-Level Hybrid DDQN-ALNS, which adds three online-learning controllers to an ALNS core: a macro plateau controller modeled approximately as a semi-Markov decision process over aggregated features, a micro operator controller that blends a Dueling Double Deep Q-Network with operator priors through an entropy gate, and a Learned Acceptance Criterion that can accept moves Simulated Annealing rejects. The controllers start from random weights in every run. The search also uses ejection chains, set partitioning with HiGHS, and a frozen Graph Neural Network edge heatmap. We claim neither a new search principle nor a convergence guarantee. We evaluate the method under equal wall-clock budgets of 10, 60 and 300\,s on 74 Solomon and Gehring-Homberger instances with five seeds per instance, against ALNS-Base, PyVRP-ILS and an adapted NeuroLKH, on the same machine and in the same blocks, counting only incumbents certified in the original problem space before the cutoff. A factorial ablation on 18 instances separates learning from heuristic components. \PENDING{two sentences with the rerun's 300\,s result against each comparator and the ablation result, including any loss.}
+The Vehicle Routing Problem with Time Windows (VRPTW) is commonly solved under a lexicographic objective: minimize the number of vehicles ($\NV$) first, then total travel distance ($\TD$). This paper presents Tri-Level Hybrid DDQN-ALNS, which adds three online-learning controllers to an Adaptive Large Neighborhood Search (ALNS) core: a macro plateau controller modeled approximately as a semi-Markov decision process over aggregated features, a micro operator controller that blends a Dueling Double Deep Q-Network with operator priors through an entropy gate, and a Learned Acceptance Criterion that can accept moves Simulated Annealing rejects. The controllers start from random weights in every run. The search also uses ejection chains, set partitioning with HiGHS, a frozen Graph Neural Network edge heatmap, and a classical Guided Ejection Search phase. It was added after earlier benchmark results were seen and kept by a pre-specified rule, so its inclusion was not independently tested. We claim neither a new search princionple nor a convergence guarantee. We evaluate the method under equal wall-clock budgets of 10, 60 and 300\,s on 74 Solomon and Gehring-Homberger instances with five seeds per instance, against ALNS-Base,PyVRP-ILS and NeuroLKH-adapted, counting only incumbents certified in the original problem space before the cutoff. At 300\,s, the proposed configuration did not differ detectably on fleet size (fleet score, 98.33\% interval; positive favors it) from ALNS-Base ($-0.027$ [$-0.065$, $0.011$]), PyVRP-ILS ($+0.008$ [$-0.098$, $0.117$]) or NeuroLKH-adapted ($-0.068$ [$-0.142$, $0.033$]). In a factorial ablation on 18 instances, no primary factorial contrast's fleet-score interval excluded zero at 300\,s.
 \end{abstract}
 
 \begin{keywords}
@@ -225,13 +231,13 @@ Neural Combinatorial Optimization (NCO) takes a different approach, using Deep R
     \item[(iii)] Distribution shift: results often degrade on larger instances or different customer distributions without retuning.
 \end{itemize}
 
-This paper presents Tri-Level Hybrid DDQN-ALNS, which places state-conditioned reinforcement learning inside the search loop of ALNS. It keeps the neighborhood operators of ALNS instead of replacing them with a neural solver, and it returns only solutions validated as feasible. The search has three tiers: a learned macro controller for plateaus, a learned micro controller for operator selection, and a heuristic search tier. Whether this control pays for the compute it consumes is an empirical question, and we treat it as one.
+This paper presents Tri-Level Hybrid DDQN-ALNS, which places state-conditioned reinforcement learning inside the search loop of ALNS. It keeps the neighborhood operators of ALNS instead of replacing them with a neural solver, and it returns only solutions validated as feasible. The search has three tiers: a learned macro controller for plateaus, a learned micro controller for operator selection, and a heuristic search tier. Whether this control pays for the compute it consumes is an empirical question, and we treat it as one. Our answer is negative at the budgets we tested: at 300\,s the method did not differ detectably on fleet size from ALNS-Base, PyVRP-ILS or NeuroLKH-adapted, and the factorial ablation does not establish a benefit of the learned components at 300\,s.
 
 The primary contributions of this paper are summarized as follows:
 \begin{enumerate}\setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}
     \item We specify a control layer for ALNS in which a macro plateau controller, a micro operator controller and an acceptance model learn online from random weights in every run, with no offline policy training. Destroy-repair search, Simulated Annealing, ejection chains and set partitioning are established methods, and we do not claim a new search principle. What we study is whether such cold-start control pays for its compute within a time budget.
-    \item We evaluate the method under equal wall-clock budgets of 10, 60, 300 and 900\,s on 74 benchmark instances (56 Solomon-100, 12 Homberger-200, and 6 Homberger-400) with five seeds, against ALNS-Base, PyVRP-ILS and an adapted NeuroLKH. All cases of an instance, seed and cutoff run as one block, and only incumbents certified in the original problem space before the cutoff count.
-    \item We separate learning from heuristic machinery with a wall-clock factorial ablation over six components at 60 and 300\,s, including a $2\times2$ contrast of the learning and heuristic bundles.
+    \item We evaluate the method under equal wall-clock budgets of 10, 60 and 300\,s on 74 benchmark instances (56 Solomon-100, 12 Homberger-200, and 6 Homberger-400) with five seeds, against ALNS-Base, PyVRP-ILS and NeuroLKH-adapted. All cases of an instance, seed and cutoff run as one block, and only incumbents certified in the original problem space before the cutoff count. At 300\,s, the method did not differ detectably on fleet size from any of the three comparators, and we report this as a negative result.
+    \item We separate learning from heuristic machinery with a wall-clock factorial ablation over six components at 60 and 300\,s, including a $2\times2$ contrast of the learning and heuristic bundles. The Guided Ejection Search phase is on in every case, so the ablation cannot isolate its effect. No primary contrast excluded zero at 300\,s. In a separate measurement on the ablation instances, the LAC classifier never changed an acceptance decision at that budget, so the LAC contrast is uninformative rather than evidence that LAC has no effect.
     \item We report the limits of the method and of the evidence: where it does not help, how results depend on the budget, the method's earlier dependence on reference fleet sizes, the machine-speed variation we measured, and the way test results influenced development.
 \end{enumerate}
 
@@ -340,124 +346,60 @@ The method has three tiers, shown in Fig.~\ref{fig:architecture}:
 
 \begin{figure*}[!t]
 \centering
-\resizebox{0.83\textwidth}{!}{%
+\resizebox{\textwidth}{!}{%
 \begin{tikzpicture}[
-  >=Latex,
-  font=\scriptsize,
-  card/.style 2 args={
-    draw=#1, fill=#2, rounded corners=3.5pt, line width=0.85pt,
-    inner sep=3.8pt, text width=6.7cm, align=left
-  },
-  rcard/.style 2 args={
-    draw=#1, fill=#2, rounded corners=3.5pt, line width=0.85pt,
-    inner sep=3.8pt, text width=6.7cm, align=left
-  },
-  ctrlarr/.style={->, line width=1.0pt, draw=cMacro},
-  dataarr/.style={->, line width=0.95pt, draw=cMicro},
-  marr/.style={->, line width=0.95pt, draw=cPool},
-  fbarr/.style={->, line width=0.8pt, dashed, draw=cPool},
-  badge/.style={
-    font=\tiny, fill=white, draw=gray!40, line width=0.35pt,
-    inner sep=1.4pt, rounded corners=1.8pt
-  },
-  slopedbadge/.style={
-    font=\tiny, fill=white, draw=cPool!70, line width=0.35pt,
-    inner sep=1.2pt, rounded corners=1.8pt, sloped, midway
-  }
+  >=Latex, font=\footnotesize,
+  box/.style={draw=black!55, fill=white, rounded corners=2pt, line width=0.6pt,
+              text width=2.9cm, minimum height=11mm, align=center, inner sep=2.5pt},
+  learned/.style={box, draw=cMacro, fill=cMacroBg, line width=0.8pt},
+  phase/.style={draw=black!55, fill=black!4, rounded corners=2pt, line width=0.6pt,
+                minimum height=8mm, align=center, inner sep=3pt},
+  flow/.style={->, line width=0.7pt, draw=black!70},
+  fb/.style={->, line width=0.6pt, draw=cMacro, dashed},
+  lab/.style={font=\scriptsize, inner sep=1.5pt}
 ]
+  % --- one iteration of the main loop ------------------------------------
+  \node[learned] (macro) {\textbf{Macro controller}\\ DDQN, once per segment};
+  \node[learned, below=9mm of macro] (micro) {\textbf{Micro controller}\\ DDQN blended with\\ operator priors};
+  \node[box, right=15mm of micro] (alns) {\textbf{Destroy and repair}\\ ALNS operators,\\ GEC, GNN heatmap\\ (frozen)};
+  \node[learned, right=15mm of alns] (lac) {\textbf{Acceptance}\\ Simulated Annealing;\\ LAC may override};
+  \node[box, above=9mm of lac] (pool) {\textbf{Route pool}};
+  \node[box, right=15mm of pool] (sp) {\textbf{Set partitioning}\\ HiGHS, time-limited};
+  \node[box, right=15mm of lac] (inc) {\textbf{Current and}\\ \textbf{best solution}};
 
-  % =========================================================================
-  % COLUMN 1: Decision & Search Hierarchy (Tiers 1-3)
-  % =========================================================================
-  \node[card={cMacro}{cMacroBg}] (macro) {
-    {\bfseries\color{cMacro}\normalsize Tier 1: Macro Plateau Controller $\bm{\pi_{\text{macro}}}$}\hfill{\scriptsize\color{cMacro!80}\textsf{[Semi-MDP, $\Delta_{\text{seg}}=100$]}}\\[1pt]
-    {\color{cMacro!30}\rule{\linewidth}{0.35pt}}\\[1.5pt]
-    $\bullet$ \textbf{Observation $\mathbf{s}_k^{\text{macro}} \in \mathbb{R}^{12}$}: Stagnation rate, temp $T/T_0$, route separation $rb$, capacity balance $lb$, tight-TW ratio $\tau_{\text{tight}}$, slack $\bar{s}$, pool occupancy $\rho_{\text{pool}}$\\
-    $\bullet$ \textbf{Network}: Dueling Double DQN ($12 \to 128 \to 128 \to 7$) with Prioritized Replay\\
-    $\bullet$ \textbf{7 Search Modes ($a_0$--$a_6$)}: $a_0$: Default exploration; $a_1$: Intensify / deep cool; $a_2$: Thermal reheat; $a_3$: TW-Rescue; $a_4$: Set-Part Recomb; $a_5$: GEC route reduction; $a_6$: Infeasible descent (adaptive TW/cap penalty relaxation)
-  };
+  \draw[flow] (macro) -- node[lab, right] {search mode} (micro);
+  \draw[flow] (micro) -- node[lab, above] {operator} node[lab, below] {pair} (alns);
+  \draw[flow] (alns) -- node[lab, above] {candidate} (lac);
+  \draw[flow] (lac) -- node[lab, above] {accepted} (inc);
+  \draw[flow] (lac) -- node[lab, right] {routes} (pool);
+  \draw[flow] (pool) -- node[lab, above] {columns} (sp);
+  \draw[flow] (sp) -- node[lab, right] {recombined plan} (inc);
 
-  \node[card={cMicro}{cMicroBg}, below=4.8mm of macro] (micro) {
-    {\bfseries\color{cMicro}\normalsize Tier 2: Micro Selection Tier ($\bm{\pi_{\text{micro}}}$ \& LAC)}\hfill{\scriptsize\color{cMicro!80}\textsf{[Step $t \in \{1,\dots,T\}$]}}\\[1pt]
-    {\color{cMicro!30}\rule{\linewidth}{0.35pt}}\\[1.5pt]
-    $\bullet$ \textbf{Observation $\mathbf{s}_t^{\text{micro}} \in \mathbb{R}^{20}$}: Search progress, stagnation, temperature, fleet and route-load statistics, forward time-slack distribution\\
-    $\bullet$ \textbf{Operator Controller}: Dueling DDQN ($20 \to 128 \to 65$) selecting 65 action pairs ($13\text{ Destroy} \times 5\text{ Repair}$) with Softmax-Entropy confidence gate $w_{\text{conf}}(\mathbf{s})$\\
-    $\bullet$ \textbf{Learned Acceptance (LAC)}: MLP ($9 \to 64 \to 48 \to 32 \to 1$) evaluates delayed downstream gain ($H_{\text{lac}}=80$ lookahead); can accept moves SA rejects, after 300 warmup decisions
-  };
+  \coordinate (fbY) at ($(alns.south)+(0,-6mm)$);
+  \draw[fb] (inc.south) |- node[lab, pos=0.75, below] {search state and reward} (fbY -| micro.south) -- (micro.south);
+  \draw[fb] (fbY -| micro.south) -- ($(fbY -| macro.west)+(-5mm,0)$) |- (macro.west);
 
-  \node[card={cHeur}{cHeurBg}, below=4.8mm of micro] (heur) {
-    {\bfseries\color{cHeur}\normalsize Tier 3: Heuristic Execution Engine (ALNS)}\hfill{\scriptsize\color{cHeur!80}\textsf{[Search]}}\\[1pt]
-    {\color{cHeur!30}\rule{\linewidth}{0.35pt}}\\[1.5pt]
-    $\bullet$ \textbf{Composite Operators}: 13 Destroy (Random, Worst, Shaw, TW-urgency, route-based, neural) $\times$ 5 Repair (Greedy, 2-Regret, 3-Regret, TW-greedy, Slack-greedy)\\
-    $\bullet$ \textbf{Spatial Guidance}: 3-layer GNN edge heatmap (16-NN message passing)\\
-    $\bullet$ \textbf{Fast Feasibility}: $O(1)$ per insertion query (cached forward slack)\\
-    $\bullet$ \textbf{Fleet Elimination}: Polynomial Generalized Ejection Chains (GEC)
-  };
+  \node[draw=black!35, dotted, rounded corners=3pt, inner xsep=7mm, inner ysep=4mm,
+        fit=(macro) (micro) (alns) (lac) (pool) (sp) (inc) (fbY)] (loop) {};
+  \node[font=\footnotesize\itshape, anchor=north west, inner sep=3pt] at (loop.north west) {Main loop, one iteration};
 
-  % =========================================================================
-  % COLUMN 2: Recombination & Elite Archive (Right)
-  % =========================================================================
-  \node[rcard={cPool}{cPoolBg}, right=18mm of macro] (pool) {
-    {\bfseries\color{cPool}\normalsize Dual-Slot Route Pool $\bm{\mathcal{P}}$}\hfill{\scriptsize\color{cPool!80}\textsf{[Cap $|\mathcal{P}|_{\max}\le 2000$]}}\\[1pt]
-    {\color{cPool!30}\rule{\linewidth}{0.35pt}}\\[1.5pt]
-    $\bullet$ \textbf{Deduplication}: Frozenset customer hash table guarantees 0 duplicate columns\\
-    $\bullet$ \textbf{Slot A (75\% Quota)}: Cost-per-stop efficiency metric $c_r / |r|$\\
-    $\bullet$ \textbf{Slot B (25\% Quota)}: Longest routes for vehicle reduction\\
-    $\bullet$ \textbf{Trimming}: Re-rank both slots when the pool exceeds its limit
-  };
+  % --- the whole run along the wall-clock budget ---------------------------
+  \node[phase, above=8mm of loop.north west, anchor=south west] (start) {Greedy\\ construction};
+  \node[phase, right=5mm of start] (ges) {Guided Ejection Search\\ (classical, once)};
+  \node[phase, right=5mm of ges] (main) {Main loop\\ (most of the budget)};
+  \node[phase, right=5mm of main] (tail) {Tail phases\\ (recombination, polishing)};
+  \node[phase, right=5mm of tail] (out) {Certified solution\\ at the cutoff};
+  \draw[flow] (start) -- (ges); \draw[flow] (ges) -- (main); \draw[flow] (main) -- (tail); \draw[flow] (tail) -- (out);
+  \draw[black!40, line width=0.6pt, dotted] (main.south) -- (main.south |- loop.north);
 
-  \node[rcard={cMIP}{cMIPBg}, right=18mm of micro] (highs) {
-    {\bfseries\color{cMIP}\normalsize Set Partitioning Recombination (HiGHS)}\hfill{\scriptsize\color{cMIP!80}\textsf{[Exact Recomb]}}\\[1pt]
-    {\color{cMIP!30}\rule{\linewidth}{0.35pt}}\\[1.5pt]
-    $\bullet$ \textbf{MILP Model}: $\min \sum_{r \in \mathcal{P}} (\lambda_{\text{pen}} \bar{c} + c_r) y_r$ s.t. $\sum_{r \ni i} y_r = 1$\\
-    $\bullet$ \textbf{Lexicographic Penalty}: grid $\lambda_{\text{pen}} \in \{2 \dots 50\}\bar{c}$; certified $\NV \succ \TD$ within $\mathcal{P}$ at the top scale\\
-    $\bullet$ \textbf{Cutoff}: Per-query wall-clock limit (Table~\ref{tab:hyperparameters}); keeps $s_{\text{inc}}$ if no better plan is found
-  };
-
-  \node[rcard={cArchive}{cArchiveBg}, right=18mm of heur] (inc) {
-    {\bfseries\color{cArchive}\normalsize Incumbent Plan $\bm{s_{\text{inc}}}$ \& Elite Archive}\hfill{\scriptsize\color{cArchive!80}\textsf{[Feasibility Gate]}}\\[1pt]
-    {\color{cArchive!30}\rule{\linewidth}{0.35pt}}\\[1.5pt]
-    $\bullet$ \textbf{Feasibility Invariant}: 100\% hard capacity and time-window conformance\\
-    $\bullet$ \textbf{Lexicographic Admission}: $s_{\text{cand}} \prec s_{\text{inc}} \iff \NV^{\text{cand}} < \NV^{\text{inc}} \lor (\NV^{\text{cand}} = \NV^{\text{inc}} \land \TD^{\text{cand}} < \TD^{\text{inc}})$\\
-    $\bullet$ \textbf{Cold-Start Protocol}: Isolated ephemeral scratch directories (0 seed leakage)
-  };
-
-  % =========================================================================
-  % VERTICAL DOWNWARD CONTROL & DATA ARROWS
-  % =========================================================================
-  \draw[ctrlarr] (macro.south) -- node[badge, right=3pt]{Mode $a_k$ (every $\Delta_{\text{seg}}$ iters)} (micro.north);
-  \draw[ctrlarr] (micro.south) -- node[badge, right=3pt]{Operator pair $(d,r)$ (iter $t$)} (heur.north);
-
-  \draw[marr] (pool.south) -- node[badge, right=3pt]{Candidate columns in $\mathcal{P}$} (highs.north);
-  \draw[marr] (highs.south) -- node[badge, right=3pt]{Recombined solution $s_{\text{MIP}}$} (inc.north);
-
-  % =========================================================================
-  % UPWARD STATE FEEDBACK (LEFT FLANK)
-  % =========================================================================
-  \draw[fbarr] ([yshift=-2mm]heur.west) -- ++(-6mm,0) coordinate (p1)
-               -- node[slopedbadge]{$\mathbf{s}_t^{\text{micro}} \in \mathbb{R}^{20}$} (p1 |- micro.west)
-               -- ([yshift=-2mm]micro.west);
-
-  \draw[fbarr] ([yshift=3mm]micro.west) -- ++(-6mm,0) coordinate (p2)
-               -- node[slopedbadge]{$\mathbf{s}_k^{\text{macro}} \in \mathbb{R}^{12}$} (p2 |- macro.west)
-               -- (macro.west);
-
-  % =========================================================================
-  % UPWARD ROUTE ACCUMULATION (RIGHT FLANK)
-  % =========================================================================
-  \draw[dataarr] (inc.east) -- ++(6mm,0) coordinate (p3)
-                -- node[badge, midway, sloped]{Elite routes $\to \mathcal{P}$} (p3 |- pool.east)
-                -- (pool.east);
-
-  % =========================================================================
-  % HORIZONTAL CROSS-TIER ARROWS
-  % =========================================================================
-  \draw[ctrlarr] (macro.east) -- node[badge, above=1pt]{Mode $a_4$/$a_5$ Trigger} (pool.west);
-  \draw[dataarr] (heur.east) -- node[badge, above=1pt]{Feasible $s_{\text{cand}}$} (inc.west);
-
+  % --- legend ---------------------------------------------------------------
+  \node[learned, text width=, minimum height=3.5mm, minimum width=6mm, below=4mm of loop.south west, anchor=north west] (k1) {};
+  \node[right=1.5mm of k1, font=\scriptsize] (k1t) {learned online, from random weights in every run};
+  \node[box, text width=, minimum height=3.5mm, minimum width=6mm, right=8mm of k1t] (k2) {};
+  \node[right=1.5mm of k2, font=\scriptsize] {classical or fixed};
 \end{tikzpicture}%
 }
-\caption{Tri-Level Hybrid DDQN-ALNS control architecture. Solid downward arrows represent hierarchical control and data dispatch across tiers. Dashed upward arrows represent state feedback signals consumed by the Macro and Micro RL training loops. The Macro tier operates over segment options $\Delta_{\text{seg}}=100$; the Micro and Heuristic tiers execute per iteration $t$.}
+\caption{Tri-Level Hybrid DDQN-ALNS. Top: the phases of one run within the wall-clock budget. Bottom: one iteration of the main loop. Shaded components learn online from random weights in every run; the others are classical or fixed, and the GNN heatmap comes from a frozen pretrained model. The macro controller chooses a search mode once per segment of iterations, and one mode triggers set partitioning over the route pool. Dashed arrows carry the search state and reward to the controllers.}
 \label{fig:architecture}
 \end{figure*}
 
@@ -702,6 +644,7 @@ HiGHS~\cite{huangfu2018parallelizing} solves the models by branch and cut. Each 
 \Require Instance $\mathcal{I}$, Hyperparameters $\Theta$, Time budget $T$
 \Ensure Best feasible routing plan $s^*$
 \State $s^* \leftarrow s_{\text{inc}} \leftarrow \text{GreedyInit}(\mathcal{I})$; $\mathcal{P} \leftarrow \text{ExtractRoutes}(s^*)$
+\State $s^* \leftarrow s_{\text{inc}} \leftarrow \text{GuidedEjectionSearch}(s^*)$ for $10\%$ of the remaining budget \Comment{Classical, Section~\ref{sec:ges}}
 \State Initialize Macro DDQN $Q_{\text{macro}}$, Micro DDQN $Q_{\text{micro}}$, LAC $\phi_{\text{LAC}}$
 \For{$t = 1, 2, \dots$ until $80\%$ of $T$ has elapsed}
     \If{$t \bmod \Delta_{\text{seg}} == 1$} \Comment{Macro Tier: SMDP regime selection}
@@ -726,8 +669,8 @@ An optional phase runs the route-minimization heuristic of Nagata and Br{\"a}ysy
 
 This section evaluates the method on 74 standard benchmark instances: Solomon-100 (56 instances across 6 families)~\cite{Solomon1987}, Gehring-Homberger 200-customer (12 instances) and Gehring-Homberger 400-customer (6 instances)~\cite{gehring1999parallel}. Five questions structure the evaluation:
 \begin{itemize}
-    \item RQ1 (Comparison at equal compute): At 300\,s, how does the method compare with ALNS-Base, PyVRP-ILS and adapted NeuroLKH on fleet size and, at matched fleet size, on distance?
-    \item RQ2 (Budget): How do these comparisons change at 10, 60 and 900\,s?
+    \item RQ1 (Comparison at equal compute): At 300\,s, how does the method compare with ALNS-Base, PyVRP-ILS and NeuroLKH-adapted on fleet size and, at matched fleet size, on distance?
+    \item RQ2 (Budget): How do these comparisons change at 10 and 60\,s?
     \item RQ3 (Components): Which components change results, and does the learning bundle add to the heuristic bundle?
     \item RQ4 (Scale): How do the comparisons differ at 100, 200 and 400 customers?
     \item RQ5 (Families): How do they differ across clustered, random and mixed instance families? This question is descriptive.
@@ -740,13 +683,14 @@ This section evaluates the method on 74 standard benchmark instances: Solomon-10
 All experiments ran on one Apple M1 notebook (4 performance and 4 efficiency cores, 16\,GB memory, macOS 26.5.2), with four cells at a time and one numerical-library thread per cell. macOS assigns cores itself, so processes were not pinned to cores.
 
 \textit{Machine-speed variation.} A wall-clock budget does not fix the compute a run receives. PyVRP and NeuroLKH with the same seed retrace the same search, so the time needed to reach the same (fleet, distance) step measures machine speed. On 18 instances at 60\,s, cells of our first full sweep took a median of 2.3 times as long as the same cells on a later night, ranging from about 0.65 to 9.6 times per instance. During that sweep the notebook was also used for other work and was at times unplugged or asleep, but the cause of the slowdown is not established. Absolute times therefore do not describe a steady machine speed, and comparisons are valid within a block of cells that ran together, not across blocks. In the reported rerun, all cases of one instance, seed and cutoff run together as a block. A cell whose wall-clock span exceeds its monotonic duration by more than 5\,s was frozen by machine sleep, and its whole block runs again. Each cell records power state and load at its start, and the primary comparisons are repeated without blocks that started a cell at a one-minute load above 8. Other work on the notebook raised the load as high as 233 early in the rerun. Before any result was read, we therefore moved 58 of the first 111 blocks at 300\,s, those with a cell started above load 8, aside unread and ran them again, and from then on no new cell started above that load. A cell can still start below that load and then run above it, so also before any result was read, we began sampling load once a minute and added two repeats at 300\,s: one without blocks that have a cell whose mean load during its run was above 8, and one that also leaves out blocks with a cell not measured this way. Load during a run is not known for the roughly 450 cells at 300\,s that finished before sampling began.
-% TODO(T300): report blocks rerun and the load-sensitivity result. Update this paragraph if the rerun moves to another machine.
+
+In all, 11 blocks were rerun after machine sleep and 58 after load spikes. The load repeats change none of the three primary comparisons, but for the adoption rule the interval then includes zero (Section~\ref{sec:primary_results}).
 
 ALNS-Base is our own implementation in the framework of Ropke and Pisinger~\cite{Ropke2006, pisinger2007general}, not a reproduction of it. It shares the 13 destroy and 5 repair operators of our search infrastructure. It loads no GNN, so its two heatmap-guided destroy operators receive no heatmap. Pairs are selected by Thompson sampling over 65 Beta posteriors instead of a roulette wheel, with scores $(\sigma_1, \sigma_2, \sigma_3) = (33, 9, 3)$ normalized by $\sigma_1$, posterior decay $0.95$ every 100 iterations, and a posterior reset after 1,250 iterations without improvement. Simulated Annealing starts at $T_0 = 0.05\,c_0 / \ln 2$, where $c_0$ is the cost of the starting solution, and cools geometrically with $\alpha = 0.99975$. Its main loop applies no local search, ejection chains or set partitioning. Initialization is algorithm-specific: ALNS-Base starts from the unweighted greedy construction (\textsf{\small BuildGreedyInitialSolution}), the hybrid starts from the same construction with GNN-weighted insertion costs, and PyVRP-ILS and NeuroLKH use their own construction procedures; construction and model inference are charged to each solver's budget. A defect in the greedy construction, which did not check the depot return deadline, made the ALNS-Base start infeasible on R1\_2\_5, so all 20 ALNS-Base runs on that instance terminated without a solution. We corrected the construction, which leaves the start unchanged on the other 73 instances, and reran those 20 runs.
 
 PyVRP-ILS is the iterated local search of PyVRP~\cite{wouda2024pyvrp}, version 0.14.1, with a vehicle fixed cost set above any possible travel cost so that its objective follows the fleet-first order. PyVRP's HGS is not the method used here. NeuroLKH-adapted runs the pretrained CVRPTW checkpoint and LKH binary of NeuroLKH~\cite{xin2021neurolkh} at a pinned upstream commit, with cold restarts at decreasing fleet sizes. It is an adaptation, not a replication of the authors' experiments, and we did not retrain it or tune it on benchmark instances. Both baselines work on integer-scaled models, so every candidate is mapped back and certified in the original problem space.
 
-All cases share one supervisor. A case's clock starts in a fresh process with an empty work directory and JIT cache, and construction, model inference, search, JIT compilation after the start, certification and communication with the supervisor are charged to its budget. Imports and loading of frozen models are recorded separately. An incumbent counts only if the supervisor has received, validated and hashed it before the cutoff, and the process must return within $[T-0.05, T+0.5]$\,s of the cutoff $T$.
+All cases share one supervisor. A case's clock starts in a fresh process with an empty work directory and JIT cache, and construction, model inference, search, JIT compilation after the start, certification and communication with the supervisor are charged to its budget. Imports and loading of frozen models are recorded separately. An incumbent counts only if the supervisor has received, validated and hashed it before the cutoff, and the process is expected to return within $[T-0.05, T+0.5]$\,s of the cutoff $T$. A later return is recorded but does not change which incumbent counts (Section~\ref{sec:feasibility_results}).
 
 \paragraph{Reference-Fleet Information}
 In the first full sweep (Section~\ref{sec:first_sweep}), the hybrid read the best-known fleet size $\NVs{BKS}$~\cite{sintef_homberger} of each benchmark instance during search. It served as the floor at which vehicle-reduction phases stop, as the trigger for switching set partitioning to a distance-only objective, and as a parameter of the recombination and route-elimination steps. None of the baselines uses this information, it is not available for new instances, and equal compute alone does not remove this asymmetry. The rerun therefore disables every lookup. With the Guided Ejection Search phase on, the capacity bound takes the place of the reference fleet; with it off, the hybrid uses its fallbacks for unknown instances. The effect of reading the reference fleet was not re-estimated under matched conditions, so we report only that the first sweep's hybrid read it.
@@ -754,8 +698,8 @@ In the first full sweep (Section~\ref{sec:first_sweep}), the hybrid read the bes
 \paragraph{Hyperparameter Specification and Experimental Firewall}
 The hyperparameters in Table~\ref{tab:hyperparameters} combine literature defaults (for example the Adam optimizer parameters and the Polyak update rate $\tau=0.005$) with values set by hand during development. We did not retain a calibration log, so we cannot document how the hand-set values were chosen or show that they are independent of earlier runs on the benchmark instances. They were frozen before the sweeps reported here. One solver rule reads family information from the benchmark's naming convention: the fleet-reduction search receives more iterations when an instance name begins with RC and the current fleet exceeds the target by at least one vehicle.
 
-The test set did not, however, remain untouched by development. After the first full sweep, per-family losses on the test instances led us to evaluate a Guided Ejection Search phase before the main search. This is a classical method, so any gain from it is not a gain from learning. Its parameters were chosen only on 30 development instances with different instance identities: 18 are 100-customer subsamples of Gehring-Homberger instances, and 12 are unmodified Gehring-Homberger instances outside the test set. They are not independent of the test set, because they share customer coordinates with test instances of the same families and up to $81\%$ of a development instance's customer records (coordinates, demand, time window and service time) are identical to those of a test instance. The rule for adopting the phase was fixed before a single contemporaneous rerun on the test set, and that rerun was not used to change the solver.
-% TODO(T300): state the outcome of the adoption rule.
+The test set did not, however, remain untouched by development. After the first full sweep, per-family losses on the test instances led us to evaluate a Guided Ejection Search phase before the main search. This is a classical method, so any gain from it is not a gain from learning. Its parameters were chosen only on 30 development instances with different instance identities: 18 are 100-customer subsamples of Gehring-Homberger instances, and 12 are unmodified Gehring-Homberger instances outside the test set. They are not independent of the test set, because they share customer coordinates with test instances of the same families and up to $81\%$ of a development instance's customer records (coordinates, demand, time window and service time) are identical to those of a test instance. The rule for adopting the phase was fixed before a single contemporaneous rerun on the test set, and that rerun was not used to change the solver. The rule adopted the phase by a small margin (Section~\ref{sec:primary_results}).
+
 
 \textit{Training and testing protocol.} The Macro DDQN, Micro DDQN and LAC have no offline training phase. They start from random weights in every run and learn online within that run's time budget, so they have no train/test split, nothing learned in one run is carried to another, and we make no claim that a learned policy transfers between instances. Only the GNN is trained offline. It is then frozen and uses only the synthetic data described in Section~\ref{sec:gnn_guidance}. Its generalization is limited to what the factorial ablation measures on the benchmark instances.
 
@@ -821,7 +765,7 @@ A missing cell caused by infrastructure failure is not an algorithm outcome, so 
 
 \subsection{Comparison at 300\,s (RQ1, RQ4)}
 \label{sec:primary_results}
-\PENDING{adoption rule outcome: the fleet score of F111111+GES against F111111-blind at $98.75\%$, and which configuration is proposed. The comparison family follows that outcome.}
+Under the rule fixed before the rerun, the Guided Ejection Search phase was to be adopted only if F111111 with the phase used fewer vehicles than F111111-blind at 300\,s on a 98.75\% interval. It did: the fleet score was +$0.062$ [$0.001$, $0.123$], with 26 wins, 341 ties and 3 losses over seed pairs. F111111 is therefore the proposed configuration and is compared with ALNS-Base, PyVRP-ILS and NeuroLKH-adapted below. The margin is small. In the repeat fixed before results were read, which leaves out the 92 blocks with a cell run at a mean load above 8, the estimate stays at +$0.062$ but the interval becomes [$-0.014$, $0.123$] and no longer excludes zero. On blocks whose load was measured throughout, the interval is undefined (point estimate $+0.054$). Results from the first sweep on the test instances motivated adding this phase, so the outcome is not an independent test of that design choice. The phase is classical, so a gain from it is not evidence for learned control, and because every ablation case keeps it on, the ablation cannot apportion the gain to it.
 
 \begin{table}[!t]
 \caption{Rerun at 300\,s: Proposed Configuration vs.\ Each Comparator (Intervals at 98.33\%)}
@@ -840,11 +784,53 @@ NeuroLKH-adapted & $-0.068$ [$-0.142$, $0.033$] & 16/313/41 & $-3.57$ (undefined
 \end{tabular}
 \end{table}
 
-\PENDING{text for Table~\ref{tab:primary}, then the same comparisons by size (100, 200, 400 customers), the bounds for infrastructure gaps, the repeat without blocks started at load above 8, the two repeats based on load during a run with their block counts, and F111111+GES against F111111-blind whatever the adoption outcome.}
+Table~\ref{tab:primary} gives the three primary comparisons at 300\,s. The proposed configuration did not differ detectably on fleet size from ALNS-Base ($-0.027$ [$-0.065$, $0.011$]), PyVRP-ILS ($+0.008$ [$-0.098$, $0.117$]) or NeuroLKH-adapted ($-0.068$ [$-0.142$, $0.033$]). Most of the 370 seed pairs tied: 352 against ALNS-Base, 299 against PyVRP-ILS and 313 against NeuroLKH-adapted. Where fleets matched, the distance gap against ALNS-Base was $+0.04\%$ [$-0.61$, $0.66$]. The gaps against PyVRP-ILS ($+0.95\%$) and NeuroLKH-adapted ($-3.57\%$) have undefined intervals, so neither is given a direction.
+
+By size, on unadjusted $95\%$ intervals, no comparison excluded zero. The largest point estimates were against PyVRP-ILS at 200 and 400 customers ($+0.233$ [$0.000$, $0.386$] and $+0.300$ [$0.000$, $0.750$]), against ALNS-Base at 400 customers ($-0.233$ [$-0.486$, $0.000$]) and against NeuroLKH-adapted at 200 customers ($-0.167$ [$-0.250$, $0.000$]). With four geometry groups per size the bootstrap is coarse, and each of these intervals ends exactly at zero, so none shows a difference. No cell was lost to infrastructure failure, so the three ways of treating gaps give identical results, and no block started at a load above 8. The repeats based on load during a run change no conclusion. Leaving out the 92 blocks with a cell run at a mean load above 8 gives $-0.030$ [$-0.080$, $0.015$], $+0.007$ [$-0.109$, $0.122$] and $-0.070$ [$-0.158$, $0.044$]. Also leaving out the 76 blocks whose load was not measured throughout leaves the intervals undefined.
 
 \subsection{Effect of the Time Budget (RQ2)}
 \label{sec:budget_results}
-\PENDING{fleet score and matched gap at 10, 60 and 900\,s, with unadjusted intervals. State whether the 900\,s stage was completed. Compilation of the phase's kernels and the phase itself are charged to the budget, so state how much of the 10\,s budget they used and that the 10\,s comparison mostly reflects this cost.}
+\begin{figure}[!t]
+\centering
+% Coordinates printed by scripts/plot_fleet_score_by_budget.py from the rerun analysis.
+\begin{tikzpicture}
+\begin{axis}[
+  width=\columnwidth, height=0.64\columnwidth, xmode=log, xmin=7, xmax=430,
+  xtick={10,60,300}, xticklabels={10\,s,60\,s,300\,s}, minor xtick={}, log ticks with fixed point,
+  ymin=-0.75, ymax=0.25, ytick={-0.6,-0.4,-0.2,0,0.2}, yticklabel style={/pgf/number format/fixed},
+  xlabel={Wall-clock budget}, ylabel={Fleet score vs.\ comparator},
+  ymajorgrids, grid style={black!15}, axis lines*=left, axis line style={black!60},
+  tick label style={font=\scriptsize}, label style={font=\footnotesize},
+  mark size=2.2pt, error bars/error bar style={line width=1.1pt}, error bars/error mark=none,
+  legend style={at={(0.98,0.04)}, anchor=south east, draw=none, fill=none, font=\scriptsize}, legend cell align=left,
+]
+\addplot[black!60, dashed, line width=0.6pt, forget plot] coordinates {(7,0) (430,0)};
+% ALNS-Base
+\addplot[cSerA, line width=0.8pt, opacity=0.55, forget plot] coordinates {(8.8,0.073) (52.8,-0.024) (264,-0.027)};
+\addplot[cSerA, only marks, mark=*, mark options={fill=white}, forget plot, error bars/.cd, y dir=both, y explicit] coordinates {(8.8,0.073) += (0,0.121) -= (0,0.113) (52.8,-0.024) += (0,0.024) -= (0,0.025)};
+\addplot[cSerA, only marks, mark=*, error bars/.cd, y dir=both, y explicit] coordinates {(264,-0.027) += (0,0.038) -= (0,0.037)};
+\addlegendentry{ALNS-Base}
+% PyVRP-ILS
+\addplot[cSerB, line width=0.8pt, opacity=0.55, forget plot] coordinates {(10,-0.522) (60,0.032) (300,0.008)};
+\addplot[cSerB, only marks, mark=square*, mark options={fill=white}, forget plot, error bars/.cd, y dir=both, y explicit] coordinates {(10,-0.522) += (0,0.168) -= (0,0.132) (60,0.032) += (0,0.095) -= (0,0.092)};
+\addplot[cSerB, only marks, mark=square*, error bars/.cd, y dir=both, y explicit] coordinates {(300,0.008) += (0,0.109) -= (0,0.106)};
+\addlegendentry{PyVRP-ILS}
+% NeuroLKH-adapted
+\addplot[cSerC, line width=0.8pt, opacity=0.55, forget plot] coordinates {(11.3,-0.573) (67.8,-0.032) (339,-0.068)};
+\addplot[cSerC, only marks, mark=triangle*, mark options={fill=white}, forget plot, error bars/.cd, y dir=both, y explicit] coordinates {(11.3,-0.573) += (0,0.201) -= (0,0.117) (67.8,-0.032) += (0,0.069) -= (0,0.063)};
+\addplot[cSerC, only marks, mark=triangle*, error bars/.cd, y dir=both, y explicit] coordinates {(339,-0.068) += (0,0.100) -= (0,0.075)};
+\addlegendentry{NeuroLKH-adapted}
+\end{axis}
+\end{tikzpicture}
+\caption{Fleet score of the proposed configuration against each comparator by wall-clock budget. Positive values favor the proposed configuration. Filled markers at 300\,s show the confirmatory $98.33\%$ intervals; open markers at 10 and 60\,s show descriptive, unadjusted $95\%$ intervals. Markers are offset horizontally for legibility.}
+\label{fig:budget}
+\end{figure}
+
+Fig.~\ref{fig:budget} shows how the comparisons change with the budget. These results are descriptive and use unadjusted $95\%$ intervals. At 10\,s the proposed configuration used more vehicles than PyVRP-ILS ($-0.522$ [$-0.654$, $-0.354$]; 16 wins, 145 ties and 209 losses) and NeuroLKH-adapted ($-0.573$ [$-0.690$, $-0.372$]; 14, 130 and 226), and it did not differ detectably from ALNS-Base ($+0.073$ [$-0.040$, $0.194$]). At 60\,s it did not differ detectably from any of the three: $-0.024$ [$-0.049$, $0.000$] against ALNS-Base, $+0.032$ [$-0.060$, $0.128$] against PyVRP-ILS and $-0.032$ [$-0.095$, $0.036$] against NeuroLKH-adapted. The interval against ALNS-Base ends exactly at zero, so it does not show a difference. Where fleets matched at 60\,s, the distance gap against ALNS-Base was $+0.03\%$ [$-0.54$, $0.49$]. The other matched gaps at 10 and 60\,s have undefined intervals or no matched pairs and are given no direction.
+
+Compilation of the search kernels and the Guided Ejection Search phase are charged to the budget. In the 10\,s cells, the first improvement from any later phase came no earlier than 5.2\,s, with a median of 6.2, 6.3 and 7.3\,s at 100, 200 and 400 customers. In 123 of the 370 cells, no later phase improved on the solution the Guided Ejection Search phase left. Most of the first half of the budget therefore passed before the main search improved anything, so the 10\,s comparison says little about the search itself.
+
+The 900\,s stage was started and not completed, and no result from it is reported.
 
 \subsection{Factorial Ablation (RQ3)}
 \label{sec:ablation_results}
@@ -875,19 +861,25 @@ learning at heuristic & $+0.022$ [$-0.111$, $0.152$] & $-0.08$ [$-1.55$, $1.86$]
 {\scriptsize Positive fleet scores and negative gaps favor the component or bundle named. All 32 contrasts are in the supplement.\par}
 \end{table}
 
-\PENDING{text for Table~\ref{tab:ablation}: the eight primary contrasts at 300\,s with $99.38\%$ intervals, and the 60\,s and exploratory contrasts as descriptive.}
+Table~\ref{tab:ablation} gives the eight primary factorial contrasts at 300\,s. No primary factorial contrast excluded zero at 300\,s, so the ablation does not establish a benefit of the learned components at that budget. Most seed pairs tied, between 80 and 88 of the 90 in every primary contrast, and the point estimates ranged from $-0.044$ to $+0.044$. The learning bundle with the heuristic bundle present gave $+0.022$ [$-0.111$, $0.152$], and Micro in the full context gave $+0.044$ [$-0.095$, $0.201$].
+
+The LAC contrast is uninformative rather than evidence that LAC has no effect. Its fleet score was $-0.022$ [$-0.098$, $0.000$], with no wins, 88 ties and 2 losses. In a separate one-seed measurement on the same 18 instances at 300\,s (Section~\ref{sec:cost_results}), LAC was consulted in 6 instances and passed its 300-decision warmup in 3, and its classifier did not approve a move in any of them. At this budget, acceptance therefore followed the Simulated Annealing rule throughout. In the same measurement, the macro controller made no decision on the six R2 and RC2 instances.
+
+At 60\,s, on unadjusted $95\%$ intervals, three descriptive contrasts excluded zero: Micro in the bare configuration ($+0.344$ [$0.198$, $0.516$]), Micro in the full context ($+0.244$ [$0.053$, $0.492$]) and the learning bundle without the heuristic bundle ($+0.256$ [$0.114$, $0.433$]). They describe a pattern and do not establish one, and $47\%$ of the 60\,s ablation cells ran at a mean load above 8, measured with about one load sample per cell. At 300\,s, $56\%$ of ablation cells ran at a mean load above 8. No load repeat was fixed in advance for the ablation, so this exposure is reported but not adjusted for.
+
+\PENDING{result of the fresh-instance test of the Micro contrasts at 60\,s (protocol in docs/micro\_replication\_protocol.md), reported whatever the outcome.}
 
 \subsection{Instance Families (RQ5)}
 \label{sec:family_results}
-\PENDING{descriptive per-family fleet and matched distance against each comparator. Say which families lose, not only which win.}
 
+By family, the comparisons are descriptive: they count the seed pairs in which the proposed configuration used fewer, the same or more vehicles than each comparator at 300\,s. On C1 and C2, every seed pair tied against all three comparators. Against ALNS-Base, the other four families were close, with 0 to 2 pairs fewer and 1 to 5 pairs more in each. Against PyVRP-ILS, the proposed configuration used fewer vehicles in 18 pairs and more in 1 on RC1, 10 and 10 on R1, 9 and 13 on R2, and none and 10 on RC2. Against NeuroLKH-adapted, the counts were 8 and 8 on R1, 8 and 2 on RC1, none and 21 on R2, and none and 10 on RC2. The losses therefore concentrate on R2 and RC2, the families with wide time windows: there the proposed configuration never used fewer vehicles than NeuroLKH-adapted, nor than PyVRP-ILS on RC2. Where fleets matched on R2 and RC2, its distance was 10.1\% and 15.4\% shorter than that of NeuroLKH-adapted, but no interval is computed per family, and under the lexicographic objective the fleet result comes first.
 \subsection{Availability and Feasibility}
 \label{sec:feasibility_results}
-The supervisor validates every incumbent in the original problem space, covering customer coverage, capacity and time windows, before it counts. A cell without such an incumbent is reported as unavailable, and it is never replaced by a later or uncertified result. In the first sweep, 21 of the 8,620 cells were lost to infrastructure failures. \PENDING{number of cells without a solution by case, infrastructure gaps, blocks rerun after machine sleep, and interrupted cells in the rerun.}
+The supervisor validates every incumbent in the original problem space, covering customer coverage, capacity and time windows, before it counts. A cell without such an incumbent is reported as unavailable, and it is never replaced by a later or uncertified result. In the first sweep, 21 of the 8,620 cells were lost to infrastructure failures. In the rerun, all 8,060 cells of the five completed stages finished, so no comparison has an infrastructure gap. Five cells found no certified solution, all from comparators at short budgets: NeuroLKH-adapted on R1\_4\_1 (seeds 43 and 45) and RC1\_4\_1 (seed 45) at 10\,s, and PyVRP-ILS on RC1\_4\_1 (seed 42) at 10 and 60\,s. Every cell of the proposed configuration found one. Blocks with a cell frozen by machine sleep were moved aside unread and run again whole, 11 blocks with 74 cells, and 58 blocks at 300\,s (345 cells) were moved aside unread and rerun after load spikes on the machine. Of the 8,060 cells, 350 returned more than 0.5\,s after their cutoff, 349 of them NeuroLKH-adapted (median 0.77\,s late, at most 1.20\,s), but in every cell the counted incumbent had been captured before the cutoff.
 
 \subsection{Computational Cost}
 \label{sec:cost_results}
-\PENDING{time per component (DDQN inference and updates, GNN, ejection chains, set partitioning, certification) from a phase trace on a representative subset, and iterations per second by size, including ALNS-Base.}
+Each of the 18 ablation instances was run once more with the proposed configuration (seed 42, 300\,s), with timers on its main components. These runs measure shares of the budget, not solution quality. Each started at a one-minute load average of 3 or below, and four 400-customer runs ended at a load between 11 and 18. Set partitioning took the largest share, a median of $53\%$, $28\%$ and $22\%$ of the budget at 100, 200 and 400 customers. Destroy, repair and local search together took a median of $18\%$, $48\%$ and $50\%$, and the Guided Ejection Search phase took its allotted $10\%$. The learned controllers were cheap: macro, micro and LAC inference and training together took a median of $2.6\%$, $1.9\%$ and $0.8\%$, and at most $23\%$, on C101, where the main loop ran 213 iterations per second. GNN inference took $0.01\%$ and certification of incumbents less than $0.05\%$. About $11\%$ of the time was not attributed to a timed component. The main loop ran at a median of 17.8, 14.5 and 6.5 iterations per second at 100, 200 and 400 customers. The compute of the learned layer is therefore unlikely to explain the null results above. The activity counts in Section~\ref{sec:ablation_results} suggest instead that parts of it rarely act at this budget. ALNS-Base was not measured in this way, so no iteration rate is reported for it.
 
 \subsection{Record of the First Sweep}
 \label{sec:first_sweep}
@@ -913,7 +905,7 @@ NeuroLKH-adapted & $-0.176$ [$-0.284$, $-0.029$] & 8/286/73 & 2/50/22 & $-4.62$ 
 {\scriptsize Instances W/T/L compares mean fleet over five seeds and is descriptive. Treating infrastructure gaps as failures changes no conclusion.\par}
 \end{table*}
 
-Table~\ref{tab:first_sweep} shows that at 300\,s this hybrid did not differ detectably from ALNS-Base or PyVRP-ILS on fleet size and used more vehicles than NeuroLKH-adapted. Where fleets matched, it used less distance than NeuroLKH-adapted on average, but that interval is undefined. Against PyVRP-ILS it was behind at 100 customers (fleet score $-0.150$, $95\%$ interval [$-0.257$, $0$]) and ahead in point estimate at 200 and 400 customers ($+0.150$ and $+0.300$), with intervals that include zero. At 10\,s it was behind all three comparators on fleet size. At 900\,s, on the unadjusted interval, it was ahead of ALNS-Base (fleet score $+0.135$, [$0.022$, $0.201$]; matched gap $-0.41\%$, [$-0.70$, $-0.03$]) and still behind NeuroLKH-adapted ($-0.134$, [$-0.224$, $-0.021$]).
+Table~\ref{tab:first_sweep} shows that at 300\,s this hybrid did not differ detectably from ALNS-Base or PyVRP-ILS on fleet size and used more vehicles than NeuroLKH-adapted. WWhere fleets matched, the distance gap against NeuroLKH-adapted was $-4.62\%$, but that interval is undefined, so it is given no direction. Against PyVRP-ILS, no size stratum differed detectably: the fleet score was $-0.150$ at 100 customers, with a $95\%$ interval [$-0.257$, $0$] that ends at zero, and $+0.150$ and $+0.300$ at 200 and 400 customers, with intervals that include zero. At 10\,s it was behind all three comparators on fleet size. At 900\,s, on the unadjusted interval, it was ahead of ALNS-Base (fleet score $+0.135$, [$0.022$, $0.201$]; matched gap $-0.41\%$, [$-0.70$, $-0.03$]) and still behind NeuroLKH-adapted ($-0.134$, [$-0.224$, $-0.021$]).
 
 In its factorial ablation, no primary contrast had a fleet interval excluding zero at 300\,s under the $99.38\%$ correction. On unadjusted intervals, the Micro DDQN against its rule policy in the full configuration ($+0.200$, [$0.060$, $0.366$]) and the learning bundle added to the heuristic bundle ($+0.189$, [$0.067$, $0.363$]) excluded zero at 60\,s, and the same contrast in the bare configuration did so at 300\,s ($+0.111$, [$0.022$, $0.178$]). The evidence for learned control in this sweep is therefore descriptive.
 
@@ -924,12 +916,18 @@ This section interprets the results, states their practical meaning, and lists t
 
 \subsection{Where the Method Does and Does Not Help}
 \label{sec:disc_scale_aware}
-\PENDING{write from the rerun: what the method gains relative to ALNS-Base and at what budgets, whether it is behind PyVRP-ILS or NeuroLKH-adapted and on which sizes and families, and how much of any gain comes from Guided Ejection Search and other classical components instead of learning. Do not generalize beyond the 74 instances.}
+Against ALNS-Base, the proposed configuration gained nothing detectable on fleet size at any budget: the intervals at 10, 60 and 300\,s all contain zero or end at it, and most seed pairs tied. This comparison does not isolate the learned layer, because ALNS-Base also lacks the local search, ejection chains and set partitioning of the hybrid; the ablation is the comparison that does.
+
+Against PyVRP-ILS and NeuroLKH-adapted, it did not differ detectably at 300\,s or 60\,s, and at 10\,s it used more vehicles than both on unadjusted intervals, largely because compilation and the Guided Ejection Search phase take most of the first half of that budget. By family, the losses concentrate on R2 and RC2, the families with wide time windows: there it never used fewer vehicles than NeuroLKH-adapted, nor than PyVRP-ILS on RC2. It used fewer vehicles than PyVRP-ILS in 18 seed pairs and more in 1 on RC1, which is descriptive and does not establish an advantage.
+
+Much of what both search methods achieve at 300\,s comes from the classical Guided Ejection Search phase. On descriptive $95\%$ intervals, ALNS-Base with the phase used fewer vehicles than without it ($+0.208$ [$0.052$, $0.291$]; 80 wins, 287 ties and 3 losses). Without the phase, the hybrid used fewer vehicles than ALNS-Base ($+0.116$ [$0.002$, $0.181$]) and more than NeuroLKH-adapted ($-0.135$ [$-0.236$, $-0.012$]); with the phase on both, the difference from ALNS-Base was no longer detectable. The hybrid's other classical components differ from ALNS-Base as well, so even the comparison without the phase is not evidence for learned control.
+
+The ablation does not establish a benefit of the learned components at 300\,s. At that budget the LAC classifier never changed an acceptance decision and the macro controller made no decision on the R2 and RC2 instances, so parts of the learned layer were hardly exercised; the LAC contrast is uninformative, not a null effect. The only signal for learning is descriptive: Micro-DDQN at 60\,s, which a separate test on new time-window variants examines. These conclusions concern the 74 instances, the budgets and the single machine of this study, and do not extend beyond them.
 
 \subsection{Managerial Implications for Commercial Logistics}
 \label{sec:disc_managerial}
 
-In commercial freight operations, capital depreciation, vehicle financing, insurance, and driver shift wages dominate marginal fuel consumption \cite{Toth2014, braysy2005vehicle}. Fixed vehicle cost is therefore the main driver, and removing one vehicle saves more, and more regularly, than a marginal distance improvement. Extra compute is therefore worth spending when it removes a vehicle, but the solver that removes it need not be this one. \PENDING{say which solver the results favor at planning budgets of 5 and 15 minutes.}
+In commercial freight operations, capital depreciation, vehicle financing, insurance, and driver shift wages dominate marginal fuel consumption \cite{Toth2014, braysy2005vehicle}. Fixed vehicle cost is therefore the main driver, and removing one vehicle saves more, and more regularly, than a marginal distance improvement. Extra compute is therefore worth spending when it removes a vehicle, but the solver that removes it need not be this one. At a planning budget of 5 minutes, the results do not favor a solver on fleet size: none of the three comparators differed detectably from the proposed configuration at 300\,s. The choice therefore cannot rest on these results, and the simplest solver to deploy and maintain is a reasonable default; the proposed method adds learned controllers whose benefit this study does not establish. For budgets of seconds, PyVRP-ILS and NeuroLKH-adapted used fewer vehicles than the proposed configuration at 10\,s on unadjusted intervals. No 900\,s result is reported, so the study gives no guidance for a 15-minute budget.
 
 \subsection{Analytical Properties and Architectural Design Principles}
 \label{sec:disc_theory}
@@ -951,7 +949,9 @@ The main limitations are these. (i) Benchmark Scope: the evaluation covers 74 in
 \label{sec:conclusion}
 This paper presented Tri-Level Hybrid DDQN-ALNS, a hierarchical learning-augmented method for the VRPTW. It separates macro plateau control (Dueling DDQN SMDP) from micro operator selection (Dueling DDQN with Softmax-Entropy policy gating) and predictive lookahead acceptance (LAC). Feasibility rests on insertion checks against cached route profiles during search and on validation in the original problem space before any solution counts.
 
-\PENDING{write from the rerun at 300\,s, including losses and the ablation result.} The method could be extended to electric vehicle routing with non-linear charging and to real-time stochastic dispatch. All benchmark instances, trained checkpoints, baseline implementations, evaluation scripts, and raw execution logs across all 74 instances $\times$ 5 seeds are available at \url{https://github.com/Thundercok/vrptw-neural-hybrid-optimizer}.
+At 300\,s, the proposed configuration did not differ detectably on fleet size from ALNS-Base, PyVRP-ILS or NeuroLKH-adapted, and no primary factorial contrast excluded zero, so this study does not establish a benefit of the learned components at that budget. The one detectable gain, from the classical Guided Ejection Search phase, was small and did not survive leaving out blocks run at high machine load. On descriptive intervals, the proposed configuration used more vehicles than PyVRP-ILS and NeuroLKH-adapted at 10\,s, and on the wide-time-window families R2 and RC2 it never used fewer vehicles than NeuroLKH-adapted.
+
+At 300\,s, the learned acceptance criterion never changed an acceptance decision and the macro controller was idle on R2 and RC2, so the value of these components remains untested rather than refuted. The method could be extended to electric vehicle routing with non-linear charging and to real-time stochastic dispatch. All benchmark instances, trained checkpoints, baseline implementations, evaluation scripts, and raw execution logs across all 74 instances $\times$ 5 seeds are available at \url{https://github.com/Thundercok/vrptw-neural-hybrid-optimizer}.
 % TODO(before submission): this sentence is true only once the code is pushed and the records, checkpoint and logs are published. Match it to what is actually published.
 
 {\footnotesize
