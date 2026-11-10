@@ -522,7 +522,39 @@ RC2\_4\_1 & 23.20 & 8360.3 & 17.20 & 8599.8 & 12.60 & 6588.2 & 19.20 & 7450.1 \\
 \end{longtable}
 }
 
-\PENDING{family variability tables from the same records.}
+\begin{table}[!t]
+\centering
+\caption{Seed Pairs by Family at 300\,s: Fewer, Same or More Vehicles than Each Comparator}
+\label{tab:supp_family}
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{l ccc ccc ccc}
+\toprule
+ & \multicolumn{3}{c}{ALNS-Base} & \multicolumn{3}{c}{PyVRP-ILS} & \multicolumn{3}{c}{NeuroLKH-adapted} \\
+\cmidrule(lr){2-4}\cmidrule(lr){5-7}\cmidrule(lr){8-10}
+Family & Fewer & Same & More & Fewer & Same & More & Fewer & Same & More \\
+\midrule
+C1 & 0 & 60 & 0 & 0 & 60 & 0 & 0 & 60 & 0 \\
+C2 & 0 & 55 & 0 & 0 & 55 & 0 & 0 & 55 & 0 \\
+R1 & 0 & 74 & 1 & 10 & 55 & 10 & 8 & 59 & 8 \\
+R2 & 1 & 64 & 5 & 9 & 48 & 13 & 0 & 49 & 21 \\
+RC1 & 1 & 50 & 4 & 18 & 36 & 1 & 8 & 45 & 2 \\
+RC2 & 2 & 49 & 4 & 0 & 45 & 10 & 0 & 45 & 10 \\
+\midrule
+\multicolumn{10}{l}{Distance gap where fleets matched (\%), mean over matched seed pairs} \\
+\midrule
+C1 & \multicolumn{3}{c}{$0.00$} & \multicolumn{3}{c}{$0.00$} & \multicolumn{3}{c}{$-0.15$} \\
+C2 & \multicolumn{3}{c}{$-0.23$} & \multicolumn{3}{c}{$0.00$} & \multicolumn{3}{c}{$-0.32$} \\
+R1 & \multicolumn{3}{c}{$+0.24$} & \multicolumn{3}{c}{$+1.55$} & \multicolumn{3}{c}{$-2.37$} \\
+R2 & \multicolumn{3}{c}{$-0.58$} & \multicolumn{3}{c}{$+1.60$} & \multicolumn{3}{c}{$-10.12$} \\
+RC1 & \multicolumn{3}{c}{$+0.91$} & \multicolumn{3}{c}{$+0.67$} & \multicolumn{3}{c}{$+0.52$} \\
+RC2 & \multicolumn{3}{c}{$-0.46$} & \multicolumn{3}{c}{$+2.43$} & \multicolumn{3}{c}{$-15.44$} \\
+\bottomrule
+\end{tabular}
+
+\vspace{2pt}
+{\footnotesize Counts are seed pairs of the proposed configuration (F111111) against each comparator, pooled over the instances of a family at all sizes. No seed pair had a cell without a solution. These counts and gaps are descriptive: no interval is computed per family, and negative gaps favor the proposed configuration.\par}
+\end{table}
 
 \section{Factorial Ablation Contrasts}
 \label{sec:supp_ablation}
