@@ -1,0 +1,71 @@
+{
+ "wall_sec": 300.0014002500102,
+ "component_sec": {
+  "capture": 0.008720498939510435,
+  "destroy": 21.211715215758886,
+  "fixed_fleet_polish": 0.19490729173412547,
+  "gec": 75.97845227370271,
+  "ges_phase": 0.09705908398609608,
+  "gnn_inference": 0.018072666018269956,
+  "lac_inference": 0.33089852024568245,
+  "lac_training": 0.15720891661476344,
+  "local_search": 90.42918750294484,
+  "macro_inference": 0.024904881021939218,
+  "macro_training": 0.29912862612400204,
+  "micro_inference": 11.110148295992985,
+  "micro_training": 27.279344120062888,
+  "repair": 36.18527969846036,
+  "set_partitioning": 1.235875658574514
+ },
+ "component_calls": {
+  "capture": 89,
+  "destroy": 26124,
+  "fixed_fleet_polish": 37,
+  "gec": 2128,
+  "ges_phase": 1,
+  "gnn_inference": 1,
+  "lac_inference": 1678,
+  "lac_training": 76,
+  "local_search": 2748,
+  "macro_inference": 133,
+  "macro_training": 133,
+  "micro_inference": 24489,
+  "micro_training": 6122,
+  "repair": 26124,
+  "set_partitioning": 262
+ },
+ "other_sec": 35.44049699982861,
+ "iterations": 24489,
+ "first_phase_ended": true,
+ "first_phase_end_iteration": 0,
+ "lac": {
+  "consulted": 1678,
+  "warmup": 299,
+  "accepted": 950
+ },
+ "modes": {
+  "0": 63,
+  "1": 16,
+  "2": 12,
+  "3": 10,
+  "4": 3,
+  "5": 11,
+  "6": 74
+ },
+ "controllers": {
+  "micro_ddqn": 24489,
+  "macro_ddqn": 133
+ },
+ "instance": "C201",
+ "config": "ges",
+ "seed": 42,
+ "time_limit": 300.0,
+ "customers": 100,
+ "loadavg": [
+  3.697265625,
+  5.07421875,
+  5.546875
+ ],
+ "nv": 3,
+ "td": 591.5565566715014
+}

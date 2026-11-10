@@ -1,0 +1,93 @@
+{"start": "C101", "at": "10 03:26:32", "waited_min": 11, "load": "{ 2.78 6.21 9.64 }"}
+[phase_transition_log] {'phase1_best_nv': 10, 'phase1_best_td': 828.936866942834, 'phase1_final_lambda': 50.0, 'early_stop_triggered_iter': 64001, 'phase2_final_nv': 10, 'phase2_final_td': 828.936866942834}
+{"instance": "C101", "wall_sec": 300.00109083298594, "iterations": 64002, "first_phase_ended": true, "lac": {"consulted": 456, "warmup": 299, "accepted": 5}}
+{"start": "C1_2_1", "at": "10 03:32:37", "waited_min": 1, "load": "{ 2.19 3.93 7.35 }"}
+[c1_2_1] Population restart triggered at iter 765 (no_best_imp=324): NV=20->20, cost=2707.4->2704.6 (best_nv=20, best_cost=2704.6)
+[c1_2_1] Population restart triggered at iter 1845 (no_best_imp=648): NV=20->20, cost=2717.0->2704.6 (best_nv=20, best_cost=2704.6)
+[c1_2_1] Population restart triggered at iter 2277 (no_best_imp=324): NV=20->20, cost=2707.9->2704.6 (best_nv=20, best_cost=2704.6)
+[c1_2_1] Population restart triggered at iter 3897 (no_best_imp=972): NV=20->20, cost=2729.5->2704.6 (best_nv=20, best_cost=2704.6)
+[phase_transition_log] {'phase1_best_nv': None, 'phase1_best_td': None, 'phase1_final_lambda': None, 'early_stop_triggered_iter': None, 'phase2_final_nv': 20, 'phase2_final_td': 2704.5677663304737}
+{"instance": "C1_2_1", "wall_sec": 300.0038977499935, "iterations": 5194, "first_phase_ended": false, "lac": {}}
+{"start": "C1_4_1", "at": "10 03:38:41", "waited_min": 1, "load": "{ 2.71 3.52 5.97 }"}
+[phase_transition_log] {'phase1_best_nv': None, 'phase1_best_td': None, 'phase1_final_lambda': None, 'early_stop_triggered_iter': None, 'phase2_final_nv': 40, 'phase2_final_td': 7152.0565813846015}
+{"instance": "C1_4_1", "wall_sec": 300.0197297499981, "iterations": 1551, "first_phase_ended": false, "lac": {}}
+{"start": "C201", "at": "10 03:46:50", "waited_min": 3, "load": "{ 2.69 4.48 5.48 }"}
+[C201] Population restart triggered at iter 287 (no_best_imp=216): NV=3->3, cost=635.9->591.6 (best_nv=3, best_cost=591.6)
+[C201] Population restart triggered at iter 863 (no_best_imp=432): NV=3->3, cost=635.9->591.6 (best_nv=3, best_cost=591.6)
+[C201] Population restart triggered at iter 1439 (no_best_imp=432): NV=3->3, cost=675.7->591.6 (best_nv=3, best_cost=591.6)
+[C201] Population restart triggered at iter 2735 (no_best_imp=1080): NV=3->3, cost=675.7->591.6 (best_nv=3, best_cost=591.6)
+[C201] Population restart triggered at iter 7991 (no_best_imp=4968): NV=3->3, cost=635.9->591.6 (best_nv=3, best_cost=591.6)
+[C201] Population restart triggered at iter 9935 (no_best_imp=1944): NV=3->3, cost=635.9->591.6 (best_nv=3, best_cost=591.6)
+[C201] Population restart triggered at iter 10151 (no_best_imp=216): NV=3->3, cost=594.3->591.6 (best_nv=3, best_cost=591.6)
+[C201] Population restart triggered at iter 10583 (no_best_imp=432): NV=3->3, cost=594.3->591.6 (best_nv=3, best_cost=591.6)
+[C201] Population restart triggered at iter 11879 (no_best_imp=1296): NV=3->3, cost=594.3->591.6 (best_nv=3, best_cost=591.6)
+[phase_transition_log] {'phase1_best_nv': 3, 'phase1_best_td': 591.5565566715014, 'phase1_final_lambda': 50.0, 'early_stop_triggered_iter': 24488, 'phase2_final_nv': 3, 'phase2_final_td': 591.5565566715014}
+{"instance": "C201", "wall_sec": 300.0014002500102, "iterations": 24489, "first_phase_ended": true, "lac": {"consulted": 1678, "warmup": 299, "accepted": 950}}
+{"start": "C2_2_1", "at": "10 03:54:54", "waited_min": 3, "load": "{ 2.67 4.03 5.01 }"}
+[c2_2_1] Population restart triggered at iter 2613 (no_best_imp=648): NV=6->6, cost=1991.2->1931.4 (best_nv=6, best_cost=1931.4)
+[phase_transition_log] {'phase1_best_nv': 6, 'phase1_best_td': 1931.4425029392019, 'phase1_final_lambda': 45.0, 'early_stop_triggered_iter': None, 'phase2_final_nv': 6, 'phase2_final_td': 1931.4425029392016}
+{"instance": "C2_2_1", "wall_sec": 300.0009427079931, "iterations": 6530, "first_phase_ended": true, "lac": {"consulted": 759, "warmup": 299, "accepted": 556}}
+{"start": "C2_4_1", "at": "10 04:00:00", "waited_min": 0, "load": "{ 2.59 3.24 4.35 }"}
+[phase_transition_log] {'phase1_best_nv': None, 'phase1_best_td': None, 'phase1_final_lambda': None, 'early_stop_triggered_iter': None, 'phase2_final_nv': 12, 'phase2_final_td': 4116.138870655767}
+{"instance": "C2_4_1", "wall_sec": 300.0085686669918, "iterations": 1028, "first_phase_ended": false, "lac": {}}
+{"start": "R101", "at": "10 04:15:05", "waited_min": 10, "load": "{ 2.93 4.88 5.27 }"}
+[phase_transition_log] {'phase1_best_nv': None, 'phase1_best_td': None, 'phase1_final_lambda': None, 'early_stop_triggered_iter': None, 'phase2_final_nv': 19, 'phase2_final_td': 1650.7992395710685}
+{"instance": "R101", "wall_sec": 300.0012090000091, "iterations": 3577, "first_phase_ended": false, "lac": {}}
+{"start": "R1_2_1", "at": "10 04:24:11", "waited_min": 4, "load": "{ 2.89 4.51 5.12 }"}
+[r1_2_1] Population restart triggered at iter 2936 (no_best_imp=324): NV=20->20, cost=4915.7->4930.4 (best_nv=20, best_cost=4863.0)
+[phase_transition_log] {'phase1_best_nv': None, 'phase1_best_td': None, 'phase1_final_lambda': None, 'early_stop_triggered_iter': None, 'phase2_final_nv': 20, 'phase2_final_td': 4863.009728989499}
+{"instance": "R1_2_1", "wall_sec": 300.00362154102186, "iterations": 3501, "first_phase_ended": false, "lac": {}}
+{"start": "R1_4_1", "at": "10 04:31:16", "waited_min": 2, "load": "{ 2.30 3.80 4.68 }"}
+[phase_transition_log] {'phase1_best_nv': None, 'phase1_best_td': None, 'phase1_final_lambda': None, 'early_stop_triggered_iter': None, 'phase2_final_nv': 40, 'phase2_final_td': 10826.705708287684}
+{"instance": "R1_4_1", "wall_sec": 300.0153292500181, "iterations": 2983, "first_phase_ended": false, "lac": {}}
+{"start": "R201", "at": "10 04:39:23", "waited_min": 3, "load": "{ 2.71 4.13 4.48 }"}
+[phase_transition_log] {'phase1_best_nv': None, 'phase1_best_td': None, 'phase1_final_lambda': None, 'early_stop_triggered_iter': None, 'phase2_final_nv': 4, 'phase2_final_td': 1252.3712215887208}
+{"instance": "R201", "wall_sec": 300.0010198749951, "iterations": 2341, "first_phase_ended": false, "lac": {}}
+{"start": "R2_2_1", "at": "10 04:44:27", "waited_min": 0, "load": "{ 2.51 3.17 3.92 }"}
+[phase_transition_log] {'phase1_best_nv': None, 'phase1_best_td': None, 'phase1_final_lambda': None, 'early_stop_triggered_iter': None, 'phase2_final_nv': 5, 'phase2_final_td': 4070.7674600369105}
+{"instance": "R2_2_1", "wall_sec": 300.0014654160477, "iterations": 2789, "first_phase_ended": false, "lac": {}}
+{"start": "R2_4_1", "at": "10 04:49:31", "waited_min": 0, "load": "{ 2.44 2.79 3.52 }"}
+[phase_transition_log] {'phase1_best_nv': None, 'phase1_best_td': None, 'phase1_final_lambda': None, 'early_stop_triggered_iter': None, 'phase2_final_nv': 9, 'phase2_final_td': 9019.62841272755}
+{"instance": "R2_4_1", "wall_sec": 300.0069230000372, "iterations": 1845, "first_phase_ended": false, "lac": {}}
+{"start": "RC101", "at": "10 04:54:35", "waited_min": 0, "load": "{ 2.66 3.12 3.47 }"}
+[RC101] Population restart triggered at iter 215 (no_best_imp=216): NV=14->14, cost=1767.6->1764.0 (best_nv=14, best_cost=1764.0)
+[RC101] Population restart triggered at iter 688 (no_best_imp=216): NV=14->14, cost=1754.8->1764.0 (best_nv=14, best_cost=1754.8)
+[RC101] Population restart triggered at iter 904 (no_best_imp=216): NV=14->14, cost=1764.0->1754.8 (best_nv=14, best_cost=1754.8)
+[RC101] Population restart triggered at iter 1192 (no_best_imp=216): NV=14->14, cost=1764.0->1754.8 (best_nv=14, best_cost=1754.8)
+[RC101] Population restart triggered at iter 1480 (no_best_imp=216): NV=14->14, cost=1754.8->1764.0 (best_nv=14, best_cost=1754.8)
+[RC101] Population restart triggered at iter 1768 (no_best_imp=216): NV=14->14, cost=1764.8->1754.8 (best_nv=14, best_cost=1754.8)
+[RC101] Population restart triggered at iter 3280 (no_best_imp=216): NV=15->14, cost=1726.1->1754.8 (best_nv=14, best_cost=1754.8)
+[RC101] Population restart triggered at iter 3568 (no_best_imp=216): NV=14->14, cost=1754.8->1764.0 (best_nv=14, best_cost=1754.8)
+[RC101] Population restart triggered at iter 3856 (no_best_imp=216): NV=14->14, cost=1764.0->1754.8 (best_nv=14, best_cost=1754.8)
+[RC101] Population restart triggered at iter 4144 (no_best_imp=216): NV=14->14, cost=1764.0->1754.8 (best_nv=14, best_cost=1754.8)
+[RC101] Population restart triggered at iter 4576 (no_best_imp=216): NV=17->14, cost=1972.3->1764.0 (best_nv=14, best_cost=1754.8)
+[RC101] Population restart triggered at iter 6088 (no_best_imp=216): NV=15->14, cost=1710.8->1764.0 (best_nv=14, best_cost=1754.8)
+[RC101] Population restart triggered at iter 7088 (no_best_imp=216): NV=14->14, cost=1825.6->1744.8 (best_nv=14, best_cost=1735.4)
+[phase_transition_log] {'phase1_best_nv': 14, 'phase1_best_td': np.float64(1754.7679352903253), 'phase1_final_lambda': 5.0, 'early_stop_triggered_iter': None, 'phase2_final_nv': 14, 'phase2_final_td': 1735.406611594314}
+{"instance": "RC101", "wall_sec": 300.0034010420204, "iterations": 7101, "first_phase_ended": true, "lac": {"consulted": 139, "warmup": 139, "accepted": 135}}
+{"start": "RC1_2_1", "at": "10 05:06:40", "waited_min": 7, "load": "{ 2.98 4.57 4.44 }"}
+[rc1_2_1] Population restart triggered at iter 323 (no_best_imp=324): NV=18->18, cost=4918.5->4908.7 (best_nv=18, best_cost=4908.7)
+[rc1_2_1] Population restart triggered at iter 866 (no_best_imp=324): NV=18->18, cost=4930.2->4907.8 (best_nv=18, best_cost=4907.8)
+[rc1_2_1] Population restart triggered at iter 1190 (no_best_imp=324): NV=18->18, cost=4957.9->4907.8 (best_nv=18, best_cost=4907.8)
+[rc1_2_1] Population restart triggered at iter 1514 (no_best_imp=324): NV=18->18, cost=4930.2->4907.8 (best_nv=18, best_cost=4907.8)
+[rc1_2_1] Population restart triggered at iter 2486 (no_best_imp=972): NV=18->18, cost=4930.1->4907.8 (best_nv=18, best_cost=4907.8)
+[rc1_2_1] Population restart triggered at iter 2810 (no_best_imp=324): NV=18->18, cost=4930.1->4907.8 (best_nv=18, best_cost=4907.8)
+[rc1_2_1] Population restart triggered at iter 3134 (no_best_imp=324): NV=18->18, cost=4919.6->4907.8 (best_nv=18, best_cost=4907.8)
+[rc1_2_1] Population restart triggered at iter 3458 (no_best_imp=324): NV=18->18, cost=4928.7->4907.8 (best_nv=18, best_cost=4907.8)
+[rc1_2_1] Population restart triggered at iter 7670 (no_best_imp=2916): NV=19->18, cost=3713.1->4907.8 (best_nv=18, best_cost=4907.8)
+[phase_transition_log] {'phase1_best_nv': 18, 'phase1_best_td': 4908.662303074631, 'phase1_final_lambda': 50.0, 'early_stop_triggered_iter': None, 'phase2_final_nv': 18, 'phase2_final_td': 4094.447528830382}
+{"instance": "RC1_2_1", "wall_sec": 300.00199933402473, "iterations": 8601, "first_phase_ended": true, "lac": {"consulted": 293, "warmup": 293, "accepted": 78}}
+{"start": "RC1_4_1", "at": "10 05:15:46", "waited_min": 4, "load": "{ 2.30 3.32 3.79 }"}
+[rc1_4_1] Population restart triggered at iter 1403 (no_best_imp=1296): NV=36->36, cost=13095.6->13019.0 (best_nv=36, best_cost=13019.0)
+[phase_transition_log] {'phase1_best_nv': 36, 'phase1_best_td': np.float64(13018.991913748527), 'phase1_final_lambda': 50.0, 'early_stop_triggered_iter': None, 'phase2_final_nv': 36, 'phase2_final_td': 11940.474771388177}
+{"instance": "RC1_4_1", "wall_sec": 300.02010695799254, "iterations": 2076, "first_phase_ended": true, "lac": {"consulted": 1, "warmup": 1, "accepted": 1}}
+{"start": "RC201", "at": "10 05:21:52", "waited_min": 1, "load": "{ 2.82 3.54 3.78 }"}
+[phase_transition_log] {'phase1_best_nv': None, 'phase1_best_td': None, 'phase1_final_lambda': None, 'early_stop_triggered_iter': None, 'phase2_final_nv': 4, 'phase2_final_td': 1446.3073821325152}
+{"instance": "RC201", "wall_sec": 300.00076241599163, "iterations": 2345, "first_phase_ended": false, "lac": {}}
+{"start": "RC2_2_1", "at": "10 05:26:58", "waited_min": 0, "load": "{ 2.94 3.08 3.48 }"}
+[phase_transition_log] {'phase1_best_nv': None, 'phase1_best_td': None, 'phase1_final_lambda': None, 'early_stop_triggered_iter': None, 'phase2_final_nv': 6, 'phase2_final_td': 3205.228071822173}
+{"instance": "RC2_2_1", "wall_sec": 300.00175004196353, "iterations": 3189, "first_phase_ended": false, "lac": {}}
+{"start": "RC2_4_1", "at": "10 05:33:05", "waited_min": 1, "load": "{ 2.64 4.59 4.19 }"}
+[phase_transition_log] {'phase1_best_nv': None, 'phase1_best_td': None, 'phase1_final_lambda': None, 'early_stop_triggered_iter': None, 'phase2_final_nv': 13, 'phase2_final_td': 6669.358913987255}
+{"instance": "RC2_4_1", "wall_sec": 300.00842737499624, "iterations": 2085, "first_phase_ended": false, "lac": {}}
+{"finished": "10 05:38:10"}

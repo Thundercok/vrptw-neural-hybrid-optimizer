@@ -1,0 +1,52 @@
+[project]
+name = "vrptw-neural-hybrid-optimizer"
+version = "0.1.0"
+description = "Neural Hybrid DDQN-ALNS with GNN Edge-Heatmap Guidance for VRPTW"
+readme = "README.md"
+requires-python = ">=3.11,<3.13"
+dependencies = [
+    "numpy>=1.26,<2.4",  # numba ceiling; V2 validated under numpy 2.3.5
+    "pandas>=2.2",
+    "scipy>=1.13",
+    "numba>=0.60",
+    "torch>=2.4",
+    "safetensors>=0.4",
+    "matplotlib>=3.8",
+    "ortools>=9.15.6755",
+]
+
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[project.optional-dependencies]
+baselines = ["pyvrp==0.14.1"]
+dev = [
+    "ruff>=0.7",
+    "pytest>=8.0",
+]
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+extend-exclude = ["docs", "logs", "model", "data", "posters/archive", "archive", "scratch", "*.md"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]
+ignore = ["E501", "B008", "B905", "E402"]
+
+[tool.pyright]
+extraPaths = ["docs", "src"]
+
+[dependency-groups]
+poster = [
+    "python-pptx>=1.0.2",
+    "playwright>=1.41",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+

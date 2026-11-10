@@ -1,0 +1,50 @@
+{
+ "wall_sec": 300.0069230000372,
+ "component_sec": {
+  "capture": 0.09562107973033562,
+  "destroy": 35.082111558294855,
+  "fixed_fleet_polish": 0.05274587916210294,
+  "ges_phase": 29.811830376274884,
+  "gnn_inference": 0.012823500030208379,
+  "local_search": 56.38340499694459,
+  "micro_inference": 0.6631414042785764,
+  "micro_training": 1.5747041162103415,
+  "repair": 53.42150216875598,
+  "set_partitioning": 114.37139704101719
+ },
+ "component_calls": {
+  "capture": 90,
+  "destroy": 1922,
+  "fixed_fleet_polish": 1,
+  "ges_phase": 1,
+  "gnn_inference": 1,
+  "local_search": 120,
+  "micro_inference": 1846,
+  "micro_training": 461,
+  "repair": 1922,
+  "set_partitioning": 52
+ },
+ "other_sec": 8.537640879338142,
+ "iterations": 1845,
+ "first_phase_ended": false,
+ "first_phase_end_iteration": null,
+ "lac": {},
+ "modes": {
+  "0": 19
+ },
+ "controllers": {
+  "micro_ddqn": 1846
+ },
+ "instance": "R2_4_1",
+ "config": "ges",
+ "seed": 42,
+ "time_limit": 300.0,
+ "customers": 400,
+ "loadavg": [
+  2.65576171875,
+  3.12255859375,
+  3.470703125
+ ],
+ "nv": 9,
+ "td": 9019.62841272755
+}

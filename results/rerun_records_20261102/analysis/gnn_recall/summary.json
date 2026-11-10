@@ -1,0 +1,146 @@
+[
+ {
+  "customers": 100,
+  "threshold": 0.003,
+  "source": "NeuroLKH-adapted",
+  "edges": 30038,
+  "edge_recall": 0.9855849257607031,
+  "candidate_retention": 0.38620579915134373
+ },
+ {
+  "customers": 100,
+  "threshold": 0.003,
+  "source": "PyVRP-ILS",
+  "edges": 30031,
+  "edge_recall": 0.9951383570310679,
+  "candidate_retention": 0.38620579915134373
+ },
+ {
+  "customers": 100,
+  "threshold": 0.01,
+  "source": "NeuroLKH-adapted",
+  "edges": 30038,
+  "edge_recall": 0.9799920101205141,
+  "candidate_retention": 0.3398939179632249
+ },
+ {
+  "customers": 100,
+  "threshold": 0.01,
+  "source": "PyVRP-ILS",
+  "edges": 30031,
+  "edge_recall": 0.9907096000799174,
+  "candidate_retention": 0.3398939179632249
+ },
+ {
+  "customers": 100,
+  "threshold": 0.05,
+  "source": "NeuroLKH-adapted",
+  "edges": 30038,
+  "edge_recall": 0.9655103535521673,
+  "candidate_retention": 0.273988684582744
+ },
+ {
+  "customers": 100,
+  "threshold": 0.05,
+  "source": "PyVRP-ILS",
+  "edges": 30031,
+  "edge_recall": 0.9794212646931504,
+  "candidate_retention": 0.273988684582744
+ },
+ {
+  "customers": 200,
+  "threshold": 0.003,
+  "source": "NeuroLKH-adapted",
+  "edges": 12720,
+  "edge_recall": 0.9935534591194969,
+  "candidate_retention": 0.2716728855721393
+ },
+ {
+  "customers": 200,
+  "threshold": 0.003,
+  "source": "PyVRP-ILS",
+  "edges": 12750,
+  "edge_recall": 0.9989019607843137,
+  "candidate_retention": 0.2716728855721393
+ },
+ {
+  "customers": 200,
+  "threshold": 0.01,
+  "source": "NeuroLKH-adapted",
+  "edges": 12720,
+  "edge_recall": 0.9918238993710692,
+  "candidate_retention": 0.23328150912106135
+ },
+ {
+  "customers": 200,
+  "threshold": 0.01,
+  "source": "PyVRP-ILS",
+  "edges": 12750,
+  "edge_recall": 0.9981960784313726,
+  "candidate_retention": 0.23328150912106135
+ },
+ {
+  "customers": 200,
+  "threshold": 0.05,
+  "source": "NeuroLKH-adapted",
+  "edges": 12720,
+  "edge_recall": 0.9875786163522012,
+  "candidate_retention": 0.18222636815920398
+ },
+ {
+  "customers": 200,
+  "threshold": 0.05,
+  "source": "PyVRP-ILS",
+  "edges": 12750,
+  "edge_recall": 0.9967058823529412,
+  "candidate_retention": 0.18222636815920398
+ },
+ {
+  "customers": 400,
+  "threshold": 0.003,
+  "source": "NeuroLKH-adapted",
+  "edges": 12754,
+  "edge_recall": 0.998980711933511,
+  "candidate_retention": 0.273618038237739
+ },
+ {
+  "customers": 400,
+  "threshold": 0.003,
+  "source": "PyVRP-ILS",
+  "edges": 12787,
+  "edge_recall": 1.0,
+  "candidate_retention": 0.273618038237739
+ },
+ {
+  "customers": 400,
+  "threshold": 0.01,
+  "source": "NeuroLKH-adapted",
+  "edges": 12754,
+  "edge_recall": 0.9981182374157127,
+  "candidate_retention": 0.23594139650872817
+ },
+ {
+  "customers": 400,
+  "threshold": 0.01,
+  "source": "PyVRP-ILS",
+  "edges": 12787,
+  "edge_recall": 1.0,
+  "candidate_retention": 0.23594139650872817
+ },
+ {
+  "customers": 400,
+  "threshold": 0.05,
+  "source": "NeuroLKH-adapted",
+  "edges": 12754,
+  "edge_recall": 0.9951387799905912,
+  "candidate_retention": 0.18388403990024937
+ },
+ {
+  "customers": 400,
+  "threshold": 0.05,
+  "source": "PyVRP-ILS",
+  "edges": 12787,
+  "edge_recall": 0.9982795026198483,
+  "candidate_retention": 0.18388403990024937
+ }
+]
