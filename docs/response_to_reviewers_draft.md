@@ -1,184 +1,279 @@
-# Response to reviewers: working draft for Access-2026-45322
+# Response to reviewers: draft for Access-2026-45322
 
-Working draft, not ready to send. Final text goes into the IEEE template
-(concern / author response / author action).
+Draft of 10 November 2026, written to match `docs/manuscript.tex` at commit 2fb925fe. The authors
+rewrite it in their own words before sending. The final text goes into the IEEE template
+(concern / author response / author action). Section numbers refer to the compiled manuscript.
 
-Status tags:
-- **DONE**: the manuscript edit exists in `docs/manuscript.tex`.
-- **DATA OK, TEXT TODO**: evidence exists, the manuscript text is not rewritten yet.
-- **OPEN**: evidence or decision still missing.
+Updated on the evening of 10 November 2026 for the Micro test result, the GNN recall sentence now in
+Section IV-E3, and the removal of the Discussion subsection on analytical properties. These updates
+match `docs/manuscript.tex` as committed together with this file on 11 November 2026.
 
-Numbers below come from the closed sweep plus the reference-blind T300 run. They change
-if the GES variant replaces the current solver. A single GES rerun is in progress with its
-analysis and adoption rule fixed in advance: see `results/ges_sweep_20261102/README.md`.
+Open before sending:
+- **[HGS]** The answer under R1.2 is checked against the installed PyVRP 0.14.1, the frozen
+  adapter, the rerun cells and the PyVRP 0.13.0 release notes
+  (https://github.com/PyVRP/PyVRP/releases/tag/v0.13.0). It gives no reason for not running another
+  HGS implementation; the authors add one if they want to.
+- **[AI]** A disclosure for this letter is drafted in its last section. The authors check that it
+  describes what they actually did, and keep it consistent with the manuscript's Acknowledgment.
 
-## Must fix before sending
+## Opening statement (draft)
 
-Manuscript edits of 2 November are in `docs/manuscript.tex`, uncommitted, and still need copying to Overleaf.
+We thank the editor and the reviewers. The reviews identified a central problem: our claims
+rested on equal iteration budgets, and the proposed method costs more per iteration. We have
+rebuilt the evaluation and withdrawn every iteration-budget result. All results now come from a
+single rerun in which every solver received the same wall-clock budget on the same machine, with
+all solvers of an instance, seed and budget run together, and with only incumbents certified in
+the original problem space counted. The analysis plan was fixed before results were read.
 
-1. **GNN training description.** DONE. Now 48 training and 12 validation synthetic instances at N = 100
-   and 200, ALNS teacher at 10 s, no test instances.
-2. **Recall figures 95.8%, 91.4%, 78.2%.** REMOVED, because they cannot be traced to the registered checkpoint.
-   Replaced by validation-set figures, labelled as optimistic. Recall by test size is still open (R2.5).
-3. **Firewall sentence.** DONE. States that test results motivated evaluating GES, and how the development
-   set relates to the test set.
-4. **Stale claims.** PARTLY DONE. Conclusion, limitations and platform are fixed. The Results sections still
-   hold old tables and 23W/49T/2L, p=1.7e-5, T_max=2000. They wait for the T300 numbers. The Conclusion has a visible
-   `[RESULTS PENDING]` marker that must not reach submission. Table A4 still says "Contrastive GNN".
-5. **Instance-family heuristic.** DONE, disclosed. It stays in the solver because the rerun is running.
-6. **Machine speed varied.** DONE, disclosed in the setup section. Rerun block counts and the load sensitivity
-   result are still to add.
-7. **Granular neighbourhood was misdescribed.** FIXED. The text said k = 25 spatiotemporal neighbours with an affinity
-   equation. The code uses 15 nearest customers by distance. The equation is removed.
-8. **Pruning claim (97.5-98.7%, 98.74%).** REMOVED. Those figures match k = 5, which is neither the text's k = 25 nor the
-   code's k = 15, and `docs/gnn_retraining_20261017.md` says the registered model does not establish them.
-9. **Hardware text was wrong.** FIXED. It said 32 GB, macOS 15 and pinned processes. The machine is an M1 with 16 GB
-   on macOS 26.5.2, and processes are not pinned.
-10. **Author to confirm.** (a) Data availability. The old link returned 404, so manuscript and supplement now cite `Thundercok/vrptw-neural-hybrid-optimizer`. "Archived on Zenodo" was removed: no such archive is known to the author. Say in the response that the statement was corrected. Before submission, push the code and publish the records, checkpoint and logs, because `results/` is gitignored and the repository was last pushed on 23 October. (b) That the "synthetic pilot"
-    calibration in Supplementary Section 10 happened as described: I could not verify it from the code.
+The rerun changes the paper's conclusion, and we report it as it is. At 300 s the proposed
+configuration did not differ detectably on fleet size from ALNS-Base, PyVRP-ILS or
+NeuroLKH-adapted, and no primary factorial contrast excluded zero, so the study does not
+establish a benefit of the learned components at that budget. One learned component, Micro-DDQN,
+was then tested once more at 60 s under a protocol fixed in advance: one of its two contrasts
+excluded zero and the other did not, and we report both (R1.3). Several of your concerns are
+therefore supported by the new evidence, and we say so where they are. We also disclose that
+results on the test instances motivated adding a classical Guided Ejection Search phase, which
+was kept under a rule fixed before the rerun.
 
-11. **ALNS-Base was misdescribed.** FIXED. The text called it a faithful Pisinger and Ropke reproduction with a roulette wheel, sigma3 = 13 and cooling 0.9995. The code uses Thompson sampling over 65 pairs, sigma3 = 3 and cooling 0.99975. Say so in the response (R3.3).
-12. **Hyperparameter table and blending equation did not match the code.** FIXED from `config.py` and `rl.py`: macro state 12 (figure said 13), macro lr, buffer and batch, blend weights 0.55/0.20/0.35, no standardization before the gate, ungated UCB term, and the set-partitioning limit min(30, 4 + 0.05N) s instead of 4 s.
-13. **"Synthetic pilot" calibration.** REWORDED in manuscript and supplement: no calibration log was retained. The author can restore the claim only with a record of it. This replaces item 10(b).
-14. **Supplement rebuilt.** DONE except per-instance tables, which wait for the rerun. REMOVED because no source could be traced or the data were iteration-budget results: Section 5 sensitivity table (its nominal 0.35/0.65 was not the code), Section 6 PCA, Section 7 literature comparison (family-level rows could not be traced), Section 8 per-instance tables, Section 11 variability, Section 12 anytime table. Tell the reviewers these were withdrawn and why.
-15. **Main-text methods audited against the frozen code.** FIXED in `docs/manuscript.tex`:
-    - Macro: modes a4 and a5 were swapped; DIVERSIFY is 1.35 destroy and 1.08 temperature, not 1.5 and 1.5.
-    - Search phases were undescribed: a penalized first phase without LAC (up to 3,000 nominal iterations) and tail phases taking 20% of the budget. The old penalty multipliers were wrong.
-    - Reward and potential omitted the 0.30 scale and used wrong potential coefficients (15 and 0.18). Micro exploration and reward were missing.
-    - LAC: the feature vector was wrong, the label follows best distance only and not lexicographic F, and the latency claim of under 0.05 ms was removed.
-    - GEC: no beam (k = 25 and 15 were not implemented), no 0.5 s limit, and feasibility tests replay the route instead of using O(1) queries.
-    - Set partitioning: per-query limits of 3, 4.7 and 8 s, at most 800 columns, a set-covering fallback, up to min(60, 28 + N/10) routes per customer (not 3).
-    - Ablation: low levels of Macro and Micro are rule policies, not removals.
-    Implication for R3.5 and R3.7: state that LAC does not act in the first phase, and that GEC does not use O(1) checks. Whether LAC fires enough at 300 s should be measured from the rerun's counters.
-16. **Proofs corrected.** DONE. The two-stage set-partitioning theorem was removed because the solver does not use that formulation, and its conditioning claim had no basis. The GEC complexity proof now describes the code (no beam, O(m K^3 L^4)). The behavior policy in the Bellman section is corrected to epsilon-greedy. The forward-slack condition was wrong as an if-and-only-if: the exact condition is max(0, delta - W_{i+1}) <= F_{i+1}, fixed in manuscript and supplement. Algorithm S1 and the reward table, now with Micro coefficients, follow the code.
-
-17. **Findings from the dry runs of 2 November, development instances only.** The sweep CLI uses a nominal 10,000 iterations and patience 2,500, not the Config defaults of 5,000 and 250. Corrected in the text. (a) LAC can be absent at 300 s: it is not consulted until the first phase ends, which needs 6,000 iterations or the fleet floor, and 10 of 18 dev100 runs did not reach 6,000. With GES and blind search the floor is the capacity bound, which is often unreachable, so the early exit may rarely fire. This can make the rerun's LAC contrast nearly empty. Measure it and say so in R3.5. The solver must not change. (b) At 10 s, GES and its JIT compilation take much of the budget: a 8 s dry run spent all of it there, and ALNS iterations at 10 s fell from 1,901 to 609 and from 7,567 to 1,021 on two instances. Report this with the 10 s results. (c) Set partitioning took 15.1 of 30 s in a dry run on a 100-customer instance.
-18. **Checklist items still open.** A grammar pass was done on 3 November by reading the source, with no grammar tool; an author should still proofread it. References are in citation order; rerun the ordering if citations change. No video. Byline form only if the author list changes. Supplement must be uploaded with the final files. NV and TD were converted to upright notation on 3 November.
-19. **Reference audit of 3 November.** Corrected against Crossref or the publisher: Lu et al. (wrong title and venue), Alvarenga et al. (wrong author, title, issue, pages), Subramanian et al. (wrong authors, title, issue, pages), Rochat and Taillard, Turkes et al., Chen and Tian (title, pages), Vidal et al. (author initials), Auer et al. (issue). Syberfeldt and Back could not be found in Crossref or a web search and was replaced with Kallestad et al. 2023. Vidal et al. no longer supports the set-partitioning claim, and the taxonomy rows for L2I and Neural LNS were corrected from the papers. A second check the same day confirmed the other entries against Crossref, arXiv, publisher pages or indexes, and added the pages of Li et al. and the volume of Nazari et al. Gehring and Homberger rests on reference lists of other papers. The ICLR venue of Kool et al. and Schaul et al. and the edition of Toth and Vigo were not seen in a record. Still to check by hand: the pages of Khalil et al. (and its author order, since arXiv lists Dai first), Nazari et al., NeuroLKH and van Hasselt et al., and the SINTEF link, which refuses scripts.
-20. **Amendment 5 of 3 November.** Load is sampled once a minute during the rerun, and two repeats at 300 s are registered before any result is read: without blocks that have a cell run at mean load above 8, and on measured blocks only. Report both with their block counts. Load during a run is unknown for about 450 cells at 300 s that finished before sampling began.
-21. **Prepared on 5 November, before any rerun outcome was read.** `docs/rerun_wording_rules.md` fixes how each outcome will be worded. `scripts/build_highlighted_pdf.sh` builds the highlighted PDF from `docs/manuscript_submitted.tex`, and it needs a final run once the text is final. Tables and figures are not marked inside it, so say in the letter that they were replaced. `scripts/build_response_letter.py` is the letter builder recovered after a reboot cleared the scratchpad; it takes the decision letter text and the unpacked template.
-
-Manuscript rewrite of 2 November (uncommitted, not yet compiled): old Results, LOCO, ladder and Wilcoxon text removed. New statistics subsection and first-sweep record are written. Rerun numbers are visible `\PENDING{}` markers, none of which may reach submission.
+Other corrections found during the revision are listed at the end of this letter.
 
 ## Reviewer 1
 
-**R1.1 Equal-compute evaluation as the primary basis.** DATA OK, TEXT TODO.
-Response: All primary claims now rest on matched wall-clock budgets of 10, 60, 300 and
-900 s across all 74 instances with five seeds, under a supervisor that certifies the
-incumbent captured before the cutoff. Iteration-budget results are no longer used for claims.
-Action: Replace the iteration-budget results section with the wall-clock tables.
+**R1.1 Equal-compute evaluation as the primary basis.**
+Response: We agree, and the iteration-budget results are withdrawn. All claims now rest on equal
+wall-clock budgets of 10, 60 and 300 s on all 74 instances (56 Solomon-100, 12 Homberger-200,
+6 Homberger-400) with five seeds, so the full suite rather than a subset. Construction, model
+inference, compilation and certification are charged to each solver's budget. A 900 s stage was
+started but not completed, and no 900 s result is reported, so the longer operational horizon you
+asked for is not covered. We state this as a limitation.
+Action: Sections V-A to V-D rewritten; Fig. 2 shows the comparisons by budget.
 
-**R1.2 Directly reproduced contemporary baselines.** DATA OK, TEXT TODO.
-Response: PyVRP (0.14.1) and an adapted NeuroLKH run on the same hardware, cutoffs, seeds
-and supervisor as the proposed solver. Published results are no longer used as comparators.
-Results: at 300 s the hybrid is not significantly different from PyVRP overall, is behind on
-100-customer instances, and is behind NeuroLKH on fleet size. State these directly.
-Action: Add the baselines to the setup and results; restrict claims accordingly.
+**R1.2 Directly reproduced contemporary baselines.**
+Response: Two external solvers now run under the same hardware, budgets, seeds and supervisor as
+the proposed method: PyVRP 0.14.1 with its iterated local search (PyVRP-ILS) and an adaptation of
+NeuroLKH with its pretrained checkpoint (NeuroLKH-adapted). You named HGS, and we did not run it:
+PyVRP 0.14.1, the release we pinned, solves with an iterated local search. PyVRP dropped its
+hybrid genetic search in release 0.13.0, whose release notes give better solution quality at
+limited runtimes as the reason, and we did not add an older release or another HGS
+implementation. The manuscript says that PyVRP's HGS is not the method used, and we do not present
+PyVRP-ILS as a reproduction of HGS or of any published configuration. At 300 s the proposed configuration did not differ detectably on fleet size from either
+(fleet scores +0.008 [-0.098, 0.117] and -0.068 [-0.142, 0.033], 98.33% intervals). On
+descriptive intervals it used more vehicles than both at 10 s, and on the wide-time-window
+families R2 and RC2 it never used fewer vehicles than NeuroLKH-adapted. Published results are no
+longer used as comparators.
+Action: Section V-A (baselines), V-C, V-D and V-F.
 
-**R1.3 Separate learning from heuristic machinery.** DATA OK, TEXT TODO.
-Response: A wall-clock factorial ablation (anchored 16 cases plus a 2x2 bundle on 18
-instances at 60 and 300 s) separates the components. No single component is significant at
-300 s after Bonferroni correction. Micro-DDQN is significant at 60 s in full context, and the
-learning bundle matters at 60 s. We no longer attribute the total gain to the DDQN hierarchy.
-Action: Replace LOCO and ladder interpretation with the factorial results.
+**R1.3 Separate learning from heuristic machinery.**
+Response: Your concern is supported. A wall-clock factorial ablation over GEC, set partitioning,
+Macro, Micro, LAC and GNN on 18 instances at 60 and 300 s replaces the earlier ladder. No primary
+contrast excluded zero at 300 s (99.38% intervals), so we do not attribute any gain to the DDQN
+hierarchy. At 60 s, Micro-DDQN excluded zero on descriptive intervals (+0.244 [0.053, 0.492] in the
+full context). That pattern came from exploring the test set, so we tested it once more on 24 new
+time-window variants of the same customer layouts at 200 and 400 customers, under a protocol fixed
+before any cell ran. On the two confirmatory contrasts (97.5% intervals), Micro-DDQN used fewer
+vehicles than the rule-based policy at 60 s on these instances in the bare configuration (+0.208
+[0.025, 0.450]), and in the full context the test did not detect a difference and is too small to
+rule one out (+0.150 [-0.012, 0.372]). 71 of the 120 blocks ran at a mean load above 8, and without
+them both intervals are undefined. The test compares Micro-DDQN with a rule-based policy inside the
+same framework; it says nothing about 300 s or about the other solvers. We also show that much of
+what ALNS-Base achieves comes from the classical Guided Ejection Search phase.
+Action: Sections V-E and VI-A; Table 5; all 32 contrasts in the supplement.
 
-**R1.4 LAC and SA convergence.** DONE.
-Response: We removed the claim. The rule accepts every SA-approved move and adds rescue
-transitions, so it changes the transition kernel and the classical theorem does not carry
-over. We state only what the experiments support.
-Action: LAC section and Design Principle 2 rewritten; supplement rescoped.
+**R1.4 LAC and SA convergence.**
+Response: We removed the claim. The rule accepts every move SA accepts and adds others, so it
+changes the transition kernel, and the classical convergence results do not carry over. We make no
+convergence claim.
+Action: Section IV-D rewritten; the design-principle statement about LAC removed from the
+Discussion; supplement rescoped.
 
-**R1.5 Statistical hierarchy and seed-level uncertainty.** DONE for method (Statistical Analysis subsection); numbers wait for the rerun.
-Response: The fleet estimand is the per-seed paired score sign(NV_c - NV_t). Uncertainty
-comes from a hierarchical geometry/seed bootstrap (10,000 replicates, fixed size-stratum
-weights) with Bonferroni families. Distance gaps are explicitly conditional on matched
-fleet size.
-Action: Rewrite the statistics subsection; remove best-of-five and instance-mean tests.
+**R1.5 Statistical hierarchy and seed-level uncertainty.**
+Response: The unit is a seed pair within an instance, never a best run or an instance mean. The
+fleet score is +1, -1 or 0 per seed pair, averaged over seeds and instances within each size with
+fixed weights. Intervals come from a bootstrap that resamples seeds and, within each size, groups
+of instances sharing customer coordinates (10,000 replicates), with Bonferroni families of 3 for
+the primary comparisons and 8 for the primary ablation contrasts. Distance gaps are computed only
+where fleets matched and are described as conditional. Wilcoxon tests are no longer used.
+Action: Section V-B.
 
-**R1.6 Moderate GNN and lexicographic claims.** DONE, except the ablation numbers.
-Response: The penalty guarantee is scoped to the route pool and the incumbent rule is stated
-separately. We removed the earlier pruning and recall figures, which we could not trace to the
-registered checkpoint. Recall is now reported only on validation data against heuristic teacher edges,
-and described as such. The effect of the GNN on solutions rests on the factorial ablation.
-Action: GNN paragraph, contributions list, architecture figure and Property 2 rewritten.
+**R1.6 Moderate GNN and lexicographic claims.**
+Response: Both claims are now scoped. The set-partitioning penalty guarantee holds only within the
+route pool at the top penalty scale, and the incumbent update rule separately enforces the
+lexicographic order; no global optimality is claimed. The recall figures you questioned could not
+be traced to the registered checkpoint and are withdrawn. Measured on the benchmark instances
+against the 300 s routes of PyVRP-ILS and NeuroLKH-adapted, the heatmap kept between 98.0% and
+100.0% of their route edges at threshold 0.01 across the three sizes, and 96.6% at the lowest point
+over all thresholds (details under R2.5). The GNN full-context ablation contrast did not exclude
+zero at 300 s (-0.044 [-0.167, 0.067]).
+Action: Sections III-A, IV-E3 and IV-F.
 
 ## Reviewer 2
 
-**R2.1 What is the fundamental innovation?** DRAFTED in abstract and contributions; author to approve.
-Response direction: Do not claim a fundamentally new algorithm. The honest contribution is
-an online-learning, cold-start control layer over ALNS, evaluated under a certified
-wall-clock protocol, with an explicit account of where it helps and where it does not.
-Action: Rewrite the contributions list.
+**R2.1 What is the fundamental innovation?**
+Response: We no longer claim a new search principle. The contribution is a cold-start control
+layer over ALNS, two controllers at different timescales and an acceptance model that learn
+online from random weights in every run, together with a certified wall-clock evaluation of
+whether that control pays for its compute. The evaluation finds that at 300 s it does not
+detectably do so, and we report this as a negative result. The one positive signal, for Micro-DDQN
+at 60 s, is described under R1.3.
+Action: Abstract, introduction and contribution list rewritten.
 
-**R2.2 Markov property and convergence of the aggregated SMDP.** DONE.
-Response: We make no convergence guarantee. The state aggregates search history, so the
-Markov property is at best approximate; we state this and cite Li et al. (2006). The
-Bellman contraction holds only for a finite MDP and is stated in that scope.
-Action: Macro section and supplement rewritten.
+**R2.2 Markov property and convergence of the aggregated SMDP.**
+Response: The aggregated state is a lossy summary of the search, so the Markov property need not
+hold, and we give no convergence guarantee or error bound. We describe the controller as a learned
+policy over a partially observed, state-aggregated process (Li et al., 2006).
+Action: Section IV-B and the supplement rewritten.
 
-**R2.3 Does LAC preserve SA convergence?** DONE. See R1.4.
+**R2.3 Does LAC preserve SA convergence?**
+Response: No. See R1.4.
 
-**R2.4 Table 8: A1 beats A4 on distance.** DATA OK, TEXT TODO.
-Response: That table used iteration budgets. In the wall-clock factorial study no learning
-component is significant at 300 s after correction, so we do not claim that learning justifies
-itself at every budget; we report the 60 s evidence and the 300 s null result.
-Action: Table removed; new ablation reported.
+**R2.4 Ablation: heuristic-only A1 beats full A4 on distance.**
+Response: Your concern is supported. That table used iteration budgets and is withdrawn. In the
+wall-clock factorial study no learning contrast excluded zero at 300 s, so we do not claim that the
+learning components justify themselves at that budget. At 60 s, a separate test fixed in advance
+found that Micro-DDQN used fewer vehicles than a rule-based policy in the bare configuration and
+did not detect a difference in the full context (R1.3).
+Action: Section V-E.
 
-**R2.5 GNN recall drop and its effect.** PARTLY DONE.
-Response: The figures you questioned described an earlier model, so we withdrew them. For the registered
-checkpoint, validation recall against heuristic teacher edges at threshold 0.01 is 100% at N = 100 and 99.85% at N = 200,
-retaining about 29% of candidate arcs. These instances also selected the checkpoint, so the figures are optimistic.
-N = 400 lies outside the training sizes and is an extrapolation.
-Open: recall at N = 400 and on benchmark sizes (after T300, to avoid CPU contention), plus the ablation contrast.
-Action: Paragraph rewritten.
+**R2.5 GNN recall drop and its effect.**
+Response: The figures 95.8% to 78.2% described an earlier model and could not be traced to the
+registered checkpoint, so we withdrew them. We measured recall again with the registered
+checkpoint on the 74 benchmark instances, against the 300 s routes of the two solvers that use no
+GNN. At threshold 0.01 the heatmap kept 99.1%, 99.8% and 100.0% of the route edges of PyVRP-ILS
+solutions at 100, 200 and 400 customers, and 98.0%, 99.2% and 99.8% of NeuroLKH-adapted's, while
+retaining 34.0%, 23.3% and 23.6% of candidate arcs. The lowest figure over the three thresholds was
+96.6%, for NeuroLKH-adapted at 100 customers and threshold 0.05. So we did not observe the drop
+with size that the withdrawn figures showed. These are agreement with other solvers' routes, which
+are themselves heuristic, not a solution-quality effect. The effect on solutions is estimated by
+the ablation, where the GNN contrast did not exclude zero. Use at 400 customers remains an
+extrapolation from training at 100 and 200.
+Action: Section IV-E3.
 
 ## Reviewer 3
 
-**R3.1 Novelty over learning-guided ALNS.** OPEN. See R2.1.
+**R3.1 Novelty over learning-guided ALNS methods.**
+Response: Section II-C now compares the design with the closest work, Johnn et al. (operator
+choice in ALNS by deep RL with graph networks) and DR-ALNS (a policy over operators, parameters and
+acceptance). The differences are two controllers at different timescales in place of one policy,
+an acceptance model added to SA by a disjunctive rule, and online learning from random weights in
+every run. We did not run those methods, and we state that these differences are not evidence of
+better performance. See also R2.1.
+Action: Sections II-C, II-D and the contribution list.
 
-**R3.2 Comprehensive ablation.** DATA OK, TEXT TODO. See R1.3.
+**R3.2 Comprehensive ablation.**
+Response: See R1.3. The factorial design covers all six components you listed, each in a bare and
+a full context, plus a 2x2 contrast of the learning and heuristic bundles.
 
-**R3.3 Fair comparison under consistent conditions.** DATA OK, TEXT TODO. See R1.2. Disclose
-that the hybrid read the reference fleet inside search in the registered analysis, and report
-the reference-blind arm of the contemporaneous rerun. Do NOT use the 1 November blind numbers
-(+0.049 vs F111111, +0.119 vs ALNS-Base): that run was about 1.9 times faster than the closed
-cells, so those comparisons are confounded in its favour. Also disclose that machine speed varied
-between blocks in the closed sweep (see Must fix item 6).
+**R3.3 Fair comparison under consistent conditions.**
+Response: All solvers ran on one machine, under one supervisor, with the same budgets and seeds,
+and all cases of an instance, seed and budget ran together as a block, because machine speed
+varied by up to several times between nights in our earlier sweep. Blocks frozen by machine sleep
+or run under load spikes were moved aside unread and rerun, and repeats without high-load blocks
+are reported. We also disclose that the earlier version of the hybrid read the best-known fleet
+size during search, which no baseline did; the rerun disables this. The baselines were not tuned
+for these budgets, which we list as a limitation.
+Action: Section V-A.
 
-**R3.4 Training and testing protocol.** DONE.
-Response: The Macro DDQN, Micro DDQN and LAC have no offline phase. They start from random weights in every run and
-learn online within the time budget, so they have no train/test split and we make no transfer claim. Only the GNN is
-trained offline, on 48 synthetic instances with 12 for validation at N = 100 and 200, and then frozen. No test instance
-was used for its training or selection. We also state that test results motivated evaluating GES, and that the development
-instances used for its parameters share coordinates with test instances.
-Action: "Training and testing protocol" paragraph added to the setup section.
+**R3.4 Training and testing protocol.**
+Response: The Macro DDQN, Micro DDQN and LAC have no offline training: they start from random
+weights in every run and learn within it, so there is no train/test split and we make no transfer
+claim. Only the GNN is trained offline, on synthetic instances, and frozen; no benchmark instance
+was used for its training or selection. Test results did motivate adding the Guided Ejection
+Search phase, and its development instances share coordinates with test instances; both are
+disclosed. The separate Micro-DDQN test (R1.3) used time-window variants that played no part in
+development, but they share customer layouts with the ablation instances, so we describe it as a
+test on new time-window variants and not on new layouts.
+Action: Section V-A ("Training and testing protocol" and "Experimental firewall").
 
-**R3.5 LAC training with delayed outcomes.** DONE for mechanism; comparison DATA OK.
-Response: LAC is consulted only for feasible, same-fleet, distance-worsening candidates,
-after a 300-decision warmup, with an observational label over a horizon of 80 LAC decisions.
-Comparison with SA alone comes from the factorial LAC contrast.
+**R3.5 LAC training with delayed outcomes, and comparison with SA.**
+Response: LAC is consulted only for feasible candidates that keep the fleet size and increase
+distance, after 300 warmup decisions of pure SA. Each consulted decision is labelled by whether the
+best distance improved within the next 80 LAC decisions. Your question about its performance
+exposed a problem: in a separate measurement on the 18 ablation instances at 300 s, LAC was
+consulted in 6 instances, passed its warmup in 3, and its classifier never changed an acceptance
+decision. The LAC contrast (-0.022 [-0.098, 0.000]) is therefore uninformative rather than evidence
+that LAC has no effect, and we say so.
+Action: Sections IV-D, V-E, V-H and limitation (vi).
 
-**R3.6 Effect of GNN pruning on quality.** PARTLY DONE. See R2.5. At threshold 0.01 on validation, 2 of 2,005 teacher
-edges were lost. Teacher edges are heuristic, so this does not bound the loss of useful arcs. The solution-level effect waits for the
-ablation numbers.
+**R3.6 Effect of GNN pruning on solution quality.**
+Response: See R2.5. The GNN ablation contrast did not exclude zero, and the recall check on the
+benchmark sizes measures how often edges used by other solvers survive the pruning: at least 96.6%
+in every combination of size, threshold and solver that we measured.
 
-**R3.7 O(1) insertion checks.** DONE.
-Response: Constant time applies to a query against cached forward-slack and latest-start
-profiles. Each route change costs O(m) to refresh, and a full insertion scan is not O(1).
+**R3.7 O(1) insertion checks.**
+Response: Constant time applies to one insertion query against a cached route profile (arrival
+times, load and latest feasible start). Refreshing the profile costs O(m) after each change to the
+route, scanning all positions is O(m), and moves that reverse or relocate segments are not O(1). We
+claim no O(1) bound for moves or iterations.
+Action: Section IV-E1 rewritten, with the exact feasibility condition.
 
-**R3.8 Total computational cost.** OPEN.
-Response direction: Measure time per component (DDQN inference, GNN, GEC, set partitioning)
-with `vrptw.phase_trace` on a representative subset. Use `scripts/measure_component_cost.py`, because search rates vary widely between instances.
+**R3.8 Total computational cost.**
+Response: We timed the main components on the 18 ablation instances at 300 s. Set partitioning
+took the largest share (median 53%, 28% and 22% of the budget at 100, 200 and 400 customers),
+destroy, repair and local search 18%, 48% and 50%, and the Guided Ejection Search phase 10%. The
+learned controllers took a median of 2.6%, 1.9% and 0.8% (at most 23% on one instance), GNN
+inference 0.01% and certification under 0.05%. The main loop ran at a median of 17.8, 14.5 and 6.5
+iterations per second. The learned layer is cheap, so its compute is unlikely to explain the null
+results. At 10 s, compilation and the Guided Ejection Search phase take most of the first half of
+the budget.
+Action: Sections V-D and V-H.
 
-**R3.9 Hierarchical objective enforcement.** DONE.
-Response: The penalty lambda_cert applies only at the top penalty scale, the guarantee holds
-within the pool, and the incumbent update rule separately enforces lexicographic order.
+**R3.9 Hierarchical objective enforcement.**
+Response: The best solution changes only for a candidate with fewer vehicles, or the same number
+and strictly lower distance, after validation in the original instance, so the reported solution
+never trades a vehicle for distance. Intermediate moves may, for example in the diversification
+mode, and we say so. The set-partitioning guarantee holds within the route pool at the top penalty
+scale.
+Action: Sections III-A and IV-F.
 
-**R3.10 Variability and significance testing.** DONE for method. See R1.5.
+**R3.10 Variability and significance testing.**
+Response: See R1.5. Per-instance means over five seeds for all solvers at 10, 60 and 300 s, all 32
+ablation contrasts and per-family counts are in the supplement, and the record of every cell in
+the reported stages is published in the repository.
+Action: Section V-B and the supplement.
 
-**R3.11 Feasibility after complex modifications.** DATA OK, TEXT TODO.
-Response: Every incumbent is validated in the original problem space by the supervisor
-before it counts. Infrastructure gaps (21 cells) are disclosed with bounds. The greedy
-depot-deadline bug found during this audit is disclosed and its affected cells rerun.
+**R3.11 Feasibility after complex modifications.**
+Response: Every incumbent counts only after the supervisor has validated coverage, capacity and
+time windows in the original instance and hashed it before the cutoff. In the rerun, every cell of
+the proposed configuration found a certified solution; five comparator cells at 10 and 60 s found
+none and count as failures. No cell was lost to infrastructure failure. A defect in the greedy
+construction found during this revision is disclosed, and the affected runs were rerun.
+Action: Sections IV-E5 and V-G.
 
-**R3.12 Learning vs established techniques.** DATA OK, TEXT TODO. See R1.3.
+**R3.12 Learning versus established techniques.**
+Response: Your concern is supported. With the Guided Ejection Search phase on, the difference
+between the hybrid and ALNS-Base was no longer detectable, the phase gave ALNS-Base a fleet score
+of +0.208 against ALNS-Base without it, and no primary learning contrast excluded zero at 300 s.
+The one detectable gain for a learned component is at 60 s: in a separate test fixed in advance,
+Micro-DDQN used fewer vehicles than a rule-based policy in the bare configuration, and the test did
+not detect a difference in the full context. See also R1.3.
+Action: Sections V-E and VI-A.
+
+## Other corrections (draft list for the letter)
+
+- Methods text audited against the frozen code: hardware (16 GB M1, macOS 26.5.2, unpinned),
+  ALNS-Base (Thompson sampling over 65 pairs), the granular neighbourhood (15 nearest customers),
+  the macro modes, search phases, reward, LAC features and label, GEC, set-partitioning limits and
+  the hyperparameter table.
+- Withdrawn because they could not be traced or rested on iteration budgets: earlier pruning and
+  recall figures, the supplement's sensitivity, PCA, literature-comparison, variability and anytime
+  sections.
+- Removed because they argued for a benefit the results do not show, or restated the method: the
+  introduction's list of problems of end-to-end neural solvers (we do not evaluate such solvers),
+  the Discussion subsection on analytical properties and design principles, and the future-work
+  sentence on electric vehicles and real-time dispatch. The penalty value $10^5$ is now stated in
+  Section III-A, where the earlier condition on it was also corrected.
+- Proofs corrected: the two-stage set-partitioning theorem removed, the GEC complexity bound and
+  the forward-slack condition corrected.
+- References corrected against Crossref or the publishers; one reference that could not be found
+  was replaced.
+- The data-availability statement now names the public repository and the published rerun
+  records. "Archived on Zenodo" was removed, because no such archive exists.
+- Disclosed: a solver rule reads the instance family from its name, the earlier hybrid read the
+  best-known fleet, and machine speed varied in the earlier sweep.
+
+## Use of AI tools (draft)
+
+The authors used Claude (Anthropic) to draft this response and to check the figures in it against
+the experimental records. The authors reviewed and revised the text, and take full responsibility
+for it. The same tool was used in preparing the revised manuscript, as disclosed in its
+Acknowledgment.
