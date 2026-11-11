@@ -60,7 +60,7 @@ ghi blob, SHA-256, lịch sử object và các bản source được phục hồ
 | --- | --- | --- |
 | Năm checkpoint hiện tại đã xuất hiện | `e47b4b77f871a2b6994bd30133400b68bf4c0a53` — 24-Aug-2026 | Từng byte khớp năm checkpoint local và tag archive |
 | Sửa vòng benchmark sang `init=None` | `08479fbfb607b0cab888920ccf395b858d881b22` — 25-Aug-2026 | Source trước/sau khác về khởi tạo độc lập |
-| Tag `research-history-before-cleanup` | `d1a48ecc312f1d6c2a2438dc4ea7b68992b46d99` | Suite trong tag chỉ có năm checkpoint |
+| Tag `research-history-before-cleanup` | `97caf8bff32bc1a95a3449f06b823b8b5ead672d` | Suite trong tag chỉ có năm checkpoint |
 | Combined CSV được lưu trong merge | `39a8cfe534d5a7a161df8d035ef33f49faef3024` — 09-Oct-2026 | Blob combined hiện tại đã có ở mốc này |
 
 Ngày commit là mốc lưu artifact/source trong Git, không phải ngày solve hoặc

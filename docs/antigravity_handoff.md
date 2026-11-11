@@ -17,7 +17,7 @@ Do not edit the manuscript or overwrite historical results/model files.
 - Recovered historical checkpoint: `data/checkpoints/gnn_edge_predictor.pt`.
   Its hash and provenance are in `docs/resubmission_protocol.md`.
 - The exact blob first appears in the available Git history at
-  `45365c89d21f87f2b47560995aea2ec5ca0bdb64` (2026-08-13). That commit's
+  `1c4713b43fd6911b20f5d4b54a2767c00ce4239e` (2026-08-13). That commit's
   `src/vrptw/train_gnn.py` scans result/elite directories and records neither
   a held-out split nor a training seed. This does not prove which files were
   actually consumed, but it cannot substantiate the old checkpoint's split.

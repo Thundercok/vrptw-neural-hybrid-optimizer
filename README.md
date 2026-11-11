@@ -49,9 +49,10 @@ Primary comparisons at 300 s. The fleet score is the mean over seed pairs of sig
 - **Guided Ejection Search.** This classical route-minimization phase was added after test results had been seen, so its inclusion was not an independent test. A rule fixed in advance kept it: its fleet score against the same configuration without it was +0.062 [0.001, 0.123] at 98.75%. Leaving out the blocks that ran under high machine load gives [−0.014, 0.123].
 - **Ablation.** On 18 instances, none of the eight primary factorial contrasts at 300 s excluded zero (99.38% intervals), so the ablation does not establish a benefit of the learned components at that budget.
 - **Short budgets (descriptive, unadjusted 95% intervals).** At 10 s the proposed configuration used more vehicles than PyVRP-ILS (−0.522 [−0.654, −0.354]) and NeuroLKH-adapted (−0.573 [−0.690, −0.372]). At 60 s it did not differ detectably from either.
-- **900 s.** This stage was not completed when this section was written, and no 900 s result is reported.
+- **Micro-DDQN at 60 s, tested on new time-window variants.** The 60 s ablation suggested a benefit of the Micro-DDQN controller, so it was tested once more on 24 unused Homberger instances (time-window variants of the same layouts) under a protocol frozen before any cell ran. Against the rule-based policy, Micro-DDQN used fewer vehicles in the bare configuration (+0.208 [0.025, 0.450], 97.5% interval); in the full context the test did not detect a difference (+0.150 [−0.012, 0.372]). Without the blocks run at high machine load, neither interval is defined.
+- **900 s.** This stage was started and ended unfinished, and no 900 s result is reported (see the README of the rerun records, Amendment 8).
 
-The analysis code is [`scripts/analyze_ges_rerun.py`](scripts/analyze_ges_rerun.py). The rerun's records are not yet in this repository.
+The analysis code is [`scripts/analyze_ges_rerun.py`](scripts/analyze_ges_rerun.py). The compact records of the rerun are in [`results/rerun_records_20261102/`](results/rerun_records_20261102/) and those of the Micro-DDQN test in [`results/micro_replication_records_20261110/`](results/micro_replication_records_20261110/); each folder has a `PUBLISHED.md` describing its files. The full per-cell outputs are available from the authors on request.
 
 ### Withdrawn results
 
@@ -119,7 +120,7 @@ uv run pytest
 To verify reported statistics and tables directly from the recorded benchmark outputs without requiring multi-hour recomputations:
 
 ```bash
-# 1. Run paper integrity auditor (checks all tables and empirical claims)
+# 1. Integrity auditor: checks the earlier fixed-iteration tables, not the rerun (see docs/evidence_index.md)
 uv run python scripts/audit_paper_integrity.py
 
 # 2. Analysis of the November 2026 wall-clock rerun (needs the rerun records, not yet published)

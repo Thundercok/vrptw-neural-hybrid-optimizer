@@ -221,3 +221,11 @@ The authors decided to complete `primary_t900`, which Amendment 6 had stopped. T
 **Component cost repeated, added to Amendment 7 on 10 November 2026.** The first component-cost measurement did not count LAC, because `scripts/measure_component_cost.py` attached its counters to an object that `solve()` replaces. Its output is kept in `analysis/component_cost_lac_uncounted_20261110`. Before any new 900 s cell had started, `STOP` was restored and the runner exited. The script and its test were corrected, the 18 measurements were started again, and `resume_t900.sh` was relaunched to resume the stage after they end.
 
 **Order changed, added to Amendment 7 on 10 November 2026.** Before any new 900 s cell had started, the authors approved a separate test on fresh instances (`docs/micro_replication_protocol.md`, folder `results/micro_replication_20261110`). The waiting `resume_t900.sh` was stopped, and `chain.sh` in that folder now runs the component-cost measurement's remainder, then that test, then `resume_t900.sh`. The 900 s stage, its analysis and its stopping rule are otherwise unchanged.
+
+## Amendment 8, 12 November 2026, about 02:30 (+07): the 900 s stage is ended
+
+`STOP` was restored by the authors' decision, and the stage ends here unfinished. No 900 s result has been read or analyzed, and none will be reported.
+
+**Why.** Every NeuroLKH-adapted cell of the stage since its restart on 10 November (first at about 20:21) returned code 2 within seconds, 69 of 69, with the error "NeuroLKH assets differ from prepared build manifest". The NeuroLKH build in `results/external/NeuroLKH` (the `LKH` binary and its object files) had been recompiled on 10 November, apparently while preparing NeuroLKH for continuous integration, so it no longer matched the build the sweep was prepared with, and the runner refused to use it. Each affected block therefore lacks a valid NeuroLKH-adapted cell, and any 900 s comparison against NeuroLKH-adapted would be biased. The failure was found from return codes and error logs alone. The 10, 60 and 300 s stages and the ablation finished on 9 November, before the rebuild, and the Micro-DDQN test does not use NeuroLKH, so neither is affected.
+
+This also satisfies the stopping rule of Amendment 7: the paper states that the 900 s stage was started and not completed.

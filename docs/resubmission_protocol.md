@@ -1,6 +1,10 @@
 # Resubmission Experiment Protocol
 
-Status: preparation draft, updated 2026-10-19. This is not a completed replication or
+Status: preparation draft, updated 2026-10-19. Superseded: the rerun that was actually run is described in
+`results/rerun_records_20261102/README.md`, and the revised manuscript reports it. Commit hashes in this file were
+updated on 2026-11-12 to the commits rewritten on 2026-11-05 (same messages, dates and file trees).
+
+Original status line: preparation draft, updated 2026-10-19. This is not a completed replication or
 permission to launch the full suite. Historical CSVs and manuscript sources stay
 unchanged. Pilot results are operational checks, not performance evidence.
 
@@ -10,7 +14,7 @@ unchanged. Pilot results are operational checks, not performance evidence.
 | --- | --- |
 | Local checkpoint | `data/checkpoints/gnn_edge_predictor.pt` |
 | Archive tag | `research-history-before-cleanup` |
-| Tag commit | `d1a48ecc312f1d6c2a2438dc4ea7b68992b46d99` |
+| Tag commit | `97caf8bff32bc1a95a3449f06b823b8b5ead672d` |
 | Original path | `docs/legacy_archive/model/gnn_edge_predictor.pt` |
 | Git blob | `e4435a74393fb4a166d15ba45d38b15371abfa79` |
 | SHA-256 | `1f196f4e7678841a2f9c701f3bf5bf7155735ccc7502e8e1aaa64b4199591429` |
@@ -19,7 +23,7 @@ unchanged. Pilot results are operational checks, not performance evidence.
 | Inference check | Finite dense heatmaps at 100, 200 and 400 customers |
 
 The same blob exists at commit
-`ca8a84b5cdc4f9498b75c980fbdc205e05c83ee6`. This does not prove that it was the
+`31172d83941eb5608d27f618051881b8cb46ec25`. This does not prove that it was the
 file used by historical runs: their recorded path was `docs/model/...`, and they
 did not record a model hash or a complete working-tree snapshot.
 
@@ -32,7 +36,7 @@ instance generalization or reproduce the paper's recall numbers from this file
 alone. Do not retrain on evaluation elite plans to fill this gap.
 
 Further audit (2026-10-17) located the exact blob's first available addition at
-`45365c89d21f87f2b47560995aea2ec5ca0bdb64`; its historical trainer also lacks
+`1c4713b43fd6911b20f5d4b54a2767c00ce4239e`; its historical trainer also lacks
 seed/split provenance. Unused GH200 instance names are not a safe geometry-held-
 out training pool: several variants share the same coordinates. A new synthetic,
 geometry-disjoint manifest and manifest-only trainer are prepared instead. See
