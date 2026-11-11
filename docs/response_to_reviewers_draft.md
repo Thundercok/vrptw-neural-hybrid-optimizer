@@ -190,8 +190,13 @@ distance, after 300 warmup decisions of pure SA. Each consulted decision is labe
 best distance improved within the next 80 LAC decisions. Your question about its performance
 exposed a problem: in a separate measurement on the 18 ablation instances at 300 s, LAC was
 consulted in 6 instances, passed its warmup in 3, and its classifier never changed an acceptance
-decision. The LAC contrast (-0.022 [-0.098, 0.000]) is therefore uninformative rather than evidence
-that LAC has no effect, and we say so.
+decision. We also traced why. LAC is not consulted in the first search phase, and that phase ended
+in only those 6 instances. With the Guided Ejection Search phase on, the capacity bound serves as
+the fleet floor, so the phase's stagnation exit does not apply, and in the other 12 instances the
+run ended before the phase's iteration limit. This is a consequence of how that phase was added,
+not a property of LAC; we found it after the rerun and did not change it, because the
+configuration was frozen. The LAC contrast (-0.022 [-0.098, 0.000]) is therefore uninformative
+rather than evidence that LAC has no effect, and we say so.
 Action: Sections IV-D, V-E, V-H and limitation (vi).
 
 **R3.6 Effect of GNN pruning on solution quality.**
