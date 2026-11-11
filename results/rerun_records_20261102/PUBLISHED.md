@@ -12,6 +12,11 @@ the authors and are available on request.
 - `analysis/`: output of `scripts/analyze_ges_rerun.py` (results, report, per-instance and family
   tables, LaTeX rows), the GNN recall check, and both component-cost measurements, including the one
   whose LAC counters were not recorded (`component_cost_lac_uncounted_20261110`).
+- `analysis/stage_fleet_t300.csv`: added on 12 November 2026. For every certified 300 s cell of
+  F111111 and ALNS-Base, the fleet of the initial solution, the fleet right after the Guided
+  Ejection Search phase and the final fleet, read from the cell trajectories by
+  `scripts/stage_fleet_t300.py`. It backs the descriptive counts in the Discussion (338 of 370
+  seed pairs with the same fleet at both points). It was computed after the results were read.
 - `load_samples.jsonl`: load averages sampled during the run (README Amendment 5).
 - `README.md`: the analysis plan, the adoption rule and all amendments, as written during the run.
 - `run_sweep_ges.py`, `validate.py`, `sample_load.py`, `run_component_cost.sh`, `resume_t900.sh`,

@@ -248,6 +248,9 @@ Action: Sections IV-E5 and V-G.
 Response: Your concern is supported. With the Guided Ejection Search phase on, the difference
 between the hybrid and ALNS-Base was no longer detectable, the phase gave ALNS-Base a fleet score
 of +0.208 against ALNS-Base without it, and no primary learning contrast excluded zero at 300 s.
+The trajectories show the same thing: in 338 of the 370 seed pairs the hybrid and ALNS-Base had the
+same fleet size both right after that classical phase and at the end, so at this budget the fleet
+size is largely set by the phase and the main loop, learned or not, has little left to gain.
 The one detectable gain for a learned component is at 60 s: in a separate test fixed in advance,
 Micro-DDQN used fewer vehicles than a rule-based policy in the bare configuration, and the test did
 not detect a difference in the full context. See also R1.3.
