@@ -412,12 +412,12 @@ At the start of segment $k$, the macro controller observes a 12-dimensional stat
   \mathbf{s}_k^{\text{macro}} = \Big[ 
     &\min\Big(\frac{\text{no\_imp}}{\text{patience}}, 1\Big), \; \min\Big(\frac{C_{\text{cur}} - C_{\text{best}}}{C_{\text{best}}}, 1\Big), \nonumber \\
     &\min\Big(\frac{T}{T_0}, 1.5\Big), \; \text{imp\_rate}, \; \min\Big(\frac{\NVs{cur}}{\NVs{init}}, 2\Big), \nonumber \\
-    &rb, \; lb, \; \tau_{\text{tight}}, \nonumber \\
+    &\mathrm{rb}, \; \mathrm{lb}, \; \tau_{\text{tight}}, \nonumber \\
     &\bar{s}, \; \rho_{\text{fill}}, \; \rho_{\text{pool}}, \; \frac{k}{K_{\max}} \Big]
   \label{eq:macro_state}
 \end{align}
 
-where $\text{no\_imp}$ is the number of consecutive unimproved iterations, $T/T_0$ is the normalized annealing temperature, $rb \in [0, 1]$ and $lb \in [0, 1]$ measure spatial route separation and capacity balance, $\tau_{\text{tight}} = \frac{1}{n}\sum_{i=1}^n \mathbb{I}(l_i - e_i < 0.5 \cdot d_{\max})$ is the fraction of customers whose time-window width is below half the largest distance $d_{\max}$ of the instance, $\bar{s}$ is the average forward time slack, $\rho_{\text{fill}}$ is the average vehicle capacity utilization, and $\rho_{\text{pool}} = \min(|\mathcal{P}|/\mathcal{P}_{\max}, 1.0)$ tracks the route pool fill ratio.
+where $\text{no\_imp}$ is the number of consecutive unimproved iterations, $T/T_0$ is the normalized annealing temperature, $\mathrm{rb} \in [0, 1]$ and $\mathrm{lb} \in [0, 1]$ measure spatial route separation and capacity balance, $\tau_{\text{tight}} = \frac{1}{n}\sum_{i=1}^n \mathbb{I}(l_i - e_i < 0.5 \cdot d_{\max})$ is the fraction of customers whose time-window width is below half the largest distance $d_{\max}$ of the instance, $\bar{s}$ is the average forward time slack, $\rho_{\text{fill}}$ is the average vehicle capacity utilization, and $\rho_{\text{pool}} = \min(|\mathcal{P}|/\mathcal{P}_{\max}, 1.0)$ tracks the route pool fill ratio.
 
 \subsubsection{Macro Action Space \& Search Regimes}
 The macro action space $\mathcal{A}_{\text{macro}}$ comprises 7 search modes. Each mode scales the destroy size, multiplies the temperature once per segment, biases the operator priors and sets the local-search passes. With (destroy scale, temperature factor) in parentheses, the modes are: $a_0$ (\textsf{\small DEFAULT}, 1.00, 1.00); $a_1$ (\textsf{\small INTENSIFY}, 0.70, 0.98); $a_2$ (\textsf{\small DIVERSIFY}, 1.35, 1.08), which also permits a one-vehicle increase in the current solution; $a_3$ (\textsf{\small TW\_RESCUE}, 1.10, 1.05), with priors favoring time-window urgency removal and time-window-aware repair; $a_4$ (\textsf{\small POOL\_RECOMBINE}, 0.90, 1.01), which may trigger Set Partitioning; $a_5$ (\textsf{\small ROUTE\_REDUCE}, 0.95, 1.02), with priors favoring route-elimination operators, a Generalized Ejection Chain attempt at every iteration, penalized acceptance, and possible recombination; and $a_6$ (\textsf{\small INFEASIBLE\_DESCENT}, 1.10, 1.05), which is available only during the first search phase described below and maps to \textsf{\small DEFAULT} afterwards. The segment length is 100 iterations, or 130 on instances with wide time windows.
@@ -482,8 +482,8 @@ $s_3$ & $\text{Prog}_{\text{global}}$ & $\min(t / 10000, 1)$ & $s_{13}$ & $m_{\t
 $s_4$ & $\text{Prog}_{\text{seg}}$ & $(t \bmod \Delta_{\text{seg}})/\Delta_{\text{seg}}$ & $s_{14}$ & $\Delta \NVs{rel}$ & $(\NVs{cur}\!-\!\NVs{best})/\NVs{init}$ \\
 $s_5$ & $T_{\text{norm}}$ & $T / T_0$ & $s_{15}$ & $\text{Imp}_{\text{rec}}$ & Recent improvement rate \\
 $s_6$ & $\text{Stag}_{\text{ratio}}$ & $\text{no\_imp} / \text{patience}$ & $s_{16}$ & $\text{Gini}_{\text{len}}$ & Gini of route loads \\
-$s_7$ & $rb$ & Route separation index & $s_{17}$ & $\mu_{\text{slack}}$ & Mean customer forward slack \\
-$s_8$ & $lb$ & Capacity load balance & $s_{18}$ & $\sigma_{\text{slack}}$ & Std of forward slacks \\
+$s_7$ & $\mathrm{rb}$ & Route separation index & $s_{17}$ & $\mu_{\text{slack}}$ & Mean customer forward slack \\
+$s_8$ & $\mathrm{lb}$ & Capacity load balance & $s_{18}$ & $\sigma_{\text{slack}}$ & Std of forward slacks \\
 $s_9$ & $\tau_{\text{tight}}$ & Frac tight TW customers & $s_{19}$ & $\text{Frac}_{\text{cap}}$ & Fraction routes $>90\%$ cap \\
 $s_{10}$ & $\bar{s}$ & Normalized mean slack & $s_{20}$ & $\text{Var}_{\text{dist}}$ & Normalized variance of route distances \\
 \bottomrule
@@ -980,6 +980,15 @@ D.~Pisinger and S.~Ropke, ``A general heuristic for vehicle routing problems,'' 
 \bibitem{Ropke2006}
 S.~Ropke and D.~Pisinger, ``An adaptive large neighborhood search heuristic for the pickup and delivery problem with time windows,'' \emph{Transportation Science}, vol.~40, no.~4, pp. 455--472, 2006.
 
+\bibitem{kallestad2023general}
+J.~Kallestad, R.~Hasibi, A.~Hemmati, and K.~S{\"o}rensen, ``A general deep reinforcement learning hyperheuristic framework for solving combinatorial optimization problems,'' \emph{European Journal of Operational Research}, vol.~309, no.~1, pp. 446--468, 2023.
+
+\bibitem{johnn2023graph}
+S.~N. Johnn, V.-A. Darvariu, J.~Handl, and J.~Kalcsics, ``Graph reinforcement learning for operator selection in the {ALNS} metaheuristic,'' in \emph{Optimization and Learning (OLA 2023)}, Cham, Switzerland: Springer, 2023, pp. 200--212.
+
+\bibitem{reijnen2024online}
+R.~Reijnen, Y.~Zhang, H.~C. Lau, and Z.~Bukhsh, ``Online control of adaptive large neighborhood search using deep reinforcement learning,'' in \emph{Proc. Int. Conf. Automated Planning and Scheduling}, vol.~34, no.~1, 2024, pp. 475--483.
+
 \bibitem{vinyals2015pointer}
 O.~Vinyals, M.~Fortunato, and N.~Jaitly, ``Pointer networks,'' in \emph{Advances in Neural Information Processing Systems}, vol.~28, 2015, pp. 2692--2700.
 
@@ -1006,12 +1015,6 @@ H.~Lu, X.~Zhang, and S.~Yang, ``A learning-based iterative method for solving ve
 
 \bibitem{hottung2020neural}
 A.~Hottung and K.~Tierney, ``Neural large neighborhood search for the capacitated vehicle routing problem,'' in \emph{Proc. 24th European Conference on Artificial Intelligence (ECAI)}, 2020, pp. 443--450.
-
-\bibitem{johnn2023graph}
-S.~N. Johnn, V.-A. Darvariu, J.~Handl, and J.~Kalcsics, ``Graph reinforcement learning for operator selection in the {ALNS} metaheuristic,'' in \emph{Optimization and Learning (OLA 2023)}, Cham, Switzerland: Springer, 2023, pp. 200--212.
-
-\bibitem{reijnen2024online}
-R.~Reijnen, Y.~Zhang, H.~C. Lau, and Z.~Bukhsh, ``Online control of adaptive large neighborhood search using deep reinforcement learning,'' in \emph{Proc. Int. Conf. Automated Planning and Scheduling}, vol.~34, no.~1, 2024, pp. 475--483.
 
 \bibitem{shaw1998using}
 P.~Shaw, ``Using constraint programming and local search methods to solve vehicle routing problems,'' in \emph{Proc. CP 1998}, ser. LNCS, vol. 1520.\hskip 1em plus 0.5em minus 0.4em\relax Springer, 1998, pp. 417--431.
@@ -1048,9 +1051,6 @@ C.~K. Joshi, T.~Laurent, and X.~Bresson, ``An efficient graph convolutional netw
 
 \bibitem{bengio2021machine}
 Y.~Bengio, A.~Lodi, and Y.~Prouvost, ``Machine learning for combinatorial optimization: A methodological tour d'horizon,'' \emph{European Journal of Operational Research}, vol. 290, no.~2, pp. 405--421, 2021.
-
-\bibitem{kallestad2023general}
-J.~Kallestad, R.~Hasibi, A.~Hemmati, and K.~S{\"o}rensen, ``A general deep reinforcement learning hyperheuristic framework for solving combinatorial optimization problems,'' \emph{European Journal of Operational Research}, vol.~309, no.~1, pp. 446--468, 2023.
 
 \bibitem{chen2019learning}
 X.~Chen and Y.~Tian, ``Learning to perform local rewriting for combinatorial optimization,'' in \emph{Advances in Neural Information Processing Systems}, vol.~32, 2019, pp. 6281--6292.
@@ -1105,7 +1105,6 @@ L.~Xin, W.~Song, Z.~Cao, and J.~Zhang, ``{NeuroLKH}: Combining deep learning mod
 
 \bibitem{sintef_homberger}
 {SINTEF Optimization}, ``{SINTEF} {VRPTW} benchmark portal: Best known solutions for Homberger extended instances,'' \url{https://www.sintef.no/projectweb/top/vrptw/homberger-benchmark/}, 2024.
-
 \end{thebibliography}
 }
 

@@ -1,7 +1,7 @@
 \let\origyear\year
 %DIF LATEXDIFF DIFFERENCE FILE
 %DIF DEL manuscript_submitted.tex   Sun Nov  1 13:09:21 2026
-%DIF ADD manuscript.tex             Wed Nov 11 05:02:20 2026
+%DIF ADD manuscript.tex             Wed Nov 11 09:52:53 2026
 \documentclass{ieeeaccess}
 \let\IEEEaccessyear\year
 \let\year\origyear
@@ -504,12 +504,12 @@ At the start of segment $k$, the macro controller observes a  \DIFaddbegin \DIFa
   \DIFadd{\mathbf{s}_k^{\text{macro}} = \Big[ 
     }&\DIFadd{\min\Big(\frac{\text{no\_imp}}{\text{patience}}, 1\Big), \; \min\Big(\frac{C_{\text{cur}} - C_{\text{best}}}{C_{\text{best}}}, 1\Big), \nonumber }\\
     &\DIFadd{\min\Big(\frac{T}{T_0}, 1.5\Big), \; \text{imp\_rate}, \; \min\Big(\frac{\NVs{cur}}{\NVs{init}}, 2\Big), \nonumber }\\
-    &\DIFadd{rb, \; lb, \; \tau_{\text{tight}}, \nonumber }\\
+    &\DIFadd{\mathrm{rb}, \; \mathrm{lb}, \; \tau_{\text{tight}}, \nonumber }\\
     &\DIFadd{\bar{s}, \; \rho_{\text{fill}}, \; \rho_{\text{pool}}, \; \frac{k}{K_{\max}} \Big]
   \label{eq:macro_state}
 }\end{align}\DIFaddend 
 
-where $\text{no\_imp}$ is the number of consecutive unimproved iterations, $T/T_0$ is the normalized annealing temperature, $rb \in [0, 1]$ and $lb \in [0, 1]$ measure spatial route separation and capacity balance,  \DIFaddbegin {\color{blue}$\tau_{\text{tight}} = \frac{1}{n}\sum_{i=1}^n \mathbb{I}(l_i - e_i < 0.5 \cdot d_{\max})$}\DIFadd{ is }\DIFaddend the fraction of  \DIFaddbegin \DIFadd{customers whose time-window width is below half the largest distance $d_{\max}$ of the instance}\DIFaddend , $\bar{s}$ is \DIFaddbegin \DIFadd{the }\DIFaddend average forward time slack, $\rho_{\text{fill}}$ is \DIFaddbegin \DIFadd{the }\DIFaddend average vehicle capacity utilization, and $\rho_{\text{pool}} = \min(|\mathcal{P}|/\mathcal{P}_{\max}, 1.0)$ tracks \DIFaddbegin \DIFadd{the }\DIFaddend route pool fill ratio.
+where $\text{no\_imp}$ is the number of consecutive unimproved iterations, $T/T_0$ is the normalized annealing temperature,  \DIFaddbegin \DIFadd{$\mathrm{rb} \in [0, 1]$ and $\mathrm{lb} \in [0, 1]$ }\DIFaddend measure spatial route separation and capacity balance,  \DIFaddbegin {\color{blue}$\tau_{\text{tight}} = \frac{1}{n}\sum_{i=1}^n \mathbb{I}(l_i - e_i < 0.5 \cdot d_{\max})$}\DIFadd{ is }\DIFaddend the fraction of  \DIFaddbegin \DIFadd{customers whose time-window width is below half the largest distance $d_{\max}$ of the instance}\DIFaddend , $\bar{s}$ is \DIFaddbegin \DIFadd{the }\DIFaddend average forward time slack, $\rho_{\text{fill}}$ is \DIFaddbegin \DIFadd{the }\DIFaddend average vehicle capacity utilization, and $\rho_{\text{pool}} = \min(|\mathcal{P}|/\mathcal{P}_{\max}, 1.0)$ tracks \DIFaddbegin \DIFadd{the }\DIFaddend route pool fill ratio.
 
 \subsubsection{Macro Action Space \& Search Regimes}
 The macro action space $\mathcal{A}_{\text{macro}}$ comprises 7  \DIFaddbegin \DIFadd{search modes. Each mode scales the destroy size, multiplies the temperature once per segment, biases the operator priors and sets the local-search passes. With (destroy scale, temperature factor) in parentheses, the modes are}\DIFaddend : $a_0$ (\textsf{\small DEFAULT} \DIFaddbegin \DIFadd{, 1.00, 1.00)}\DIFaddend ; $a_1$ (\textsf{\small  \DIFaddbegin \DIFadd{INTENSIFY}}\DIFadd{, 0.70, 0.98)}\DIFaddend ; $a_2$ (\textsf{\small DIVERSIFY} \DIFaddbegin \DIFadd{, 1.35, 1.08), which also permits a one-vehicle increase in the current solution}\DIFaddend ; $a_3$ (\textsf{\small TW\_RESCUE} \DIFaddbegin \DIFadd{, 1.10, 1.05), with priors favoring time-window urgency removal and time-window-aware repair}\DIFaddend ; $a_4$ ( \textsf{\small POOL\_RECOMBINE} \DIFaddbegin \DIFadd{, 0.90, 1.01), which may trigger Set Partitioning}\DIFaddend ; \DIFaddbegin \DIFadd{$a_5$ (}\textsf{\small \DIFadd{ROUTE\_REDUCE}}\DIFadd{, 0.95, 1.02), with priors favoring route-elimination operators, a Generalized Ejection Chain attempt at every iteration, penalized acceptance, and possible recombination; }\DIFaddend and $a_6$ (\textsf{\small INFEASIBLE\_DESCENT} \DIFaddbegin \DIFadd{, 1.10, 1.05), which is available only during the first search phase described below and maps to }\textsf{\small \DIFadd{DEFAULT}} \DIFadd{afterwards. The segment length is 100 iterations, or 130 on instances with wide time windows}\DIFaddend .
@@ -578,8 +578,8 @@ $s_3$ & $\text{Prog}_{\text{global}}$ &  \DIFaddbeginFL \DIFaddFL{$\min(t / 1000
 $s_4$ & $\text{Prog}_{\text{seg}}$ & $(t \bmod \Delta_{\text{seg}})/\Delta_{\text{seg}}$ & $s_{14}$ &  \DIFaddbeginFL \DIFaddFL{$\Delta \NVs{rel}$ }\DIFaddendFL &  \DIFaddbeginFL \DIFaddFL{$(\NVs{cur}\!-\!\NVs{best})/\NVs{init}$ }\DIFaddendFL \\
 $s_5$ & $T_{\text{norm}}$ & $T / T_0$ & $s_{15}$ & $\text{Imp}_{\text{rec}}$ & Recent improvement rate \\
 $s_6$ & $\text{Stag}_{\text{ratio}}$ & $\text{no\_imp} / \text{patience}$ & $s_{16}$ & $\text{Gini}_{\text{len}}$ & Gini of route  \DIFaddbeginFL \DIFaddFL{loads }\DIFaddendFL \\
-$s_7$ & $rb$ & Route separation index & $s_{17}$ & $\mu_{\text{slack}}$ & Mean customer forward slack \\
-$s_8$ & $lb$ & Capacity load balance & $s_{18}$ & $\sigma_{\text{slack}}$ & Std of forward slacks \\
+$s_7$ &  \DIFaddbeginFL \DIFaddFL{$\mathrm{rb}$ }\DIFaddendFL & Route separation index & $s_{17}$ & $\mu_{\text{slack}}$ & Mean customer forward slack \\
+$s_8$ &  \DIFaddbeginFL \DIFaddFL{$\mathrm{lb}$ }\DIFaddendFL & Capacity load balance & $s_{18}$ & $\sigma_{\text{slack}}$ & Std of forward slacks \\
 $s_9$ & $\tau_{\text{tight}}$ & Frac tight TW customers & $s_{19}$ & $\text{Frac}_{\text{cap}}$ & Fraction routes $>90\%$ cap \\
 $s_{10}$ & $\bar{s}$ & Normalized mean slack & $s_{20}$ & $\text{Var}_{\text{dist}}$ &  \DIFaddbeginFL \DIFaddFL{Normalized variance of route distances }\DIFaddendFL \\
 \bottomrule
@@ -1129,15 +1129,26 @@ P.~Toth and D.~Vigo, Eds., \emph{Vehicle Routing: Problems, Methods, and Applica
 \bibitem{braysy2005vehicle}
 O.~Br{\"a}ysy and M.~Gendreau, ``Vehicle routing problem with time windows, part  \DIFaddbegin {\DIFadd{I}}\DIFaddend : Route construction and local search algorithms,'' \emph{Transportation Science}, vol.~39, no.~1, pp. 104--118, 2005.
 
- \DIFaddbegin \bibitem{pisinger2007general}
-\DIFaddend D.~ \DIFaddbegin \DIFadd{Pisinger and S.~Ropke, ``A general heuristic for vehicle routing problems,'' }\DIFaddend \emph{ \DIFaddbegin \DIFadd{Computers \& Operations Research}\DIFaddend }, vol.~ \DIFaddbegin \DIFadd{34}\DIFaddend , no.~ \DIFaddbegin \DIFadd{8}\DIFaddend , pp.  \DIFaddbegin \DIFadd{2403--2435, 2007.
+\DIFaddbegin \bibitem{pisinger2007general}
+\DIFadd{D.~Pisinger and S.~Ropke, ``A general heuristic for vehicle routing problems,'' }\emph{\DIFadd{Computers \& Operations Research}}\DIFadd{, vol.~34, no.~8, pp. 2403--2435, 2007.
+}
+
+\DIFaddend \bibitem{Ropke2006}
+S.~Ropke and D.~Pisinger, ``An adaptive large neighborhood search heuristic for the pickup and delivery problem with time windows,'' \emph{Transportation Science}, vol.~40, no.~4, pp. 455--472, 2006.
+
+ \DIFaddbegin \bibitem{kallestad2023general}
+\DIFadd{J.~Kallestad, R.~Hasibi, A.~Hemmati, and K.~S}{\DIFadd{\"o}}\DIFadd{rensen}\DIFaddend , ``A general  \DIFaddbegin \DIFadd{deep reinforcement learning hyperheuristic framework for solving combinatorial optimization }\DIFaddend problems,'' \emph{ \DIFaddbegin \DIFadd{European Journal of Operational }\DIFaddend Research}, vol.~ \DIFaddbegin \DIFadd{309}\DIFaddend , no.~ \DIFaddbegin \DIFadd{1}\DIFaddend , pp.  \DIFaddbegin \DIFadd{446--468, 2023.
 }\DIFaddend 
 
- \DIFaddbegin \bibitem{Ropke2006}
-\DIFaddend S.~ \DIFaddbegin \DIFadd{Ropke and D.~Pisinger, ``An adaptive large neighborhood search heuristic for the pickup and delivery problem with time windows,'' }\DIFaddend \emph{ \DIFaddbegin \DIFadd{Transportation Science}\DIFaddend }, vol.~ \DIFaddbegin \DIFadd{40}\DIFaddend , no.~ \DIFaddbegin \DIFadd{4}\DIFaddend , pp.  \DIFaddbegin \DIFadd{455--472, 2006.
-}\DIFaddend 
+\DIFaddbegin \bibitem{johnn2023graph}
+\DIFadd{S.~N. Johnn, V.-A. Darvariu, J.~Handl, and J.~Kalcsics, ``Graph reinforcement learning for operator selection in the }{\DIFadd{ALNS}} \DIFadd{metaheuristic,'' in }\emph{\DIFadd{Optimization and Learning (OLA 2023)}}\DIFadd{, Cham, Switzerland: Springer, 2023, pp. 200--212.
+}
 
-\bibitem{vinyals2015pointer}
+\bibitem{reijnen2024online}
+\DIFadd{R.~Reijnen, Y.~Zhang, H.~C. Lau, and Z.~Bukhsh, ``Online control of adaptive large neighborhood search using deep reinforcement learning,'' in }\emph{\DIFadd{Proc. Int. Conf. Automated Planning and Scheduling}}\DIFadd{, vol.~34, no.~1, 2024, pp. 475--483.
+}
+
+\DIFaddend \bibitem{vinyals2015pointer}
 O.~Vinyals, M.~Fortunato, and N.~Jaitly, ``Pointer networks,'' in \emph{Advances in  \DIFaddbegin \DIFadd{Neural Information Processing Systems}\DIFaddend }, vol.~28, 2015, pp. 2692--2700.
 
 \bibitem{kool2019attention}
@@ -1164,15 +1175,7 @@ H.~Lu, X.~Zhang, and S.~Yang, ``A learning-based iterative  \DIFaddbegin \DIFadd
 \bibitem{hottung2020neural}
 A.~Hottung and K.~Tierney, ``Neural large neighborhood search for the capacitated vehicle routing problem,'' in \emph{Proc. 24th European Conference on Artificial Intelligence (ECAI)}, 2020, pp. 443--450.
 
-\DIFaddbegin \bibitem{johnn2023graph}
-\DIFadd{S.~N. Johnn, V.-A. Darvariu, J.~Handl, and J.~Kalcsics, ``Graph reinforcement learning for operator selection in the }{\DIFadd{ALNS}} \DIFadd{metaheuristic,'' in }\emph{\DIFadd{Optimization and Learning (OLA 2023)}}\DIFadd{, Cham, Switzerland: Springer, 2023, pp. 200--212.
-}
-
-\bibitem{reijnen2024online}
-\DIFadd{R.~Reijnen, Y.~Zhang, H.~C. Lau, and Z.~Bukhsh, ``Online control of adaptive large neighborhood search using deep reinforcement learning,'' in }\emph{\DIFadd{Proc. Int. Conf. Automated Planning and Scheduling}}\DIFadd{, vol.~34, no.~1, 2024, pp. 475--483.
-}
-
-\DIFaddend \bibitem{shaw1998using}
+\bibitem{shaw1998using}
 P.~Shaw, ``Using constraint programming and local search methods to solve vehicle routing problems,'' in \emph{Proc. CP 1998}, ser. LNCS, vol. 1520.\hskip 1em plus 0.5em minus 0.4em\relax Springer, 1998, pp. 417--431.
 
 \bibitem{pisinger2010large}
@@ -1208,15 +1211,12 @@ C.~K. Joshi, T.~Laurent, and X.~Bresson, ``An efficient graph convolutional netw
 \bibitem{bengio2021machine}
 Y.~Bengio, A.~Lodi, and Y.~Prouvost, ``Machine learning for combinatorial optimization: A methodological tour d'horizon,'' \emph{European Journal of Operational Research}, vol. 290, no.~2, pp. 405--421, 2021.
 
- \DIFaddbegin \bibitem{kallestad2023general}
-\DIFadd{J.~Kallestad, R.~Hasibi, }\DIFaddend A.~ \DIFaddbegin \DIFadd{Hemmati, and K.~S}\DIFaddend { \DIFaddbegin \DIFadd{\"o}\DIFaddend } \DIFaddbegin \DIFadd{rensen, ``A general deep reinforcement learning hyperheuristic framework for solving combinatorial optimization problems,'' }\DIFaddend \emph{ \DIFaddbegin \DIFadd{European Journal of Operational Research}\DIFaddend },  \DIFaddbegin \DIFadd{vol.~309, no.~1, pp. 446--468, 2023.
-}\DIFaddend 
+ \bibitem{chen2019learning}
+X.~Chen and Y.~Tian, `` \DIFaddbegin \DIFadd{Learning to perform local rewriting for combinatorial optimization,'' }\DIFaddend in \emph{Advances in  \DIFaddbegin \DIFadd{Neural Information Processing Systems}}\DIFadd{, vol.~32, 2019, pp. 6281--6292.
+}
 
-\bibitem{chen2019learning}
-X.~Chen and Y.~Tian, ``Learning to perform local  \DIFaddbegin \DIFadd{rewriting }\DIFaddend for combinatorial optimization,'' in \emph{Advances in  \DIFaddbegin \DIFadd{Neural Information Processing Systems}\DIFaddend }, vol.~32, 2019, pp.  \DIFaddbegin \DIFadd{6281--6292}\DIFaddend .
-
-\DIFaddbegin \bibitem{sutton1999between}
-\DIFadd{R.~S. Sutton, D.~Precup, and S.~Singh, ``Between MDPs and semi-MDPs: A framework for temporal abstraction in reinforcement learning,'' }\emph{\DIFadd{Artificial Intelligence}}\DIFadd{, vol. 112, no.~1-2, pp. 181--211, 1999.
+\bibitem{sutton1999between}
+\DIFadd{R.~S. Sutton, D.~Precup, and S.~Singh, ``Between MDPs and semi-MDPs: A framework for temporal abstraction in reinforcement learning,'' }\emph{\DIFadd{Artificial Intelligence}\DIFaddend }, vol.  \DIFaddbegin \DIFadd{112, no.~1-2, pp. 181--211, 1999.
 }
 
 \bibitem{mnih2015human}
@@ -1224,10 +1224,9 @@ X.~Chen and Y.~Tian, ``Learning to perform local  \DIFaddbegin \DIFadd{rewriting
 }
 
 \bibitem{vanhasselt2016deep}
-\DIFadd{H.~van Hasselt, A.~Guez, and D.~Silver, ``Deep reinforcement learning with double }{\DIFadd{Q}}\DIFadd{-learning,'' in }\emph{\DIFadd{Proc. 30th AAAI Conf. Artificial Intelligence}}\DIFadd{, 2016, pp. 2094--2100.
-}
+\DIFadd{H.~van Hasselt, A.~Guez, and D.~Silver, ``Deep reinforcement learning with double }{\DIFadd{Q}}\DIFadd{-learning,'' in }\emph{\DIFadd{Proc. 30th AAAI Conf. Artificial Intelligence}}\DIFadd{, 2016, pp. 2094--2100}\DIFaddend .
 
-\bibitem{schaul2016prioritized}
+\DIFaddbegin \bibitem{schaul2016prioritized}
 \DIFadd{T.~Schaul, J.~Quan, I.~Antonoglou, and D.~Silver, ``Prioritized experience replay,'' in }\emph{\DIFadd{International Conference on Learning Representations (ICLR)}}\DIFadd{, 2016.
 }
 
@@ -1276,8 +1275,7 @@ H.~Gehring and J.~Homberger, ``A parallel hybrid evolutionary metaheuristic for 
 
  \bibitem{sintef_homberger}
 {SINTEF Optimization}, ``{SINTEF} {VRPTW} benchmark portal: Best known solutions for Homberger extended instances,'' \url{https://www.sintef.no/projectweb/top/vrptw/homberger-benchmark/}, 2024.
-
-\end{thebibliography}
+ \end{thebibliography}
 }
 
  \DIFaddbegin \newpage
