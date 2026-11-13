@@ -17,6 +17,12 @@ the authors and are available on request.
   Ejection Search phase and the final fleet, read from the cell trajectories by
   `scripts/stage_fleet_t300.py`. It backs the descriptive counts in the Discussion (338 of 370
   seed pairs with the same fleet at both points). It was computed after the results were read.
+- `analysis/iteration_rate_t300.csv`: added on 13 November 2026. An estimate of the main-loop
+  iteration rate of F111111 and ALNS-Base in the 300 s cells, from the iterations and the time
+  between the first and the last improvement recorded in the main loop, for the 536 cells where
+  those are at least 5 s apart. Written by `scripts/iteration_rate_t300.py`, which also prints the
+  macro controller's decisions per run from the component-cost files. Cells record no total
+  iteration count, so this is an estimate, computed after the results were read.
 - `load_samples.jsonl`: load averages sampled during the run (README Amendment 5).
 - `README.md`: the analysis plan, the adoption rule and all amendments, as written during the run.
 - `run_sweep_ges.py`, `validate.py`, `sample_load.py`, `run_component_cost.sh`, `resume_t900.sh`,

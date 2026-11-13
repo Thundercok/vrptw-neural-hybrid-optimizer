@@ -45,8 +45,13 @@ wall-clock budgets of 10, 60 and 300 s on all 74 instances (56 Solomon-100, 12 H
 6 Homberger-400) with five seeds, so the full suite rather than a subset. Construction, model
 inference, compilation and certification are charged to each solver's budget. A 900 s stage was
 started but not completed, and no 900 s result is reported, so the longer operational horizon you
-asked for is not covered. We state this as a limitation.
-Action: Sections V-A to V-D rewritten; Fig. 2 shows the comparisons by budget.
+asked for is not covered. We state this as a limitation. The 1.5 to 4 times per-iteration cost you
+cite came from our original manuscript, and it was too low. From the trajectories of the 300 s
+cells we estimate that ALNS-Base completes about 28, 14 and 5 times as many main-loop iterations
+per second as the proposed configuration at 100, 200 and 400 customers, which helps explain why an
+equal iteration budget favored the proposed method so strongly.
+Action: Sections V-A to V-D rewritten; Fig. 2 shows the comparisons by budget; the iteration rates
+are in Section V-H.
 
 **R1.2 Directly reproduced contemporary baselines.**
 Response: Two external solvers now run under the same hardware, budgets, seeds and supervisor as
@@ -217,8 +222,10 @@ took the largest share (median 53%, 28% and 22% of the budget at 100, 200 and 40
 destroy, repair and local search 18%, 48% and 50%, and the Guided Ejection Search phase 10%. The
 learned controllers took a median of 2.6%, 1.9% and 0.8% (at most 23% on one instance), GNN
 inference 0.01% and certification under 0.05%. The main loop ran at a median of 17.8, 14.5 and 6.5
-iterations per second. The learned layer is cheap, so its compute is unlikely to explain the null
-results. At 10 s, compilation and the Guided Ejection Search phase take most of the first half of
+iterations per second, and the macro controller made a median of 4.5 decisions per run (none in 6
+of the 18 runs). By an estimate from the trajectories, ALNS-Base ran about 28, 14 and 5 times as
+many main-loop iterations per second. The learned layer is cheap, so its compute is unlikely to
+explain the null results; the cost lies in the heuristic machinery around it. At 10 s, compilation and the Guided Ejection Search phase take most of the first half of
 the budget.
 Action: Sections V-D and V-H.
 
